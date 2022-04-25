@@ -1,0 +1,11 @@
+**/__pycache__
+Digraph*
+**/prof
+regression_plots/
+**/*.egg-info/
+**/setup.py
+**/outcmaes
+**/.DS_Store
+qsa*
+*results/
+*plots/
