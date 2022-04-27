@@ -7,5 +7,5 @@ regression_plots/
 **/outcmaes
 **/.DS_Store
 qsa*
-*results/
-*plots/
+*results*/
+*plots*/
