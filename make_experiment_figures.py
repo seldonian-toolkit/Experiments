@@ -8,6 +8,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib
+from matplotlib.ticker import FormatStrFormatter
+
 import matplotlib.pyplot as plt
 
 # Seldonian imports
@@ -22,10 +24,8 @@ if __name__ == "__main__":
 		help='The directory where all of your experiment results are saved')
 	parser.add_argument('interface_output_pth',
 	   type=dir_path, help='Path to output folder from running interface')
-	parser.add_argument('plot_save_dir',type=dir_path,
-		help='The directory where you want to save the plot')
-	parser.add_argument('--save',action='store_true',
-		help='Whether to save the plot (default False, just view it)')
+	parser.add_argument('--savename',
+		help='Filename to which the plot will be saved. Full or relative path acceptable. If not provided, plot will not be saved.')
 	parser.add_argument('--performance_label',type=str,default='Performance',
 		help='The name of the performance measure, e.g. accuracy (for plotting)')
 	parser.add_argument('--best_performance',type=float,
@@ -57,11 +57,14 @@ if __name__ == "__main__":
 
 	subfolders = [os.path.basename(f) for f in os.scandir(args.results_dir) if f.is_dir()]
 	subfolders = [x for x in subfolders if x!='resampled_datasets']
+	subfolders = [x for x in subfolders if x!='resampled_dataframes']
 
 	all_models = [x.split('_results')[0] for x in subfolders]
 	seldonian_models = list(set(all_models).intersection(seldonian_model_set))
 	baselines = list(set(all_models).difference(seldonian_model_set))
-	
+	print()
+	print("Plotting with the following baselines: ", baselines)
+	print()
 	## BASELINE RESULTS SETUP -- same for all constraints
 	baseline_dict = {}
 	for baseline in baselines:
@@ -78,19 +81,18 @@ if __name__ == "__main__":
 		baseline_dict[baseline]['mean_performance'] = baseline_mean_performance
 		baseline_dict[baseline]['ste_performance'] = baseline_ste_performance
 
-
 	## PLOTTING SETUP
 	fig = plt.figure(figsize=(8,4))
 	plot_index=1
 	n_rows=len(constraints)
 	n_cols=3
 	fontsize=10
-
+	legend_fontsize=8
 	## Loop over constraints and plot baseline and Seldonian results
 	for ii,constraint in enumerate(constraints):
 		constraint_str = constraint_dict[constraint]['constraint_str']
 		delta = constraint_dict[constraint]['delta']
-		# print(constraint,delta,constraint_str)
+
 		ax_performance=fig.add_subplot(n_rows,n_cols,plot_index)
 		plot_index+=1
 		ax_sr=fig.add_subplot(n_rows,n_cols,plot_index)
@@ -113,6 +115,16 @@ if __name__ == "__main__":
 		ax_performance.set_xscale('log')
 		ax_sr.set_xscale('log')
 		ax_fr.set_xscale('log')
+		
+		locmaj = matplotlib.ticker.LogLocator(base=10,numticks=12) 
+		locmin = matplotlib.ticker.LogLocator(base=10.0,
+			subs=(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9),numticks=12)
+		for ax in [ax_performance,ax_sr,ax_fr]:
+			ax.minorticks_on()
+			ax.xaxis.set_major_locator(locmaj)
+			ax.xaxis.set_minor_locator(locmin)
+			ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+		
 
 		# Seldonian results
 		filename = os.path.join(
@@ -140,26 +152,33 @@ if __name__ == "__main__":
 		for baseline_i,baseline in enumerate(baselines):
 			baseline_color = baseline_colormap(baseline_i)
 			baseline_mean_performance = baseline_dict[baseline]['mean_performance']
+			
 			baseline_ste_performance = baseline_dict[baseline]['ste_performance']
-			ax_performance.plot(X,baseline_mean_performance,color=baseline_color)
-			ax_performance.fill_between(X,
+			ax_performance.plot(X_all,baseline_mean_performance,color=baseline_color,label=baseline)
+			ax_performance.fill_between(X_all,
 				baseline_mean_performance-baseline_ste_performance,
 				baseline_mean_performance+baseline_ste_performance,
 				color=baseline_color,alpha=0.5)
-		ax_performance.axhline(y=-0.25,color='r',
-			linestyle='--',label='random policy')
+		# ax_performance.axhline(y=-0.25,color='r',
+		# 	linestyle='--',label='random policy')
 		# Seldonian 
 		ax_performance.plot(X,mean_performance,color='g',
 			linestyle='--',label='QSA')
+		ax_performance.scatter(X,mean_performance,color='g',s=25)
 		ax_performance.fill_between(X,
 			mean_performance-ste_performance,
 			mean_performance+ste_performance,
 			color='g',alpha=0.5)
+
+		ax_performance.set_ylim(0,1.0)
+
 		if args.best_performance:
 			ax_performance.plot(X,[args.best_performance for x in X],
-				color='k',linestyle='--',label='optimal policy')
-		ax_performance.legend(loc='best',fontsize=10)
-
+				color='k',linestyle='--',label='optimal performance')
+		ax_performance.legend(loc='best',fontsize=legend_fontsize)
+		
+		# ax_performance.tick_params(axis='x', which='minor',length=10,width=2)
+		# ax_performance.xaxis.set_minor_formatter(FormatStrFormatter("%.1f"))
 
 		# Solution rate - calculated on all points
 		n_trials = df_qsa['trial_i'].max()+1
@@ -167,19 +186,20 @@ if __name__ == "__main__":
 		std_sr = df_qsa.groupby('data_pct').std()['passed_safety']
 		ste_sr = std_sr/np.sqrt(n_trials)
 		
-		title =  f'g={constraint_str}'
+		title =  f'{constraint}: \ng={constraint_str}'
 		ax_sr.set_title(title,y=1.05,fontsize=10)
 
 		# Plot baseline solution rate (by default 1.0)
 		for baseline_i,baseline in enumerate(baselines):
 			baseline_color = baseline_colormap(baseline_i)
-			ax_sr.plot(X_all,np.ones_like(X),color=baseline_color,label=baseline)
+			ax_sr.plot(X_all,np.ones_like(X_all),color=baseline_color,label=baseline)
 
 		ax_sr.plot(X_all,mean_sr,color='g',linestyle='--',label='QSA')
+		ax_sr.scatter(X_all,mean_sr,color='g',s=25)
 		ax_sr.fill_between(X_all,mean_sr-ste_sr,mean_sr+ste_sr,color='g',alpha=0.5)
-		ax_sr.set_ylim(-0.05,1.05)
+		# ax_sr.set_ylim(-0.05,1.05)
 		
-		ax_sr.legend(loc='best',fontsize=10)
+		ax_sr.legend(loc='best',fontsize=legend_fontsize)
 
 		## Failure rate - calculated on all points
 		# First baseline
@@ -191,7 +211,7 @@ if __name__ == "__main__":
 			baseline_std_fr = df_baseline.groupby('data_pct').std()['failed']
 			baseline_ste_fr = baseline_std_fr/np.sqrt(n_trials)	
 
-			ax_fr.plot(X_all,baseline_mean_fr,color=baseline_color)
+			ax_fr.plot(X_all,baseline_mean_fr,color=baseline_color,label=baseline)
 			ax_fr.fill_between(X_all,baseline_mean_fr-baseline_ste_fr,
 				baseline_mean_fr+baseline_ste_fr,
 				color=baseline_color,alpha=0.5)
@@ -203,18 +223,19 @@ if __name__ == "__main__":
 		ax_fr.fill_between(X_all,
 			mean_fr-ste_fr,
 			mean_fr+ste_fr,color='g',alpha=0.5)
+		ax_fr.scatter(X_all,mean_fr,color='g',s=25)
 		ax_fr.axhline(y=delta,color='k',
 			linestyle='--',label=f'delta={delta}')
-		ax_fr.legend(loc='best',fontsize=10)
+		ax_fr.legend(loc='best',fontsize=legend_fontsize)
 		ax_fr.set_ylim(-0.05,1.05)
+		# ax_performance.get_xaxis().set_tick_params(which='minor', size=8)
 
 	plt.tight_layout()
 	# plt.subplots_adjust(hspace=0.6,wspace=0.3)
-	if args.save:
-		savename = os.path.join(args.plot_save_dir,
-			f'gridworld_diagnostic_plots_{n_trials}trials.png')
-		plt.savefig(savename,format='png',dpi=600)
-		print(f"Saved {savename}")
+	if args.savename:
+
+		plt.savefig(args.savename,format='png',dpi=600)
+		print(f"Saved {args.savename}")
 	else:
 		plt.show()
 	
