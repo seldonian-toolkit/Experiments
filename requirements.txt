@@ -1,0 +1,9 @@
+auto_mix_prep==0.2.0
+autograd==1.4
+matplotlib==3.5.1
+numpy==1.21.4
+pandas==1.4.1
+scikit_learn==1.1.1
+seldonian==0.0.3.dev0
+seldonian.egg==info
+tqdm==4.64.0
