@@ -23,7 +23,7 @@ class PlotGenerator():
 	1) Performance
 	2) Solution rate
 	3) Failure rate 
-	all plotted as a function of amount of data used
+	all plotted vs. amount of data used
 
 	:param spec: Specification object for running the 
 		Seldonian algorithm
@@ -39,22 +39,48 @@ class PlotGenerator():
 		(the horizontal axis on the three plots).
 	:type data_pcts: List(float)
 
+	:param datagen_method: Method for generating data that is used
+		to run the Seldonian algorithm for each trial
+	:type datagen_method: str, e.g. "resample"
+
+	:param perf_eval_fn: Function used to evaluate the performance
+		of the model obtained in each trial, with signature:
+		func(theta,**kwargs), where theta is the solution
+		from candidate selection
+	:type perf_eval_fn: function or class method
+
+
+	:param results_dir: The directory in which to save the results
+	:type results_dir: str
+
+	:param n_workers: The number of workers to use if
+		using multiprocessing
+	:type n_workers: int
+
+	:param constraint_eval_fns: List of functions used to evaluate
+		the constraints on ground truth. If an empty list is provided,
+		the constraints are evaluated using the parse tree 
+	:type constraint_eval_fns: List(function or class method), 
+		defaults to []
 	"""
 	def __init__(self,
 		spec,
 		n_trials,
 		data_pcts,
-		n_jobs,
-		eval_method,
+		datagen_method,
 		perf_eval_fn,
-		results_dir):
+		results_dir,
+		n_workers,
+		constraint_eval_fns=[]
+		):
 		self.spec = spec
 		self.n_trials = n_trials
 		self.data_pcts = data_pcts
-		self.n_jobs = n_jobs
-		self.eval_method = eval_method
+		self.datagen_method = datagen_method
 		self.perf_eval_fn = perf_eval_fn
 		self.results_dir = results_dir
+		self.n_workers = n_workers
+		self.constraint_eval_fns = constraint_eval_fns
 
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',best_performance=None,
@@ -218,7 +244,7 @@ class PlotGenerator():
 			ax_sr.plot(X_all,mean_sr,color='g',linestyle='--',label='QSA')
 			ax_sr.scatter(X_all,mean_sr,color='g',s=25)
 			ax_sr.fill_between(X_all,mean_sr-ste_sr,mean_sr+ste_sr,color='g',alpha=0.5)
-			# ax_sr.set_ylim(-0.05,1.05)
+			ax_sr.set_ylim(-0.05,1.05)
 			
 			ax_sr.legend(loc='best',fontsize=legend_fontsize)
 
@@ -259,23 +285,67 @@ class PlotGenerator():
 		else:
 			plt.show()
 
+
 class SupervisedPlotGenerator(PlotGenerator):
 	def __init__(self,
 		spec,
 		n_trials,
 		data_pcts,
-		n_jobs,
+		datagen_method,
 		perf_eval_fn,
 		results_dir,
-		eval_method='resample'):
+		n_workers,
+		constraint_eval_fns=[]):
+		"""Class for running supervised Seldonian experiments 
+			and generating the three plots
+
+		:param spec: Specification object for running the 
+			Seldonian algorithm
+		:type spec: seldonian.spec.Spec object
+
+		:param n_trials: The number of times the 
+			Seldonian algorithm is run for each data fraction.
+			Used for generating error bars
+		:type n_trials: int
+
+		:param data_pcts: Proportions of the overall size
+			of the dataset to use
+			(the horizontal axis on the three plots).
+		:type data_pcts: List(float)
+
+		:param datagen_method: Method for generating data that is used
+			to run the Seldonian algorithm for each trial
+		:type datagen_method: str, e.g. "resample"
+
+		:param perf_eval_fn: Function used to evaluate the performance
+			of the model obtained in each trial, with signature:
+			func(theta,**kwargs), where theta is the solution
+			from candidate selection
+		:type perf_eval_fn: function or class method
+
+		:param results_dir: The directory in which to save the results
+		:type results_dir: str
+
+		:param n_workers: The number of workers to use if
+			using multiprocessing
+		:type n_workers: int
+
+		:param constraint_eval_fns: List of functions used to evaluate
+			the constraints on ground truth. If an empty list is provided,
+			the constraints are evaluated using the parse tree 
+		:type constraint_eval_fns: List(function or class method), 
+			defaults to []
+		"""
 
 		super().__init__(spec=spec,
 			n_trials=n_trials,
 			data_pcts=data_pcts,
-			n_jobs=n_jobs,
-			eval_method=eval_method,
+			datagen_method=datagen_method,
 			perf_eval_fn=perf_eval_fn,
-			results_dir=results_dir)
+			results_dir=results_dir,
+			n_workers=n_workers,
+			constraint_eval_fns=constraint_eval_fns,
+			)
 		self.regime = 'supervised'
 
 	def run_seldonian_experiment(self,verbose):
@@ -285,7 +355,8 @@ class SupervisedPlotGenerator(PlotGenerator):
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
 		include_intercept_term = dataset.include_intercept_term
-		if self.eval_method == 'resample':
+		
+		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
 			# These will be cropped to data_pct fractional size
 			print("generating resampled datasets")
@@ -310,8 +381,9 @@ class SupervisedPlotGenerator(PlotGenerator):
 			spec=self.spec,
 			data_pcts=self.data_pcts,
 			n_trials=self.n_trials,
-			n_jobs=self.n_jobs,
-			eval_method=self.eval_method,
+			n_workers=self.n_workers,
+			datagen_method=self.datagen_method,
+			constraint_eval_fns=self.constraint_eval_fns,
 			verbose=verbose,
 			test_features=test_features,
 			test_labels=test_labels,
@@ -325,54 +397,123 @@ class SupervisedPlotGenerator(PlotGenerator):
 
 
 class RLPlotGenerator(PlotGenerator):
-	"""
-
-	:param n_episodes_for_eval: The number of episodes to use
-		when evaluating the performance. RL-specific
-	:type n_episodes_for_eval: int
-
-	:param RL_environment: The name of the environment, e.g. "gridworld3x3" 
-		which needs to be a prefix of a .py file in the 
-		seldonian library containing the environment object
-	"""
 	def __init__(self,
 		spec,
 		n_trials,
 		data_pcts,
-		n_jobs,
-		RL_environment,
-		eval_method='generate_episodes',
-		n_episodes_for_eval=1000):
-		super().__init__(spec,n_trials,data_pcts,n_jobs,eval_method)	
-		self.regime = 'RL'
-		self.n_episodes_for_eval = n_episodes_for_eval
-		self.RL_environment = RL_environment
-	
-		# Get enviornment and pass it to kwargs
-		RL_environment_name = args.RL_environment
-		RL_environment_module = importlib.import_module(
-		f'seldonian.RL.environments.{RL_environment_name}')
-		RL_environment_obj = RL_environment_module.Environment()	
-		extra_seldonian_kwargs['RL_environment_obj'] = RL_environment_obj
-		extra_seldonian_kwargs['n_episodes_for_eval'] = args.n_episodes_for_eval
-		if args.reg_coef:
-			extra_seldonian_kwargs['reg_coef'] = args.reg_coef
-			print(f"using regularization coefficent of {args.reg_coef}")
+		datagen_method,
+		perf_eval_fn,
+		RL_environment_obj,
+		n_episodes_for_eval,
+		results_dir,
+		n_workers,
+		constraint_eval_fns=[]
+		):
+		"""Class for running RL Seldonian experiments 
+			and generating the three plots
 
-		# generate full-size datasets for each trial so that 
-		# I can reference them for each data_pct
-		save_dir = os.path.join(self.results_dir,'resampled_datasets')
-		os.makedirs(save_dir,exist_ok=True)
-		print("generating resampled datasets")
-		for trial_i in range(args.n_trials):
-			print(f"Trial: {trial_i}")
-			savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.pkl')
-			if not os.path.exists(savename):
-				RL_environment_obj.generate_data(
-					n_episodes=args.n_episodes_for_eval,
-					parallel=True,
-					n_workers=args.n_jobs,
-					savename=savename)
+		:param spec: Specification object for running the 
+			Seldonian algorithm
+		:type spec: seldonian.spec.Spec object
+
+		:param n_trials: The number of times the 
+			Seldonian algorithm is run for each data fraction.
+			Used for generating error bars
+		:type n_trials: int
+
+		:param data_pcts: Proportions of the overall size
+			of the dataset to use
+			(the horizontal axis on the three plots).
+		:type data_pcts: List(float)
+
+		:param datagen_method: Method for generating data that is used
+			to run the Seldonian algorithm for each trial
+		:type datagen_method: str, e.g. "resample"
+
+		:param perf_eval_fn: Function used to evaluate the performance
+			of the model obtained in each trial, with signature:
+			func(theta,**kwargs), where theta is the solution
+			from candidate selection
+		:type perf_eval_fn: function or class method
+		
+		:param RL_environment_obj: The RL environment object  
+			from the seldonian library 
+		:type RL_environment_obj: Environment() class instance
+
+		:param n_episodes_for_eval: The number of episodes to use
+			when evaluating the performance.
+		:type n_episodes_for_eval: int
+
+		:param results_dir: The directory in which to save the results
+		:type results_dir: str
+
+		:param n_workers: The number of workers to use if
+			using multiprocessing
+		:type n_workers: int
+
+		:param constraint_eval_fns: List of functions used to evaluate
+			the constraints on ground truth. If an empty list is provided,
+			the constraints are evaluated using the parse tree 
+		:type constraint_eval_fns: List(function or class method), 
+			defaults to []
+		"""
+
+		super().__init__(spec=spec,
+			n_trials=n_trials,
+			data_pcts=data_pcts,
+			datagen_method=datagen_method,
+			perf_eval_fn=perf_eval_fn,
+			results_dir=results_dir,
+			n_workers=n_workers,
+			constraint_eval_fns=constraint_eval_fns,
+			)
+		
+		self.regime = 'RL'
+		self.RL_environment_obj = RL_environment_obj
+		self.n_episodes_for_eval = n_episodes_for_eval
+
+	def run_seldonian_experiment(self,verbose):
+		print("Running experiment")
+		dataset = self.spec.dataset
+		
+		if self.datagen_method == 'generate_episodes':
+			# generate full-size datasets for each trial so that 
+			# we can reference them for each data_pct
+			save_dir = os.path.join(self.results_dir,'resampled_datasets')
+			os.makedirs(save_dir,exist_ok=True)
+			print("generating resampled datasets")
+			for trial_i in range(self.n_trials):
+				print(f"Trial: {trial_i}")
+				savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.pkl')
+				if not os.path.exists(savename):
+					self.RL_environment_obj.generate_data(
+						n_episodes=self.n_episodes_for_eval,
+						parallel=True if self.n_workers > 1 else False,
+						n_workers=self.n_workers,
+						savename=savename)
+				else:
+					print(f"{savename} already created")
+
+		run_seldonian_kwargs = dict(
+			spec=self.spec,
+			data_pcts=self.data_pcts,
+			n_trials=self.n_trials,
+			n_workers=self.n_workers,
+			datagen_method=self.datagen_method,
+			constraint_eval_fns=self.constraint_eval_fns,
+			n_episodes_for_eval=self.n_episodes_for_eval,
+			verbose=verbose,
+			RL_environment_obj=self.RL_environment_obj,
+			perf_eval_fn=self.perf_eval_fn,
+			)
+
+
+		# ## Run experiment 
+		sd_exp = SeldonianExperiment(results_dir=self.results_dir)
+
+		sd_exp.run_experiment(**run_seldonian_kwargs)
+
+		
 
 
 

@@ -13,8 +13,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.model_selection import train_test_split
 
-from seldonian.dataset import DataSet
-from seldonian import seldonian_algorithm
+from seldonian.utils.io_utils import load_pickle
+from seldonian.dataset import (SupervisedDataSet,RLDataSet)
+from seldonian.seldonian_algorithm import seldonian_algorithm
 
 class Experiment():
 	def _aggregate_results(self,**kwargs):
@@ -76,11 +77,11 @@ class BaselineExperiment(Experiment):
 			test_labels=test_labels,
 			dataset=kwargs['dataset'],
 			constraint_funcs=kwargs['constraint_funcs'],
-			eval_method=kwargs['eval_method'],
+			datagen_method=kwargs['datagen_method'],
 			results_dir=kwargs['results_dir'],
 			max_iter=kwargs['max_iter'],
 			verbose=kwargs['verbose'],
-			n_jobs=kwargs['n_jobs'],
+			n_workers=kwargs['n_workers'],
 		)
 		data_pcts = kwargs['data_pcts']
 		n_trials = kwargs['n_trials']
@@ -93,7 +94,7 @@ class BaselineExperiment(Experiment):
 		# 		print(data_pct,trial_i)
 		# 		helper(data_pct,trial_i)
 
-		with ProcessPoolExecutor(max_workers=kwargs['n_jobs']) as ex:
+		with ProcessPoolExecutor(max_workers=kwargs['n_workers']) as ex:
 			results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
 				total=len(data_pcts_vector))
 			for exc in results:
@@ -117,7 +118,7 @@ class BaselineExperiment(Experiment):
 		test_features = kwargs['test_features']
 		test_labels = kwargs['test_labels']
 		
-		if kwargs['eval_method'] == 'resample':
+		if kwargs['datagen_method'] == 'resample':
 			resampled_filename = os.path.join(kwargs['results_dir'],
 			'resampled_dataframes',f'trial_{trial_i}.pkl')
 			with open(resampled_filename,'rb') as infile:
@@ -125,7 +126,7 @@ class BaselineExperiment(Experiment):
 			# df = pd.read_csv(resampled_filename).iloc[:n_points]
 
 		else:
-			raise NotImplementedError(f"eval_method: {eval_method} not implemented")
+			raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
 
 		# Set up for initial solution
 		labels = df[label_column]
@@ -159,8 +160,8 @@ class BaselineExperiment(Experiment):
 				model=lr_model,regime='supervised',
 				branch='safety_test')
 
-			ghat = parse_tree.root.value
-			if ghat > 0:
+			g = parse_tree.root.value
+			if g > 0:
 				failed = True
 
 		# Write out file for this data_pct,trial_i combo
@@ -192,7 +193,7 @@ class BaselineExperiment(Experiment):
 			test_features = kwargs['test_features']
 			test_labels = kwargs['test_labels']
 			
-			if kwargs['eval_method'] == 'resample':
+			if kwargs['datagen_method'] == 'resample':
 				resampled_filename = os.path.join(kwargs['results_dir'],
 				'resampled_dataframes',f'trial_{trial_i}.csv')
 				n_points = int(round(data_pct*len(test_features))) 
@@ -200,7 +201,7 @@ class BaselineExperiment(Experiment):
 					df = pickle.load(infile).iloc[:n_points]
 				# df = pd.read_csv(resampled_filename).iloc[:n_points]
 			else:
-				raise NotImplementedError(f"eval_method: {eval_method} not implemented")
+				raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
 			# set labels to 0 and 1, not -1 and 1, like some classification datasets will have
 			df.loc[df[dataset.label_column]==-1.0,dataset.label_column]=0.0
 
@@ -232,8 +233,8 @@ class BaselineExperiment(Experiment):
 						dataset=dataset,
 						model=model,regime='supervised',
 						branch='safety_test')
-					ghat = parse_tree.root.value
-					if ghat > 0:
+					g = parse_tree.root.value
+					if g > 0:
 						failed = True
 
 			# Write out file for this data_pct,trial_i combo
@@ -257,7 +258,7 @@ class SeldonianExperiment(Experiment):
 		self.model_name = 'qsa'
 
 	def run_experiment(self,**kwargs):
-		n_jobs = kwargs['n_jobs']
+		n_workers = kwargs['n_workers']
 		partial_kwargs = {key:kwargs[key] for key in kwargs \
 			if key not in ['data_pcts','n_trials']}
 
@@ -271,14 +272,14 @@ class SeldonianExperiment(Experiment):
 		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
 		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
 
-		if n_jobs == 1:
+		if n_workers == 1:
 			for ii in range(len(data_pcts_vector)):
 				data_pct = data_pcts_vector[ii]
 				trial_i = trials_vector[ii]
 				print(data_pct,trial_i)
 				helper(data_pct,trial_i)
-		elif n_jobs > 1:
-			with ProcessPoolExecutor(max_workers=n_jobs,
+		elif n_workers > 1:
+			with ProcessPoolExecutor(max_workers=n_workers,
 				mp_context=mp.get_context('fork')) as ex:
 				results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
 					total=len(data_pcts_vector))
@@ -286,7 +287,7 @@ class SeldonianExperiment(Experiment):
 					if exc:
 						print(exc)
 		else:
-			raise ValueError(f"n_jobs value of {n_jobs} must be >=1 ")
+			raise ValueError(f"n_workers value of {n_workers} must be >=1 ")
 
 		self._aggregate_results(**kwargs)
 	
@@ -294,8 +295,9 @@ class SeldonianExperiment(Experiment):
 		
 		spec = kwargs['spec']
 		verbose=kwargs['verbose']
-		eval_method = kwargs['eval_method']
+		datagen_method = kwargs['datagen_method']
 		perf_eval_fn = kwargs['perf_eval_fn']
+		constraint_eval_fns = kwargs['constraint_eval_fns']
 
 		regime=spec.dataset.regime
 
@@ -318,6 +320,10 @@ class SeldonianExperiment(Experiment):
 		parse_trees = spec.parse_trees
 		dataset = spec.dataset
 
+		##############################################
+		""" Setup for running Seldonian algorithm """
+		##############################################
+
 		if regime == 'supervised':
 			# Load in ground truth
 			test_features = kwargs['test_features']
@@ -328,7 +334,7 @@ class SeldonianExperiment(Experiment):
 			include_intercept_term = dataset.include_intercept_term
 			label_column = dataset.label_column
 
-			if eval_method == 'resample':
+			if datagen_method == 'resample':
 				resampled_filename = os.path.join(self.results_dir,
 					'resampled_dataframes',f'trial_{trial_i}.pkl')
 				n_points = int(round(data_pct*len(test_features))) 
@@ -341,10 +347,10 @@ class SeldonianExperiment(Experiment):
 						  f"with {len(resampled_df)} datapoints")
 			else:
 				raise NotImplementedError(
-					f"Eval method {eval_method} "
+					f"Eval method {datagen_method} "
 					f"not supported for regime={regime}")
 
-			dataset_for_experiment = DataSet(
+			dataset_for_experiment = SupervisedDataSet(
 				df=resampled_df,
 				meta_information=resampled_df.columns,
 				regime=regime,
@@ -358,21 +364,20 @@ class SeldonianExperiment(Experiment):
 
 			spec_for_experiment = copy.deepcopy(spec)
 			spec_for_experiment.dataset = dataset_for_experiment
-			model_instance = spec_for_experiment.model()
+			model_instance = spec_for_experiment.model_class()
 
 		elif regime == 'RL':
 			RL_environment_obj = kwargs['RL_environment_obj']
+			n_episodes_for_eval = kwargs['n_episodes_for_eval']
 			
-			if eval_method == 'generate_episodes':
+			if datagen_method == 'generate_episodes':
 				# Sample from resampled dataset on disk of n_episodes
-				save_dir = os.path.join(kwargs['results_dir'],'resampled_datasets')
+				save_dir = os.path.join(self.results_dir,'resampled_datasets')
 				# savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.csv')
 				savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.pkl')
-				with open(savename,'rb') as infile:
-					resampled_df = pickle.load(infile)
-
-				# resampled_df = pd.read_csv(savename,names=dataset.df.columns[:-1])
-				# Convert any array columns
+				
+				resampled_df = load_pickle(savename)
+				# Take data_pct episodes from this df
 				n_episodes_max = resampled_df['episode_index'].nunique()
 
 				n_episodes = int(round(n_episodes_max*data_pct))
@@ -380,141 +385,111 @@ class SeldonianExperiment(Experiment):
 				print(f"This dataset with data_pct={data_pct} should have {n_episodes} episodes")
 				
 				# Take first n_episodes episodes 
-
 				resampled_df = resampled_df.loc[resampled_df['episode_index']<n_episodes]
-				resampled_episodes = resampled_df.episode_index.unique()
-				
-				# For candidate take first 1.0-frac_data_in_safety fraction
-				# and for safety take remaining
-				n_candidate = int(round(n_episodes*(1.0-frac_data_in_safety)))
-				candidate_episodes = resampled_episodes[0:n_candidate]
-				safety_episodes = resampled_episodes[n_candidate:]
-				
-				safety_df = resampled_df.copy().loc[
-					resampled_df['episode_index'].isin(safety_episodes)]
-				candidate_df = resampled_df.copy().loc[
-					resampled_df['episode_index'].isin(candidate_episodes)]
+				print("Resampled_df:")
+				print(resampled_df)
 
-				print("Safety dataset has n_episodes:")
-				print(safety_df['episode_index'].nunique())
-				print("Candidate dataset has n_episodes:")
-				print(candidate_df['episode_index'].nunique())
-				# print(candidate_df)
+				dataset_for_experiment = RLDataSet(
+					df=resampled_df,
+					meta_information=resampled_df.columns,
+					regime=regime)
+
+				# Make a new spec object from a copy of spec, where the 
+				# only thing that is different is the dataset
+
+				spec_for_experiment = copy.deepcopy(spec)
+				spec_for_experiment.dataset = dataset_for_experiment
+				model_instance = spec_for_experiment.model_class(RL_environment_obj)
+
 			else:
 				raise NotImplementedError(
-					f"Eval method {eval_method} "
+					f"Eval method {datagen_method} "
 					"not supported for regime={regime}")
-			
-			candidate_dataset = DataSet(
-				candidate_df,meta_information=resampled_df.columns,
-				regime=regime)
-
-			safety_dataset = DataSet(
-				safety_df,meta_information=resampled_df.columns,
-				regime=regime)
-
-			n_safety = safety_df['episode_index'].nunique()
-			n_candidate = candidate_df['episode_index'].nunique()
-			print(f"Safety dataset has {n_safety} episodes")
-			print(f"Candidate dataset has {n_candidate} episodes")
 		
+		################################
+		"""" Run Seldonian algorithm """
+		################################
 
-		# Run Seldonian algorithm with experimental spec
 		passed_safety,candidate_solution = seldonian_algorithm(
 			spec_for_experiment)
-		print("Ran seldonian algorithm")
-		NSF=False
-		# Handle NSF 
+		print("Solution from running seldonian algorithm:")
+		print(candidate_solution)
+		print()
+		
+		
+		# Handle whether solution was found 
+		solution_found=True
 		if type(candidate_solution) == str and candidate_solution == 'NSF':
-			NSF = True
+			solution_found = False
 		
-		# Calculate peformance
+		#########################################################
+		"""" Calculate performance and safety on ground truth """
+		#########################################################
 		
-		failed=False # flag for whether we were actually safe 
-		# on ground truth. Only relevant if we passed the safety test
+		failed=False # flag for whether we were actually safe on test set
 
-		if NSF:
-			performance = -99.0
-		else:
+		if solution_found:
+			solution = copy.deepcopy(candidate_solution)
 			# If passed the safety test, calculate performance
-			# using candidate solution 
+			# using solution 
 			if passed_safety:
 				if verbose:
 					print("Passed safety test. Calculating performance")
+
+				#############################
+				""" Calculate performance """
+				#############################
 				if regime == 'supervised':
-					if verbose: 
-						print("Calculating performance with candidate solution:")
-						print(candidate_solution)
-					
 					performance = perf_eval_fn(
-						model_instance,
-						candidate_solution,test_features,
-						test_labels)
+						solution,
+						model=model_instance,
+						X=test_features,
+						y=test_labels)
 					
-					if verbose:
-						print(f"Performance = {performance}")
-				
 				elif regime == 'RL':
-					# Calculate J, the expected sum of discounted rewards
-					# using this candidate solution on a bunch of newly 
-					# generated episodes 
-					RL_environment_obj.param_weights = candidate_solution
-					# df_regen = RL_environment_obj.generate_data(
-					# 	n_episodes=kwargs['n_episodes_for_eval'],
-					# 	n_workers=kwargs['n_jobs'])
-					df_regen = RL_environment_obj.generate_data(
-						n_episodes=kwargs['n_episodes_for_eval'],
-						n_workers=kwargs['n_jobs'],parallel=False)
-					# print(df_regen)
-					performance = RL_environment_obj.calc_J_from_df(df_regen,
-						gamma=RL_environment_obj.gamma)
-					print(f"Performance is J={performance}")
-				
-				# Calculate whether we failed on test set
+					performance = perf_eval_fn(solution,
+						n_episodes=n_episodes_for_eval)
+
 				if verbose:
-					print("Determining whether solution is actually safe on ground truth")
+					print(f"Performance = {performance}")
+			
+				########################################
+				""" Calculate safety on ground truth """
+				########################################
+				if verbose:
+					print("Determining whether solution "
+						  "is actually safe on ground truth")
 				
-				if regime == 'supervised':
-					for parse_tree in spec_for_experiment.parse_trees:
-						parse_tree.evaluate_constraint(
-							theta=candidate_solution,
-							dataset=spec_for_experiment.dataset,
-							model=model_instance,
-							regime='supervised',
-							branch='safety_test')
-						
-						ghat = parse_tree.root.value
-						if ghat > 0:
-							failed = True
+				kwargs_constraint_eval = dict(solution=solution,
+					constraint_eval_fns=constraint_eval_fns,
+					model_instance=model_instance,
+					spec_orig=spec,
+					spec_for_experiment=spec_for_experiment,
+					regime=regime,verbose=verbose)
 
-						if verbose:
-							constraint_str = parse_tree.constraint_str
-							print(f"ghat for constraint: {constraint_str}"
-								  f" on test set: {ghat}")
-
-				elif regime == 'RL':
-					ghat = gfunc(
-						df_regen,
-						RL_environment_obj=RL_environment_obj,
-						)
-					if ghat > 0:
-						failed = True
+				if regime == 'RL':
+					kwargs_constraint_eval['n_episodes_for_eval'] \
+						= n_episodes_for_eval
+					kwargs_constraint_eval['RL_environment_obj'] \
+						= RL_environment_obj
+					
+				failed = self.evaluate_constraint_functions(
+					**kwargs_constraint_eval)
 				
 				if verbose:
 					if failed:
-						print("Solution was not actually safe on test set!")
+						print("Solution was not actually safe on ground truth!")
 					else:
-						print("Solution was safe on test set")
+						print("Solution was safe on ground truth")
 					print()
 			else:
 				if verbose:
 					print("Failed safety test ")
-					performance = -99.0
+					performance = np.nan
 		
-		# Reset param weights to their initial weights -- might not be neccesary?
-		if regime == 'RL':
-			RL_environment_obj.param_weights = RL_environment_obj.initial_weights
-
+		else:
+			print("NSF")
+			performance = np.nan
 		# Write out file for this data_pct,trial_i combo
 		data = [data_pct,
 			trial_i,
@@ -531,3 +506,66 @@ class SeldonianExperiment(Experiment):
 		# except Exception as e:
 		# 	return e
 		# return None
+
+	def evaluate_constraint_functions(self,
+		solution,constraint_eval_fns,
+		**kwargs):
+
+		# Use safety test branch so the confidence bounds on leaf nodes are not inflated
+		eval_constr_kwargs = dict(theta=solution)
+		failed = False
+		if constraint_eval_fns == []:
+			""" User did not provide their own functions
+			to evaluate the constraints. Use the default: 
+			the parse tree has a built-in way to evaluate constraints.
+			"""
+			model_instance = kwargs['model_instance']
+			regime = kwargs['regime']
+			spec_orig = kwargs['spec_orig'] # the original spec 
+			spec_for_experiment = kwargs['spec_for_experiment'] # the original spec 
+
+			eval_constr_kwargs['model'] = model_instance
+			eval_constr_kwargs['regime'] = regime
+			eval_constr_kwargs['branch'] = 'safety_test'
+
+			if regime == 'supervised':
+				# Use the original dataset as ground truth
+				eval_constr_kwargs['dataset']=spec_orig.dataset 
+
+			if regime == 'RL':
+				# Generate episodes and create dataset object
+				RL_environment_obj = kwargs['RL_environment_obj']
+
+				df_for_eval = RL_environment_obj.generate_data(
+					n_episodes=kwargs['n_episodes_for_eval'],
+					n_workers=1,
+					parallel=False) 
+
+				dataset_for_eval = RLDataSet(
+					df=df_for_eval,
+					meta_information=spec_for_experiment.dataset.df.columns,
+					regime=regime)
+
+				eval_constr_kwargs['dataset'] = dataset_for_eval
+				eval_constr_kwargs['gamma'] = RL_environment_obj.gamma
+				eval_constr_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
+
+				if spec_for_experiment.normalize_returns:
+					eval_constr_kwargs['min_return'] = RL_environment_obj.min_return
+					eval_constr_kwargs['max_return'] = RL_environment_obj.max_return
+
+			for parse_tree in spec_for_experiment.parse_trees:
+				parse_tree.evaluate_constraint(
+					**eval_constr_kwargs)
+				
+				g = parse_tree.root.value
+				if g > 0:
+					failed = True
+
+		else:
+			# User provided functions to evaluate constraints
+			for eval_fn in constraint_eval_fns:
+				g = eval_fn(solution)
+				if g > 0:
+					failed = True
+		return failed

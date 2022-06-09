@@ -6,7 +6,7 @@ from experiments.generate_plots import SupervisedPlotGenerator
 
 from seldonian.utils.io_utils import load_pickle
 
-def accuracy(model,theta,X,y):
+def accuracy(theta,model,X,y):
 	""" Binary classification accuracy """
 	prediction = model.predict(theta,X)
 	predict_class = prediction>=0.5
@@ -20,13 +20,14 @@ if __name__ == "__main__":
 		'interface_outputs/demographic_parity_interface_withspec')
 	specfile = os.path.join(interface_output_dir,'spec.pkl')
 	spec = load_pickle(specfile)
+	spec.primary_objective = spec.model_class().sample_logistic_loss
 
 	### PARAMETER SETUP ###
 	n_trials = 10
-	data_pcts = np.hstack([[0.0004,0.0008],np.logspace(-3,0,15)])
-	# data_pcts = [0.001]
-	n_jobs=8
-	results_dir = './results/demographic_parity_fromspec'
+	data_pcts = np.logspace(-4,0,15)
+	# data_pcts = [0.01]
+	n_workers=8
+	results_dir = './results/demographic_parity_fromspec_test'
 	verbose=True
 
 	os.makedirs(results_dir,exist_ok=True)
@@ -35,13 +36,14 @@ if __name__ == "__main__":
 		spec=spec,
 		n_trials=n_trials,
 		data_pcts=data_pcts,
-		n_jobs=n_jobs,
-		eval_method='resample',
+		n_workers=n_workers,
+		datagen_method='resample',
 		perf_eval_fn=accuracy,
+		constraint_eval_fns=[],
 		results_dir=results_dir,
 		)
 
-	# plot_generator.run_seldonian_experiment(verbose=verbose)
+	plot_generator.run_seldonian_experiment(verbose=verbose)
 
 	savename = os.path.join(results_dir,'demographic_parity_withspec.png')
 	plot_generator.make_plots(fontsize=12,legend_fontsize=8,
