@@ -71,7 +71,8 @@ class PlotGenerator():
 		perf_eval_fn,
 		results_dir,
 		n_workers,
-		constraint_eval_fns=[]
+		constraint_eval_fns=[],
+		perf_eval_kwargs={},
 		):
 		self.spec = spec
 		self.n_trials = n_trials
@@ -81,6 +82,7 @@ class PlotGenerator():
 		self.results_dir = results_dir
 		self.n_workers = n_workers
 		self.constraint_eval_fns = constraint_eval_fns
+		self.perf_eval_kwargs = perf_eval_kwargs
 
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',best_performance=None,
@@ -295,7 +297,8 @@ class SupervisedPlotGenerator(PlotGenerator):
 		perf_eval_fn,
 		results_dir,
 		n_workers,
-		constraint_eval_fns=[]):
+		constraint_eval_fns=[],
+		perf_eval_kwargs={}):
 		"""Class for running supervised Seldonian experiments 
 			and generating the three plots
 
@@ -345,6 +348,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			results_dir=results_dir,
 			n_workers=n_workers,
 			constraint_eval_fns=constraint_eval_fns,
+			perf_eval_kwargs=perf_eval_kwargs,
 			)
 		self.regime = 'supervised'
 
@@ -365,18 +369,6 @@ class SupervisedPlotGenerator(PlotGenerator):
 				self.results_dir,
 				file_format='pkl')
 
-		# Use entire original dataset as ground truth for test set
-		test_features = dataset.df.loc[:,
-			dataset.df.columns != label_column]
-		test_labels = dataset.df[label_column]
-
-		if not include_sensitive_columns:
-			test_features = test_features.drop(
-				columns=sensitive_column_names)	
-
-		if include_intercept_term:
-			test_features.insert(0,'offset',1.0) # inserts a column of 1's in place
-
 		run_seldonian_kwargs = dict(
 			spec=self.spec,
 			data_pcts=self.data_pcts,
@@ -385,9 +377,8 @@ class SupervisedPlotGenerator(PlotGenerator):
 			datagen_method=self.datagen_method,
 			constraint_eval_fns=self.constraint_eval_fns,
 			verbose=verbose,
-			test_features=test_features,
-			test_labels=test_labels,
 			perf_eval_fn=self.perf_eval_fn,
+			perf_eval_kwargs=self.perf_eval_kwargs,
 			)
 
 		## Run experiment 

@@ -297,6 +297,7 @@ class SeldonianExperiment(Experiment):
 		verbose=kwargs['verbose']
 		datagen_method = kwargs['datagen_method']
 		perf_eval_fn = kwargs['perf_eval_fn']
+		perf_eval_kwargs = kwargs['perf_eval_kwargs']
 		constraint_eval_fns = kwargs['constraint_eval_fns']
 
 		regime=spec.dataset.regime
@@ -325,9 +326,6 @@ class SeldonianExperiment(Experiment):
 		##############################################
 
 		if regime == 'supervised':
-			# Load in ground truth
-			test_features = kwargs['test_features']
-			test_labels = kwargs['test_labels']
 
 			sensitive_column_names = dataset.sensitive_column_names
 			include_sensitive_columns = dataset.include_sensitive_columns
@@ -337,7 +335,7 @@ class SeldonianExperiment(Experiment):
 			if datagen_method == 'resample':
 				resampled_filename = os.path.join(self.results_dir,
 					'resampled_dataframes',f'trial_{trial_i}.pkl')
-				n_points = int(round(data_pct*len(test_features))) 
+				n_points = int(round(data_pct*len(dataset.df))) 
 
 				with open(resampled_filename,'rb') as infile:
 					resampled_df = pickle.load(infile).iloc[:n_points]
@@ -353,7 +351,6 @@ class SeldonianExperiment(Experiment):
 			dataset_for_experiment = SupervisedDataSet(
 				df=resampled_df,
 				meta_information=resampled_df.columns,
-				regime=regime,
 				label_column=label_column,
 				sensitive_column_names=sensitive_column_names,
 				include_sensitive_columns=include_sensitive_columns,
@@ -412,10 +409,10 @@ class SeldonianExperiment(Experiment):
 
 		passed_safety,candidate_solution = seldonian_algorithm(
 			spec_for_experiment)
+
 		print("Solution from running seldonian algorithm:")
 		print(candidate_solution)
 		print()
-		
 		
 		# Handle whether solution was found 
 		solution_found=True
@@ -442,9 +439,7 @@ class SeldonianExperiment(Experiment):
 				if regime == 'supervised':
 					performance = perf_eval_fn(
 						solution,
-						model=model_instance,
-						X=test_features,
-						y=test_labels)
+						**perf_eval_kwargs)
 					
 				elif regime == 'RL':
 					performance = perf_eval_fn(solution,
