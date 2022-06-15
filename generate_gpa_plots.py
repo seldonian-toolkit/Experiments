@@ -27,7 +27,7 @@ if __name__ == "__main__":
 	data_pcts = np.logspace(-4,0,15)
 	# data_pcts = [0.5]
 	n_workers=8
-	results_dir = './results/demographic_parity'
+	results_dir = './results/demographic_parity_debug'
 	verbose=True
 
 	os.makedirs(results_dir,exist_ok=True)

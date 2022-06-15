@@ -73,6 +73,7 @@ class PlotGenerator():
 		n_workers,
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
+		constraint_eval_kwargs={},
 		):
 		self.spec = spec
 		self.n_trials = n_trials
@@ -83,12 +84,17 @@ class PlotGenerator():
 		self.n_workers = n_workers
 		self.constraint_eval_fns = constraint_eval_fns
 		self.perf_eval_kwargs = perf_eval_kwargs
+		self.constraint_eval_kwargs = constraint_eval_kwargs
 
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',best_performance=None,
 		savename=None):
+		regime = self.spec.dataset.regime
+		if regime == 'supervised':
+			tot_data_size = len(self.spec.dataset.df)
+		elif regime == 'RL':
+			tot_data_size = len(self.spec.dataset.episodes)
 
-		tot_data_size = len(self.spec.dataset.df)
 		parse_trees = self.spec.parse_trees
 
 		constraint_dict = {}
@@ -298,7 +304,9 @@ class SupervisedPlotGenerator(PlotGenerator):
 		results_dir,
 		n_workers,
 		constraint_eval_fns=[],
-		perf_eval_kwargs={}):
+		perf_eval_kwargs={},
+		constraint_eval_kwargs={},
+		):
 		"""Class for running supervised Seldonian experiments 
 			and generating the three plots
 
@@ -349,6 +357,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			n_workers=n_workers,
 			constraint_eval_fns=constraint_eval_fns,
 			perf_eval_kwargs=perf_eval_kwargs,
+			constraint_eval_kwargs=constraint_eval_kwargs,
 			)
 		self.regime = 'supervised'
 
@@ -375,10 +384,11 @@ class SupervisedPlotGenerator(PlotGenerator):
 			n_trials=self.n_trials,
 			n_workers=self.n_workers,
 			datagen_method=self.datagen_method,
-			constraint_eval_fns=self.constraint_eval_fns,
-			verbose=verbose,
 			perf_eval_fn=self.perf_eval_fn,
 			perf_eval_kwargs=self.perf_eval_kwargs,
+			constraint_eval_fns=self.constraint_eval_fns,
+			constraint_eval_kwargs=self.constraint_eval_kwargs,
+			verbose=verbose,
 			)
 
 		## Run experiment 
@@ -398,7 +408,9 @@ class RLPlotGenerator(PlotGenerator):
 		n_episodes_for_eval,
 		results_dir,
 		n_workers,
-		constraint_eval_fns=[]
+		constraint_eval_fns=[],
+		perf_eval_kwargs={},
+		constraint_eval_kwargs={},
 		):
 		"""Class for running RL Seldonian experiments 
 			and generating the three plots
@@ -457,11 +469,12 @@ class RLPlotGenerator(PlotGenerator):
 			results_dir=results_dir,
 			n_workers=n_workers,
 			constraint_eval_fns=constraint_eval_fns,
+			perf_eval_kwargs=perf_eval_kwargs,
+			constraint_eval_kwargs=constraint_eval_kwargs,
 			)
 		
 		self.regime = 'RL'
 		self.RL_environment_obj = RL_environment_obj
-		self.n_episodes_for_eval = n_episodes_for_eval
 
 	def run_seldonian_experiment(self,verbose):
 		print("Running experiment")
@@ -475,10 +488,10 @@ class RLPlotGenerator(PlotGenerator):
 			print("generating resampled datasets")
 			for trial_i in range(self.n_trials):
 				print(f"Trial: {trial_i}")
-				savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.pkl')
+				savename = os.path.join(save_dir,f'resampled_data_trial{trial_i}.pkl')
 				if not os.path.exists(savename):
 					self.RL_environment_obj.generate_data(
-						n_episodes=self.n_episodes_for_eval,
+						n_episodes=self.perf_eval_kwargs['n_episodes'],
 						parallel=True if self.n_workers > 1 else False,
 						n_workers=self.n_workers,
 						savename=savename)
@@ -491,11 +504,12 @@ class RLPlotGenerator(PlotGenerator):
 			n_trials=self.n_trials,
 			n_workers=self.n_workers,
 			datagen_method=self.datagen_method,
-			constraint_eval_fns=self.constraint_eval_fns,
-			n_episodes_for_eval=self.n_episodes_for_eval,
-			verbose=verbose,
 			RL_environment_obj=self.RL_environment_obj,
+			constraint_eval_fns=self.constraint_eval_fns,
+			constraint_eval_kwargs=self.constraint_eval_kwargs,
 			perf_eval_fn=self.perf_eval_fn,
+			perf_eval_kwargs=self.perf_eval_kwargs,
+			verbose=verbose,
 			)
 
 

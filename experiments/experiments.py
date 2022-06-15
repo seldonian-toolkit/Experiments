@@ -299,6 +299,7 @@ class SeldonianExperiment(Experiment):
 		perf_eval_fn = kwargs['perf_eval_fn']
 		perf_eval_kwargs = kwargs['perf_eval_kwargs']
 		constraint_eval_fns = kwargs['constraint_eval_fns']
+		constraint_eval_kwargs = kwargs['constraint_eval_kwargs']
 
 		regime=spec.dataset.regime
 
@@ -365,30 +366,30 @@ class SeldonianExperiment(Experiment):
 
 		elif regime == 'RL':
 			RL_environment_obj = kwargs['RL_environment_obj']
-			n_episodes_for_eval = kwargs['n_episodes_for_eval']
 			
 			if datagen_method == 'generate_episodes':
+				n_episodes_for_eval = perf_eval_kwargs['n_episodes']
 				# Sample from resampled dataset on disk of n_episodes
 				save_dir = os.path.join(self.results_dir,'resampled_datasets')
 				# savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.csv')
-				savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.pkl')
+				savename = os.path.join(save_dir,f'resampled_data_trial{trial_i}.pkl')
 				
-				resampled_df = load_pickle(savename)
+				episodes_all = load_pickle(savename)
 				# Take data_pct episodes from this df
-				n_episodes_max = resampled_df['episode_index'].nunique()
+				n_episodes_all = len(episodes_all)
 
-				n_episodes = int(round(n_episodes_max*data_pct))
-				print(f"Orig dataset should have {n_episodes_max} episodes")
-				print(f"This dataset with data_pct={data_pct} should have {n_episodes} episodes")
+				n_episodes_for_exp = int(round(n_episodes_all*data_pct))
+				print(f"Orig dataset should have {n_episodes_all} episodes")
+				print(f"This dataset with data_pct={data_pct} should have"
+					f" {n_episodes_for_exp} episodes")
 				
 				# Take first n_episodes episodes 
-				resampled_df = resampled_df.loc[resampled_df['episode_index']<n_episodes]
-				print("Resampled_df:")
-				print(resampled_df)
+				episodes_for_exp = episodes_all[0:n_episodes_for_exp]
+				assert len(episodes_for_exp) == n_episodes_for_exp
 
 				dataset_for_experiment = RLDataSet(
-					df=resampled_df,
-					meta_information=resampled_df.columns,
+					episodes=episodes_for_exp,
+					meta_information=dataset.meta_information,
 					regime=regime)
 
 				# Make a new spec object from a copy of spec, where the 
@@ -436,15 +437,11 @@ class SeldonianExperiment(Experiment):
 				#############################
 				""" Calculate performance """
 				#############################
-				if regime == 'supervised':
-					performance = perf_eval_fn(
-						solution,
-						**perf_eval_kwargs)
+			
+				performance = perf_eval_fn(
+					solution,
+					**perf_eval_kwargs)
 					
-				elif regime == 'RL':
-					performance = perf_eval_fn(solution,
-						n_episodes=n_episodes_for_eval)
-
 				if verbose:
 					print(f"Performance = {performance}")
 			
@@ -455,21 +452,20 @@ class SeldonianExperiment(Experiment):
 					print("Determining whether solution "
 						  "is actually safe on ground truth")
 				
-				kwargs_constraint_eval = dict(solution=solution,
-					constraint_eval_fns=constraint_eval_fns,
-					model_instance=model_instance,
-					spec_orig=spec,
-					spec_for_experiment=spec_for_experiment,
-					regime=regime,verbose=verbose)
+				if constraint_eval_fns == []:
+					constraint_eval_kwargs['model']=model_instance
+					constraint_eval_kwargs['spec_orig']=spec
+					constraint_eval_kwargs['spec_for_experiment']=spec_for_experiment
+					constraint_eval_kwargs['regime']=regime
+					constraint_eval_kwargs['branch'] = 'safety_test'
+					constraint_eval_kwargs['verbose']=verbose
 
-				if regime == 'RL':
-					kwargs_constraint_eval['n_episodes_for_eval'] \
-						= n_episodes_for_eval
-					kwargs_constraint_eval['RL_environment_obj'] \
-						= RL_environment_obj
-					
 				failed = self.evaluate_constraint_functions(
-					**kwargs_constraint_eval)
+					solution=solution,
+					constraint_eval_fns=constraint_eval_fns,
+					constraint_eval_kwargs=constraint_eval_kwargs)
+					
+				
 				
 				if verbose:
 					if failed:
@@ -504,54 +500,49 @@ class SeldonianExperiment(Experiment):
 
 	def evaluate_constraint_functions(self,
 		solution,constraint_eval_fns,
-		**kwargs):
+		constraint_eval_kwargs):
 
-		# Use safety test branch so the confidence bounds on leaf nodes are not inflated
-		eval_constr_kwargs = dict(theta=solution)
+		# Use safety test branch so the confidence bounds on
+		# leaf nodes are not inflated
 		failed = False
 		if constraint_eval_fns == []:
 			""" User did not provide their own functions
 			to evaluate the constraints. Use the default: 
 			the parse tree has a built-in way to evaluate constraints.
 			"""
-			model_instance = kwargs['model_instance']
-			regime = kwargs['regime']
-			spec_orig = kwargs['spec_orig'] # the original spec 
-			spec_for_experiment = kwargs['spec_for_experiment'] # the original spec 
-
-			eval_constr_kwargs['model'] = model_instance
-			eval_constr_kwargs['regime'] = regime
-			eval_constr_kwargs['branch'] = 'safety_test'
-
+			constraint_eval_kwargs['theta'] = solution
+			spec_orig = constraint_eval_kwargs['spec_orig']
+			spec_for_experiment = constraint_eval_kwargs['spec_for_experiment']
+			regime = constraint_eval_kwargs['regime']
 			if regime == 'supervised':
 				# Use the original dataset as ground truth
-				eval_constr_kwargs['dataset']=spec_orig.dataset 
+				constraint_eval_kwargs['dataset']=spec_orig.dataset 
 
 			if regime == 'RL':
 				# Generate episodes and create dataset object
-				RL_environment_obj = kwargs['RL_environment_obj']
-
-				df_for_eval = RL_environment_obj.generate_data(
-					n_episodes=kwargs['n_episodes_for_eval'],
+				RL_environment_obj = constraint_eval_kwargs['RL_environment_obj']
+				RL_environment_obj.param_weights = solution
+				episodes_for_eval = RL_environment_obj.generate_data(
+					n_episodes=constraint_eval_kwargs['n_episodes'],
 					n_workers=1,
 					parallel=False) 
 
 				dataset_for_eval = RLDataSet(
-					df=df_for_eval,
-					meta_information=spec_for_experiment.dataset.df.columns,
+					episodes=episodes_for_eval,
+					meta_information=spec_for_experiment.dataset.meta_information,
 					regime=regime)
 
-				eval_constr_kwargs['dataset'] = dataset_for_eval
-				eval_constr_kwargs['gamma'] = RL_environment_obj.gamma
-				eval_constr_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
+				constraint_eval_kwargs['dataset'] = dataset_for_eval
+				constraint_eval_kwargs['gamma'] = RL_environment_obj.gamma
+				constraint_eval_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
 
 				if spec_for_experiment.normalize_returns:
-					eval_constr_kwargs['min_return'] = RL_environment_obj.min_return
-					eval_constr_kwargs['max_return'] = RL_environment_obj.max_return
+					constraint_eval_kwargs['min_return'] = RL_environment_obj.min_return
+					constraint_eval_kwargs['max_return'] = RL_environment_obj.max_return
 
 			for parse_tree in spec_for_experiment.parse_trees:
 				parse_tree.evaluate_constraint(
-					**eval_constr_kwargs)
+					**constraint_eval_kwargs)
 				
 				g = parse_tree.root.value
 				if g > 0:
