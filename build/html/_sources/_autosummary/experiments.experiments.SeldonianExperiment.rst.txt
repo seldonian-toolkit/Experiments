@@ -1,4 +1,4 @@
-﻿experiments.experiments.SeldonianExperiment
+experiments.experiments.SeldonianExperiment
 ===========================================
 
 .. currentmodule:: experiments.experiments
@@ -21,6 +21,8 @@
    ..    ~SeldonianExperiment.QSA
    ..
    ..    ~SeldonianExperiment.__init__
+   ..
+   ..    ~SeldonianExperiment.evaluate_constraint_functions
    ..
    ..    ~SeldonianExperiment.run_experiment
    ..

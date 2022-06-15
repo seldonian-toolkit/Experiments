@@ -1,4 +1,4 @@
-﻿experiments.generate\_plots.RLPlotGenerator
+experiments.generate\_plots.RLPlotGenerator
 ===========================================
 
 .. currentmodule:: experiments.generate_plots
@@ -21,6 +21,8 @@
    ..    ~RLPlotGenerator.__init__
    ..
    ..    ~RLPlotGenerator.make_plots
+   ..
+   ..    ~RLPlotGenerator.run_seldonian_experiment
    ..
    
    

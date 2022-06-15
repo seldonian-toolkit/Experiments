@@ -38,14 +38,14 @@
 <h1>experiments.generate_plots.PlotGenerator<a class="headerlink" href="#experiments-generate-plots-plotgenerator" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PlotGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pcts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PlotGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pcts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class for running Seldonian experiments 
 and generating the three plots:
 1) Performance
 2) Solution rate
 3) Failure rate 
-all plotted as a function of amount of data used</p>
+all plotted vs. amount of data used</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -57,12 +57,25 @@ Used for generating error bars</p></li>
 <li><p><strong>data_pcts</strong> (<em>List</em><em>(</em><em>float</em><em>)</em>) – Proportions of the overall size
 of the dataset to use
 (the horizontal axis on the three plots).</p></li>
+<li><p><strong>datagen_method</strong> (<em>str</em><em>, </em><em>e.g. &quot;resample&quot;</em>) – Method for generating data that is used
+to run the Seldonian algorithm for each trial</p></li>
+<li><p><strong>perf_eval_fn</strong> (<em>function</em><em> or </em><em>class method</em>) – Function used to evaluate the performance
+of the model obtained in each trial, with signature:
+func(theta,**kwargs), where theta is the solution
+from candidate selection</p></li>
+<li><p><strong>results_dir</strong> (<em>str</em>) – The directory in which to save the results</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – The number of workers to use if
+using multiprocessing</p></li>
+<li><p><strong>constraint_eval_fns</strong> (<em>List</em><em>(</em><em>function</em><em> or </em><em>class method</em><em>)</em><em>, 
+</em><em>defaults to</em><em> [</em><em>]</em>) – List of functions used to evaluate
+the constraints on ground truth. If an empty list is provided,
+the constraints are evaluated using the parse tree</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pcts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pcts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
