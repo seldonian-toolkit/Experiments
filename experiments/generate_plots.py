@@ -405,7 +405,6 @@ class RLPlotGenerator(PlotGenerator):
 		datagen_method,
 		perf_eval_fn,
 		RL_environment_obj,
-		n_episodes_for_eval,
 		results_dir,
 		n_workers,
 		constraint_eval_fns=[],
@@ -442,10 +441,6 @@ class RLPlotGenerator(PlotGenerator):
 		:param RL_environment_obj: The RL environment object  
 			from the seldonian library 
 		:type RL_environment_obj: Environment() class instance
-
-		:param n_episodes_for_eval: The number of episodes to use
-			when evaluating the performance.
-		:type n_episodes_for_eval: int
 
 		:param results_dir: The directory in which to save the results
 		:type results_dir: str

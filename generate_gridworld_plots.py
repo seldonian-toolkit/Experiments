@@ -57,7 +57,6 @@ if __name__ == "__main__":
 		data_pcts=data_pcts,
 		n_workers=n_workers,
 		datagen_method='generate_episodes',
-		n_episodes_for_eval=n_episodes_for_eval,
 		RL_environment_obj=RL_environment_obj,
 		perf_eval_fn=perf_eval_fn,
 		constraint_eval_fns=[],
