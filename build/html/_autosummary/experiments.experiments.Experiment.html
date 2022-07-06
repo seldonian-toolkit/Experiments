@@ -38,12 +38,23 @@
 <h1>experiments.experiments.Experiment<a class="headerlink" href="#experiments-experiments-experiment" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.experiments.Experiment">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Experiment</span></span><a class="headerlink" href="#experiments.experiments.Experiment" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.Experiment.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for running experiments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The string name of the baseline model, 
+e.g ‘logistic_regression’</p></li>
+<li><p><strong>results_dir</strong> (<em>str</em>) – Parent directory for saving any
+experimental results</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.Experiment.__repr__">
@@ -56,6 +67,31 @@
 <tbody>
 </tbody>
 </table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.Experiment.aggregate_results">
+<span class="sig-name descname"><span class="pre">aggregate_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment.aggregate_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group together the data in each 
+trial file into a single CSV file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.Experiment.write_trial_result">
+<span class="sig-name descname"><span class="pre">write_trial_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment.write_trial_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out the results from a single trial
+to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
+<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
+These will comprise the header of the saved file</p></li>
+<li><p><strong>trial_dir</strong> (<em>str</em>) – The directory in which to save the file</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – if True, prints out saved filename</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -95,6 +131,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -138,7 +175,7 @@
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

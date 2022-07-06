@@ -1,4 +1,4 @@
-experiments.experiments.BaselineExperiment
+﻿experiments.experiments.BaselineExperiment
 ==========================================
 
 .. currentmodule:: experiments.experiments
@@ -19,6 +19,8 @@ experiments.experiments.BaselineExperiment
    .. autosummary::
    .. 
    ..    ~BaselineExperiment.__init__
+   ..
+   ..    ~BaselineExperiment.aggregate_results
    ..
    ..    ~BaselineExperiment.linear_svm
    ..

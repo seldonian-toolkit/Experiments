@@ -38,12 +38,27 @@
 <h1>experiments.experiments.SeldonianExperiment<a class="headerlink" href="#experiments-experiments-seldonianexperiment" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SeldonianExperiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SeldonianExperiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="experiments.experiments.Experiment.html#experiments.experiments.Experiment" title="experiments.experiments.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for running Seldonian experiments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The string name of the Seldonian model, 
+only option is currently: ‘qsa’ (quasi-Seldonian algorithm)</p></li>
+<li><p><strong>results_dir</strong> (<em>str</em>) – Parent directory for saving any
+experimental results</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>model_class_dict</strong> (<em>dict</em>) – Dictionary mapping model_name 
+to a method of this class that runs the baseline model</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.__repr__">
@@ -56,6 +71,51 @@
 <tbody>
 </tbody>
 </table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.QSA">
+<span class="sig-name descname"><span class="pre">QSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_pct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.QSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a trial of the quasi-Seldonian algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_pct</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
+<li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.aggregate_results">
+<span class="sig-name descname"><span class="pre">aggregate_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.aggregate_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Group together the data in each 
+trial file into a single CSV file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.run_experiment">
+<span class="sig-name descname"><span class="pre">run_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.run_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the Seldonian experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.write_trial_result">
+<span class="sig-name descname"><span class="pre">write_trial_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.write_trial_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out the results from a single trial
+to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
+<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
+These will comprise the header of the saved file</p></li>
+<li><p><strong>trial_dir</strong> (<em>str</em>) – The directory in which to save the file</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – if True, prints out saved filename</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -95,6 +155,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -138,7 +199,7 @@
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

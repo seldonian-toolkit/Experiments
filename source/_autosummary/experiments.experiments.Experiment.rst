@@ -1,4 +1,4 @@
-experiments.experiments.Experiment
+﻿experiments.experiments.Experiment
 ==================================
 
 .. currentmodule:: experiments.experiments
@@ -19,6 +19,8 @@ experiments.experiments.Experiment
    .. autosummary::
    .. 
    ..    ~Experiment.__init__
+   ..
+   ..    ~Experiment.aggregate_results
    ..
    ..    ~Experiment.write_trial_result
    ..
