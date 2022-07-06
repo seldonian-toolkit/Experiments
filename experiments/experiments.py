@@ -18,7 +18,26 @@ from seldonian.dataset import (SupervisedDataSet,RLDataSet)
 from seldonian.seldonian_algorithm import seldonian_algorithm
 
 class Experiment():
-	def _aggregate_results(self,**kwargs):
+	def __init__(self,model_name,results_dir):
+		""" Base class for running experiments
+
+		:param model_name: The string name of the baseline model, 
+			e.g 'logistic_regression'
+		:type model_name: str
+
+		:param results_dir: Parent directory for saving any
+			experimental results
+		:type results_dir: str
+
+		"""
+		self.model_name = model_name
+		self.results_dir = results_dir
+
+	def aggregate_results(self,**kwargs):
+		""" Group together the data in each 
+		trial file into a single CSV file.
+
+		"""
 
 		savedir_results = os.path.join(
 			self.results_dir,
@@ -47,6 +66,22 @@ class Experiment():
 	def write_trial_result(self,data,
 		colnames,trial_dir, 
 		verbose=False):
+		""" Write out the results from a single trial
+		to a file.
+
+		:param data: The information to save
+		:type data: List
+
+		:param colnames: Names of the items in the list. 
+			These will comprise the header of the saved file
+		:type colnames: List(str)
+
+		:param trial_dir: The directory in which to save the file
+		:type trial_dir: str
+
+		:param verbose: if True, prints out saved filename
+		:type verbose: bool
+		"""
 		result_df = pd.DataFrame([data])
 		result_df.columns = colnames
 		data_pct,trial_i = data[0:2]
@@ -61,13 +96,29 @@ class Experiment():
 
 class BaselineExperiment(Experiment):
 	def __init__(self,model_name,results_dir):
-		self.model_name = model_name
+		""" Class for running baseline experiments
+		against which to compare Seldonian Experiments 
+
+		:param model_name: The string name of the baseline model, 
+			e.g 'logistic_regression'
+		:type model_name: str
+
+		:param results_dir: Parent directory for saving any
+			experimental results
+		:type results_dir: str
+
+		:ivar model_class_dict: Dictionary mapping model_name 
+			to a method of this class that runs the baseline model
+		:vartype model_class_dict: dict
+		"""
+		super().__init__(model_name,results_dir)
 		self.model_class_dict = {
 			'logistic_regression':self.logistic_regression,
 			'linear_svm':self.linear_svm}
-		self.results_dir = results_dir
 
 	def run_experiment(self,**kwargs):
+		""" Run the baseline experiment """
+
 		test_features = kwargs['test_features']
 		test_labels = kwargs['test_labels']
 
@@ -89,20 +140,34 @@ class BaselineExperiment(Experiment):
 		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
 		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
 		
-		# for data_pct in data_pcts:
-		# 	for trial_i in range(n_trials):
-		# 		print(data_pct,trial_i)
-		# 		helper(data_pct,trial_i)
+		if n_workers == 1:
+			for ii in range(len(data_pcts_vector)):
+				data_pct = data_pcts_vector[ii]
+				trial_i = trials_vector[ii]
+				print(data_pct,trial_i)
+				helper(data_pct,trial_i)
+		elif n_workers > 1:
+			with ProcessPoolExecutor(max_workers=n_workers,
+				mp_context=mp.get_context('fork')) as ex:
+				results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
+					total=len(data_pcts_vector))
+				for exc in results:
+					if exc:
+						print(exc)
+		else:
+			raise ValueError(f"n_workers value of {n_workers} must be >=1 ")
 
-		with ProcessPoolExecutor(max_workers=kwargs['n_workers']) as ex:
-			results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
-				total=len(data_pcts_vector))
-			for exc in results:
-				if exc:
-					print(exc)
-		self._aggregate_results(**kwargs)
+		self.aggregate_results(**kwargs)
 	
 	def logistic_regression(self,data_pct,trial_i,**kwargs):
+		""" Run a trial of logistic regression 
+		
+		:param data_pct: Fraction of overall dataset size to use
+		:type data_pct: float
+
+		:param trial_i: The index of the trial 
+		:type trial_i: int
+		"""
 		trial_dir = os.path.join(
 				kwargs['results_dir'],
 				'logistic_regression_results',
@@ -175,89 +240,112 @@ class BaselineExperiment(Experiment):
 			colnames,
 			trial_dir,
 			verbose=kwargs['verbose'])
-		return None
+		return 
 
 	def linear_svm(self,data_pct,trial_i,**kwargs):
-		try: 
-			trial_dir = os.path.join(
-					kwargs['results_dir'],
-					'linear_svm_results',
-					'trial_data')
+		""" Run a trial of logistic regression 
+		
+		:param data_pct: Fraction of overall dataset size to use
+		:type data_pct: float
 
-			os.makedirs(trial_dir,exist_ok=True)
-			dataset = kwargs['dataset']
-			orig_df = dataset.df
-			# number of points in this partition of the data
-			n_points = int(round(data_pct*len(orig_df))) 
+		:param trial_i: The index of the trial 
+		:type trial_i: int
+		"""
+		trial_dir = os.path.join(
+				kwargs['results_dir'],
+				'linear_svm_results',
+				'trial_data')
 
-			test_features = kwargs['test_features']
-			test_labels = kwargs['test_labels']
-			
-			if kwargs['datagen_method'] == 'resample':
-				resampled_filename = os.path.join(kwargs['results_dir'],
-				'resampled_dataframes',f'trial_{trial_i}.csv')
-				n_points = int(round(data_pct*len(test_features))) 
-				with open(resampled_filename,'rb') as infile:
-					df = pickle.load(infile).iloc[:n_points]
-				# df = pd.read_csv(resampled_filename).iloc[:n_points]
-			else:
-				raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
-			# set labels to 0 and 1, not -1 and 1, like some classification datasets will have
-			df.loc[df[dataset.label_column]==-1.0,dataset.label_column]=0.0
+		os.makedirs(trial_dir,exist_ok=True)
+		dataset = kwargs['dataset']
+		orig_df = dataset.df
+		# number of points in this partition of the data
+		n_points = int(round(data_pct*len(orig_df))) 
 
-			features = df.loc[:,
-				df.columns != dataset.label_column]
+		test_features = kwargs['test_features']
+		test_labels = kwargs['test_labels']
+		
+		if kwargs['datagen_method'] == 'resample':
+			resampled_filename = os.path.join(kwargs['results_dir'],
+			'resampled_dataframes',f'trial_{trial_i}.csv')
+			n_points = int(round(data_pct*len(test_features))) 
+			with open(resampled_filename,'rb') as infile:
+				df = pickle.load(infile).iloc[:n_points]
+			# df = pd.read_csv(resampled_filename).iloc[:n_points]
+		else:
+			raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
+		# set labels to 0 and 1, not -1 and 1, like some classification datasets will have
+		df.loc[df[dataset.label_column]==-1.0,dataset.label_column]=0.0
 
-			features = features.drop(
-				columns=dataset.sensitive_column_names)
+		features = df.loc[:,
+			df.columns != dataset.label_column]
 
-			labels = df[dataset.label_column]
-			
-			clf = make_pipeline(StandardScaler(),
-			  SGDClassifier(loss='hinge',max_iter=kwargs['max_iter']))
-			
-			clf.fit(features, labels)
+		features = features.drop(
+			columns=dataset.sensitive_column_names)
 
-			prediction = clf.predict(test_features)
-			
-			# Calculate accuracy 
-			acc = np.mean(1.0*prediction==test_labels)
-			performance = acc
-			# Determine whether this solution
-			# violates any of the constraints 
-			# on the test dataset
-			failed = False
-			for gfunc in kwargs['constraint_funcs']:
-				for parse_tree in parse_trees:
-					parse_tree.evaluate_constraint(theta=candidate_solution,
-						dataset=dataset,
-						model=model,regime='supervised',
-						branch='safety_test')
-					g = parse_tree.root.value
-					if g > 0:
-						failed = True
+		labels = df[dataset.label_column]
+		
+		clf = make_pipeline(StandardScaler(),
+		  SGDClassifier(loss='hinge',max_iter=kwargs['max_iter']))
+		
+		clf.fit(features, labels)
 
-			# Write out file for this data_pct,trial_i combo
-			data = [data_pct,
-				trial_i,
-				performance,
-				failed]
-			colnames = ['data_pct','trial_i','performance','failed']
-			self.write_trial_result(
-				data,
-				colnames,
-				trial_dir,
-				verbose=kwargs['verbose'])
-		except Exception as e:
-			return e
-		return None
+		prediction = clf.predict(test_features)
+		
+		# Calculate accuracy 
+		acc = np.mean(1.0*prediction==test_labels)
+		performance = acc
+		# Determine whether this solution
+		# violates any of the constraints 
+		# on the test dataset
+		failed = False
+		for gfunc in kwargs['constraint_funcs']:
+			for parse_tree in parse_trees:
+				parse_tree.evaluate_constraint(theta=candidate_solution,
+					dataset=dataset,
+					model=model,regime='supervised',
+					branch='safety_test')
+				g = parse_tree.root.value
+				if g > 0:
+					failed = True
+
+		# Write out file for this data_pct,trial_i combo
+		data = [data_pct,
+			trial_i,
+			performance,
+			failed]
+		colnames = ['data_pct','trial_i','performance','failed']
+		self.write_trial_result(
+			data,
+			colnames,
+			trial_dir,
+			verbose=kwargs['verbose'])
+		return 
 
 class SeldonianExperiment(Experiment):
-	def __init__(self,results_dir):
-		self.results_dir = results_dir
-		self.model_name = 'qsa'
+	def __init__(self,model_name,results_dir):
+		""" Class for running Seldonian experiments
+
+		:param model_name: The string name of the Seldonian model, 
+			only option is currently: 'qsa' (quasi-Seldonian algorithm) 
+		:type model_name: str
+
+		:param results_dir: Parent directory for saving any
+			experimental results
+		:type results_dir: str
+
+		:ivar model_class_dict: Dictionary mapping model_name 
+			to a method of this class that runs the baseline model
+		:vartype model_class_dict: dict
+		"""
+		super().__init__(model_name,results_dir)
+		if self.model_name != 'QSA':
+			raise NotImplementedError(
+				"Seldonian experiments for model:"
+				" {self.mode_name} are not supported.")
 
 	def run_experiment(self,**kwargs):
+		""" Run the Seldonian experiment """
 		n_workers = kwargs['n_workers']
 		partial_kwargs = {key:kwargs[key] for key in kwargs \
 			if key not in ['data_pcts','n_trials']}
@@ -289,10 +377,17 @@ class SeldonianExperiment(Experiment):
 		else:
 			raise ValueError(f"n_workers value of {n_workers} must be >=1 ")
 
-		self._aggregate_results(**kwargs)
+		self.aggregate_results(**kwargs)
 	
 	def QSA(self,data_pct,trial_i,**kwargs):
+		""" Run a trial of the quasi-Seldonian algorithm  
 		
+		:param data_pct: Fraction of overall dataset size to use
+		:type data_pct: float
+
+		:param trial_i: The index of the trial 
+		:type trial_i: int
+		"""
 		spec = kwargs['spec']
 		verbose=kwargs['verbose']
 		datagen_method = kwargs['datagen_method']

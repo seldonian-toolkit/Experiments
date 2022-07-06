@@ -35,14 +35,31 @@
   <section id="seldonian-experiments-documentation">
 <h1>Seldonian Experiments documentation<a class="headerlink" href="#seldonian-experiments-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Welcome to the documentation for the Seldonian Experiments library. This library is designed to help you evaluate the performance and safety of <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">Seldonian algorithms</a>. The source code is hosted on <a class="reference external" href="https://github.com/seldonian-framework/Experiments">GitHub</a>.</p>
-<p>This library makes heavy use of the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>.</p>
+<p>This library makes heavy use of the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
 <p>If you are completely new to this library, see the <a class="reference internal" href="overview.html"><span class="doc">Overview</span></a>.</p>
 <hr class="docutils" />
 <section id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#seldonian-experiments">Seldonian experiments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#three-plots">Three Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#plot-generator">Plot generator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#spec-object">Spec object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#n-trials">n_trials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#data-pcts">data_pcts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#datagen-method">datagen_method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#n-workers">n_workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#perf-eval-fn">perf_eval_fn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#perf-eval-kwargs">perf_eval_kwargs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#constraint-eval-fns">constraint_eval_fns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#constraint-eval-kwargs">constraint_eval_kwargs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#results-dir">results_dir</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="_autosummary/experiments.html">experiments</a><ul>
@@ -66,10 +83,8 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#installation">Installation</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
 </div>
 </section>
@@ -97,6 +112,7 @@
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
