@@ -12,7 +12,7 @@ import pathlib
 import sys
 # import seldonian
 sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
-
+print(sys.path)
 
 # -- Project information -----------------------------------------------------
 
@@ -55,6 +55,10 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+
+html_theme_options = {
+    'page_width': '95%',
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

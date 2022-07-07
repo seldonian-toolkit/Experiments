@@ -20,6 +20,8 @@ experiments.experiments.Experiment
    .. 
    ..    ~Experiment.__init__
    ..
+   ..    ~Experiment.aggregate_results
+   ..
    ..    ~Experiment.write_trial_result
    ..
    

@@ -1,3 +1,5 @@
+""" Module for making the three plots """
+
 import os
 import glob
 import pickle
@@ -18,51 +20,6 @@ seldonian_model_set = set(['qsa','sa'])
 baseline_colormap = matplotlib.cm.get_cmap('tab10')
 
 class PlotGenerator():
-	""" Class for running Seldonian experiments 
-	and generating the three plots:
-	1) Performance
-	2) Solution rate
-	3) Failure rate 
-	all plotted vs. amount of data used
-
-	:param spec: Specification object for running the 
-		Seldonian algorithm
-	:type spec: seldonian.spec.Spec object
-
-	:param n_trials: The number of times the 
-		Seldonian algorithm is run for each data fraction.
-		Used for generating error bars
-	:type n_trials: int
-
-	:param data_pcts: Proportions of the overall size
-		of the dataset to use
-		(the horizontal axis on the three plots).
-	:type data_pcts: List(float)
-
-	:param datagen_method: Method for generating data that is used
-		to run the Seldonian algorithm for each trial
-	:type datagen_method: str, e.g. "resample"
-
-	:param perf_eval_fn: Function used to evaluate the performance
-		of the model obtained in each trial, with signature:
-		func(theta,**kwargs), where theta is the solution
-		from candidate selection
-	:type perf_eval_fn: function or class method
-
-
-	:param results_dir: The directory in which to save the results
-	:type results_dir: str
-
-	:param n_workers: The number of workers to use if
-		using multiprocessing
-	:type n_workers: int
-
-	:param constraint_eval_fns: List of functions used to evaluate
-		the constraints on ground truth. If an empty list is provided,
-		the constraints are evaluated using the parse tree 
-	:type constraint_eval_fns: List(function or class method), 
-		defaults to []
-	"""
 	def __init__(self,
 		spec,
 		n_trials,
@@ -75,6 +32,58 @@ class PlotGenerator():
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
 		):
+		""" Class for running Seldonian experiments 
+		and generating the three plots:
+		1) Performance
+		2) Solution rate
+		3) Failure rate 
+		all plotted vs. amount of data used
+
+		:param spec: Specification object for running the 
+			Seldonian algorithm
+		:type spec: seldonian.spec.Spec object
+
+		:param n_trials: The number of times the 
+			Seldonian algorithm is run for each data fraction.
+			Used for generating error bars
+		:type n_trials: int
+
+		:param data_pcts: Proportions of the overall size
+			of the dataset to use
+			(the horizontal axis on the three plots).
+		:type data_pcts: List(float)
+
+		:param datagen_method: Method for generating data that is used
+			to run the Seldonian algorithm for each trial
+		:type datagen_method: str, e.g. "resample"
+
+		:param perf_eval_fn: Function used to evaluate the performance
+			of the model obtained in each trial, with signature:
+			func(theta,**kwargs), where theta is the solution
+			from candidate selection
+		:type perf_eval_fn: function or class method
+
+		:param results_dir: The directory in which to save the results
+		:type results_dir: str
+
+		:param n_workers: The number of workers to use if
+			using multiprocessing
+		:type n_workers: int
+
+		:param constraint_eval_fns: List of functions used to evaluate
+			the constraints on ground truth. If an empty list is provided,
+			the constraints are evaluated using the parse tree 
+		:type constraint_eval_fns: List(function or class method), 
+			defaults to []
+
+		:param perf_eval_kwargs: Extra keyword arguments to pass to
+			perf_eval_fn
+		:type perf_eval_kwargs: dict
+
+		:param constraint_eval_kwargs: Extra keyword arguments to pass to
+			the constraint_eval_fns
+		:type constraint_eval_kwargs: dict
+		"""
 		self.spec = spec
 		self.n_trials = n_trials
 		self.data_pcts = data_pcts
@@ -89,6 +98,28 @@ class PlotGenerator():
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',best_performance=None,
 		savename=None):
+		""" Make the three plots 
+		
+		:param fontsize: The font size to use for the axis labels
+		:type fontsize: int
+
+		:param legend_fontsize: The font size to use for text 
+			in the legend
+		:type legend_fontsize: int
+
+		:param performance_label: The y axis label on the performance
+			plot you want to use. 
+		:type performance_label: str, defaults to "accuracy"
+
+		:param best_performance: The best theoretical performance
+			of the algorithm. If provided, will be displayed as
+			a horizontal dashed line in the performance plot
+		:type best_performance: float
+
+		:param savename: If not None, the filename path to which the plot 
+			will be saved on disk. 
+		:type savename: str, defaults to None
+		"""
 		regime = self.spec.dataset.regime
 		if regime == 'supervised':
 			tot_data_size = len(self.spec.dataset.df)
@@ -346,6 +377,14 @@ class SupervisedPlotGenerator(PlotGenerator):
 			the constraints are evaluated using the parse tree 
 		:type constraint_eval_fns: List(function or class method), 
 			defaults to []
+
+		:param perf_eval_kwargs: Extra keyword arguments to pass to
+			perf_eval_fn
+		:type perf_eval_kwargs: dict
+
+		:param constraint_eval_kwargs: Extra keyword arguments to pass to
+			the constraint_eval_fns
+		:type constraint_eval_kwargs: dict
 		"""
 
 		super().__init__(spec=spec,
@@ -361,7 +400,15 @@ class SupervisedPlotGenerator(PlotGenerator):
 			)
 		self.regime = 'supervised'
 
-	def run_seldonian_experiment(self,verbose):
+	def run_seldonian_experiment(self,verbose=False):
+		""" Run a supervised Seldonian experiment using the spec attribute
+		assigned to the class in __init__().
+
+		:param verbose: Whether to display results to stdout 
+			while the Seldonian algorithms are running in each trial
+		:type verbose: bool, defaults to False
+		"""
+
 		dataset = self.spec.dataset
 
 		label_column = dataset.label_column
@@ -454,6 +501,14 @@ class RLPlotGenerator(PlotGenerator):
 			the constraints are evaluated using the parse tree 
 		:type constraint_eval_fns: List(function or class method), 
 			defaults to []
+
+		:param perf_eval_kwargs: Extra keyword arguments to pass to
+			perf_eval_fn
+		:type perf_eval_kwargs: dict
+
+		:param constraint_eval_kwargs: Extra keyword arguments to pass to
+			the constraint_eval_fns
+		:type constraint_eval_kwargs: dict
 		"""
 
 		super().__init__(spec=spec,
@@ -471,7 +526,14 @@ class RLPlotGenerator(PlotGenerator):
 		self.regime = 'RL'
 		self.RL_environment_obj = RL_environment_obj
 
-	def run_seldonian_experiment(self,verbose):
+	def run_seldonian_experiment(self,verbose=False):
+		""" Run an RL Seldonian experiment using the spec attribute
+		assigned to the class in __init__().
+
+		:param verbose: Whether to display results to stdout 
+			while the Seldonian algorithms are running in each trial
+		:type verbose: bool, defaults to False
+		"""
 		print("Running experiment")
 		dataset = self.spec.dataset
 		

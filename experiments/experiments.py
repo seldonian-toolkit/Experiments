@@ -1,3 +1,5 @@
+""" Module for running Seldonian Experiments """
+
 import os
 import pickle
 import autograd.numpy as np   # Thinly-wrapped version of Numpy
@@ -15,7 +17,7 @@ from sklearn.model_selection import train_test_split
 
 from seldonian.utils.io_utils import load_pickle
 from seldonian.dataset import (SupervisedDataSet,RLDataSet)
-from seldonian.seldonian_algorithm import seldonian_algorithm
+from seldonian.seldonian_algorithm import SeldonianAlgorithm
 
 class Experiment():
 	def __init__(self,model_name,results_dir):
@@ -334,9 +336,6 @@ class SeldonianExperiment(Experiment):
 			experimental results
 		:type results_dir: str
 
-		:ivar model_class_dict: Dictionary mapping model_name 
-			to a method of this class that runs the baseline model
-		:vartype model_class_dict: dict
 		"""
 		super().__init__(model_name,results_dir)
 		if self.model_name != 'QSA':
@@ -503,8 +502,9 @@ class SeldonianExperiment(Experiment):
 		"""" Run Seldonian algorithm """
 		################################
 
-		passed_safety,candidate_solution = seldonian_algorithm(
+		SA = SeldonianAlgorithm(
 			spec_for_experiment)
+		passed_safety,candidate_solution = SA.run()
 
 		print("Solution from running seldonian algorithm:")
 		print(candidate_solution)
@@ -595,7 +595,26 @@ class SeldonianExperiment(Experiment):
 
 	def evaluate_constraint_functions(self,
 		solution,constraint_eval_fns,
-		constraint_eval_kwargs):
+		**constraint_eval_kwargs):
+		""" Helper function for QSA() to evaluate
+		the constraint functions to determine
+		whether solution was safe on ground truth
+
+		:param solution: The weights of the model found
+			during candidate selection in a given trial
+		:type solution: numpy ndarray
+
+		:param constraint_eval_fns: List of functions
+			to use to evaluate each constraint. 
+			An empty list results in using the parse
+			tree to evaluate the constraints
+		:type constraint_eval_fns: List(function)
+
+		:param constraint_eval_kwargs: keyword arguments
+			to pass to each constraint function 
+			in constraint_eval_fns
+		:type constraint_eval_kwargs: dict
+		"""
 
 		# Use safety test branch so the confidence bounds on
 		# leaf nodes are not inflated

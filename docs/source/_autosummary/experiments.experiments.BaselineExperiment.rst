@@ -20,6 +20,8 @@ experiments.experiments.BaselineExperiment
    .. 
    ..    ~BaselineExperiment.__init__
    ..
+   ..    ~BaselineExperiment.aggregate_results
+   ..
    ..    ~BaselineExperiment.linear_svm
    ..
    ..    ~BaselineExperiment.logistic_regression

@@ -87,7 +87,7 @@ The directory in which to save the results of the experiment.
 
 
 Files generated in an experiment
---------------
+--------------------------------
 
 The directory structure inside results_dir will look like this after running an experiment:
 

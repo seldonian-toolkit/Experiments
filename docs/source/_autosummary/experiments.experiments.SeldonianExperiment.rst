@@ -22,6 +22,8 @@ experiments.experiments.SeldonianExperiment
    ..
    ..    ~SeldonianExperiment.__init__
    ..
+   ..    ~SeldonianExperiment.aggregate_results
+   ..
    ..    ~SeldonianExperiment.evaluate_constraint_functions
    ..
    ..    ~SeldonianExperiment.run_experiment
