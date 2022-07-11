@@ -6,7 +6,6 @@ This library makes heavy use of the `Seldonian Engine library <https://seldonian
 
 If you are completely new to this library, see the :doc:`overview`.
 
-----
 
 Table of contents
 -----------------
@@ -14,7 +13,6 @@ Table of contents
 .. toctree::
 
    overview
-   getting_started
    api
    usage
    glossary

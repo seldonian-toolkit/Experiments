@@ -39,7 +39,24 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.utils.generate_resampled_datasets">
 <span class="sig-name descname"><span class="pre">generate_resampled_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'csv'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.utils.generate_resampled_datasets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Utility function for supervised learning to generate the
+resampled datasets to use in each trial. Resamples (with replacement)
+pandas dataframes to create n_trials resampled dataframes of the same
+shape as the input dataframe, df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas DataFrame</em>) – The original df from which to resample</p></li>
+<li><p><strong>n_trials</strong> (<em>int</em>) – The number of trials, i.e. the number of 
+resampled datasets to make</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – The parent directory in which to save the 
+resampled datasets</p></li>
+<li><p><strong>file_format</strong> (<em>str</em>) – The format of the saved datasets, options are 
+“csv” and “pkl”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 
@@ -62,7 +79,6 @@
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>

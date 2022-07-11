@@ -71,6 +71,10 @@ using multiprocessing</p></li>
 </em><em>defaults to</em><em> [</em><em>]</em>) – List of functions used to evaluate
 the constraints on ground truth. If an empty list is provided,
 the constraints are evaluated using the parse tree</p></li>
+<li><p><strong>perf_eval_kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to
+perf_eval_fn</p></li>
+<li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to
+the constraint_eval_fns</p></li>
 </ul>
 </dd>
 </dl>
@@ -87,6 +91,41 @@ the constraints are evaluated using the parse tree</p></li>
 <tbody>
 </tbody>
 </table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.make_plots">
+<span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_performance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.make_plots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the three plots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fontsize</strong> (<em>int</em>) – The font size to use for the axis labels</p></li>
+<li><p><strong>legend_fontsize</strong> (<em>int</em>) – The font size to use for text 
+in the legend</p></li>
+<li><p><strong>performance_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;accuracy&quot;</em>) – The y axis label on the performance
+plot you want to use.</p></li>
+<li><p><strong>best_performance</strong> (<em>float</em>) – The best theoretical performance
+of the algorithm. If provided, will be displayed as
+a horizontal dashed line in the performance plot</p></li>
+<li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename path to which the plot 
+will be saved on disk.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.run_seldonian_experiment">
+<span class="sig-name descname"><span class="pre">run_seldonian_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.run_seldonian_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a supervised Seldonian experiment using the spec attribute
+assigned to the class in __init__().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout 
+while the Seldonian algorithms are running in each trial</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -110,7 +149,6 @@ the constraints are evaluated using the parse tree</p></li>
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>

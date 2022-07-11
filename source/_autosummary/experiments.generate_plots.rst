@@ -1,4 +1,4 @@
-experiments.generate\_plots
+﻿experiments.generate\_plots
 ===========================
 
 .. automodule:: experiments.generate_plots 

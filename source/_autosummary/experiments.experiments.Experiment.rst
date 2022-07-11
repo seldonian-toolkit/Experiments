@@ -1,4 +1,4 @@
-﻿experiments.experiments.Experiment
+experiments.experiments.Experiment
 ==================================
 
 .. currentmodule:: experiments.experiments

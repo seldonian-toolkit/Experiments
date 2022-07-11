@@ -1,4 +1,4 @@
-﻿experiments.experiments.SeldonianExperiment
+experiments.experiments.SeldonianExperiment
 ===========================================
 
 .. currentmodule:: experiments.experiments
