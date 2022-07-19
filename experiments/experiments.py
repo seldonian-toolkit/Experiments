@@ -340,8 +340,8 @@ class SeldonianExperiment(Experiment):
 		super().__init__(model_name,results_dir)
 		if self.model_name != 'QSA':
 			raise NotImplementedError(
-				"Seldonian experiments for model:"
-				" {self.mode_name} are not supported.")
+				"Seldonian experiments for model: "
+				f"{self.model_name} are not supported.")
 
 	def run_experiment(self,**kwargs):
 		""" Run the Seldonian experiment """
@@ -442,7 +442,6 @@ class SeldonianExperiment(Experiment):
 				raise NotImplementedError(
 					f"Eval method {datagen_method} "
 					f"not supported for regime={regime}")
-
 			dataset_for_experiment = SupervisedDataSet(
 				df=resampled_df,
 				meta_information=resampled_df.columns,
@@ -559,8 +558,6 @@ class SeldonianExperiment(Experiment):
 					solution=solution,
 					constraint_eval_fns=constraint_eval_fns,
 					constraint_eval_kwargs=constraint_eval_kwargs)
-					
-				
 				
 				if verbose:
 					if failed:
@@ -595,7 +592,7 @@ class SeldonianExperiment(Experiment):
 
 	def evaluate_constraint_functions(self,
 		solution,constraint_eval_fns,
-		**constraint_eval_kwargs):
+		constraint_eval_kwargs):
 		""" Helper function for QSA() to evaluate
 		the constraint functions to determine
 		whether solution was safe on ground truth
@@ -615,7 +612,6 @@ class SeldonianExperiment(Experiment):
 			in constraint_eval_fns
 		:type constraint_eval_kwargs: dict
 		"""
-
 		# Use safety test branch so the confidence bounds on
 		# leaf nodes are not inflated
 		failed = False

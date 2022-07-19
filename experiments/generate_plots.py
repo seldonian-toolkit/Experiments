@@ -181,9 +181,9 @@ class PlotGenerator():
 
 			ax_performance=fig.add_subplot(n_rows,n_cols,plot_index)
 			plot_index+=1
-			ax_sr=fig.add_subplot(n_rows,n_cols,plot_index)
+			ax_sr=fig.add_subplot(n_rows,n_cols,plot_index,sharex=ax_performance)
 			plot_index+=1
-			ax_fr=fig.add_subplot(n_rows,n_cols,plot_index)
+			ax_fr=fig.add_subplot(n_rows,n_cols,plot_index,sharex=ax_performance)
 			plot_index+=1
 
 			# Plot labels
@@ -255,7 +255,7 @@ class PlotGenerator():
 				mean_performance+ste_performance,
 				color='g',alpha=0.5)
 
-			ax_performance.set_ylim(0,1.0)
+			# ax_performance.set_ylim(0,1.0)
 
 			if best_performance:
 				ax_performance.plot(X,[best_performance for x in X],
@@ -424,6 +424,8 @@ class SupervisedPlotGenerator(PlotGenerator):
 				self.n_trials,
 				self.results_dir,
 				file_format='pkl')
+			print("Done generating resampled datasets")
+			print()
 
 		run_seldonian_kwargs = dict(
 			spec=self.spec,
@@ -439,10 +441,11 @@ class SupervisedPlotGenerator(PlotGenerator):
 			)
 
 		## Run experiment 
-		sd_exp = SeldonianExperiment(results_dir=self.results_dir)
+		sd_exp = SeldonianExperiment(model_name='QSA',
+			results_dir=self.results_dir)
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)
-
+		return
 
 class RLPlotGenerator(PlotGenerator):
 	def __init__(self,
@@ -571,7 +574,8 @@ class RLPlotGenerator(PlotGenerator):
 
 
 		# ## Run experiment 
-		sd_exp = SeldonianExperiment(results_dir=self.results_dir)
+		sd_exp = SeldonianExperiment(model_name='QSA',
+			results_dir=self.results_dir)
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)
 
