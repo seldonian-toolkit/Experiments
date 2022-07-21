@@ -1,7 +1,9 @@
-autograd>=1.4
-matplotlib>=3.5.1
-numpy>=1.21.4
-pandas>=1.4.1
-scikit_learn>=1.1.1
+autograd==1.4
+fairlearn==0.7.0
+matplotlib==3.5.1
+numpy==1.21.4
+pandas==1.4.1
+pytest==7.0.1
+scikit_learn==1.1.1
 seldonian-engine
-tqdm>=4.64.0
+tqdm==4.64.0

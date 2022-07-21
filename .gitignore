@@ -3,9 +3,14 @@ Digraph*
 **/prof
 regression_plots/
 **/*.egg-info/
-**/setup.py
 **/outcmaes
 **/.DS_Store
 qsa*
 *results*/
 *plots*/
+**/pyproject.toml
+**/logs
+**/.coverage
+build
+dist
+docs/source/_autosummary
