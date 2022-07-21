@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 from seldonian.utils.io_utils import dir_path
 
 from experiments.experiments import (
-	BaselineExperiment,SeldonianExperiment)
+	BaselineExperiment,SeldonianExperiment,
+	FairlearnExperiment)
 from experiments.utils import generate_resampled_datasets
 
 seldonian_model_set = set(['qsa','sa'])
@@ -98,7 +99,8 @@ class PlotGenerator():
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',best_performance=None,
 		savename=None):
-		""" Make the three plots 
+		""" Make the three plots from results files saved to
+		self.results_dir
 		
 		:param fontsize: The font size to use for the axis labels
 		:type fontsize: int
@@ -121,6 +123,7 @@ class PlotGenerator():
 		:type savename: str, defaults to None
 		"""
 		regime = self.spec.dataset.regime
+		
 		if regime == 'supervised':
 			tot_data_size = len(self.spec.dataset.df)
 		elif regime == 'RL':
@@ -146,10 +149,6 @@ class PlotGenerator():
 		seldonian_models = list(set(all_models).intersection(seldonian_model_set))
 		baselines = list(set(all_models).difference(seldonian_model_set))
 		
-		print()
-		print("Plotting with the following baselines: ", baselines)
-		print()
-		
 		## BASELINE RESULTS SETUP -- same for all constraints
 		baseline_dict = {}
 		for baseline in baselines:
@@ -166,6 +165,22 @@ class PlotGenerator():
 			baseline_dict[baseline]['mean_performance'] = baseline_mean_performance
 			baseline_dict[baseline]['ste_performance'] = baseline_ste_performance
 
+		## SELDONIAN RESULTS SETUP 
+		savename_seldonian = os.path.join(
+			self.results_dir,
+			f"qsa_results",f"qsa_results.csv")
+
+		df_qsa = pd.read_csv(savename_seldonian)
+		passed_mask = df_qsa['passed_safety']==True
+		df_qsa_passed = df_qsa[passed_mask]
+
+		if tot_data_size:
+			X = df_qsa_passed.groupby('data_pct').mean().index*tot_data_size 
+			X_all = df_qsa.groupby('data_pct').mean().index*tot_data_size 
+		else:
+			X = df_qsa_passed.groupby('data_pct').mean().index
+			X_all = df_qsa.groupby('data_pct').mean().index
+			
 		## PLOTTING SETUP
 		fig = plt.figure(figsize=(8,4))
 		plot_index=1
@@ -174,11 +189,12 @@ class PlotGenerator():
 		fontsize=fontsize
 		legend_fontsize=legend_fontsize
 
-		## Loop over constraints and plot baseline and Seldonian results
+		## Loop over constraints and make three plots for each constraint
 		for ii,constraint in enumerate(constraints):
 			constraint_str = constraint_dict[constraint]['constraint_str']
 			delta = constraint_dict[constraint]['delta']
 
+			# SETUP FOR PLOTTING
 			ax_performance=fig.add_subplot(n_rows,n_cols,plot_index)
 			plot_index+=1
 			ax_sr=fig.add_subplot(n_rows,n_cols,plot_index,sharex=ax_performance)
@@ -211,29 +227,16 @@ class PlotGenerator():
 				ax.xaxis.set_minor_locator(locmin)
 				ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 			
-			# Seldonian results
-			filename = os.path.join(
-				self.results_dir,
-				f"qsa_results",f"qsa_results.csv")
-
-			df_qsa = pd.read_csv(filename)
-			passed_mask = df_qsa['passed_safety']==True
-			df_qsa_passed = df_qsa[passed_mask]
-			
-			# performance
-			if tot_data_size:
-				X = df_qsa_passed.groupby('data_pct').mean().index*tot_data_size 
-				X_all = df_qsa.groupby('data_pct').mean().index*tot_data_size 
-			else:
-				X = df_qsa_passed.groupby('data_pct').mean().index
-				X_all = df_qsa.groupby('data_pct').mean().index
+			########################
+			### PERFORMANCE PLOT ###
+			########################
 
 			mean_performance = df_qsa_passed.groupby('data_pct').mean()['performance']
 			std_performance = df_qsa_passed.groupby('data_pct').std()['performance']
 			n_passed = df_qsa_passed.groupby('data_pct').count()['performance']	
 			ste_performance = std_performance/np.sqrt(n_passed)
 
-			# Plot baseline performance
+			# Baseline performance
 			for baseline_i,baseline in enumerate(baselines):
 				baseline_color = baseline_colormap(baseline_i)
 				baseline_mean_performance = baseline_dict[baseline]['mean_performance']
@@ -244,9 +247,8 @@ class PlotGenerator():
 					baseline_mean_performance-baseline_ste_performance,
 					baseline_mean_performance+baseline_ste_performance,
 					color=baseline_color,alpha=0.5)
-			# ax_performance.axhline(y=-0.25,color='r',
-			# 	linestyle='--',label='random policy')
-			# Seldonian 
+
+			# Seldonian performance
 			ax_performance.plot(X,mean_performance,color='g',
 				linestyle='--',label='QSA')
 			ax_performance.scatter(X,mean_performance,color='g',s=25)
@@ -323,7 +325,6 @@ class PlotGenerator():
 			print(f"Saved {savename}")
 		else:
 			plt.show()
-
 
 class SupervisedPlotGenerator(PlotGenerator):
 	def __init__(self,
@@ -446,6 +447,66 @@ class SupervisedPlotGenerator(PlotGenerator):
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)
 		return
+
+	def run_fairlearn_experiment(self,
+		fairlearn_sensitive_feature_names,
+		fairlearn_constraint_name,
+		fairlearn_epsilon_constraint,
+		fairlearn_epsilon_eval,
+		fairlearn_eval_kwargs={},
+		verbose=False):
+		""" Run a supervised experiment using the fairlearn
+		library 
+
+		:param verbose: Whether to display results to stdout 
+			while the fairlearn algorithms are running in each trial
+		:type verbose: bool, defaults to False
+		"""
+
+		dataset = self.spec.dataset
+
+		label_column = dataset.label_column
+		sensitive_column_names = dataset.sensitive_column_names
+		include_sensitive_columns = dataset.include_sensitive_columns
+		include_intercept_term = dataset.include_intercept_term
+		
+		if self.datagen_method == 'resample':
+			# Generate n_trials resampled datasets of full length
+			# These will be cropped to data_pct fractional size
+			print("Checking for resampled datasets")
+			generate_resampled_datasets(dataset.df,
+				self.n_trials,
+				self.results_dir,
+				file_format='pkl')
+			print("Done generating resampled datasets")
+			print()
+
+		run_fairlearn_kwargs = dict(
+			spec=self.spec,
+			data_pcts=self.data_pcts,
+			n_trials=self.n_trials,
+			n_workers=self.n_workers,
+			datagen_method=self.datagen_method,
+			fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
+			fairlearn_constraint_name=fairlearn_constraint_name,
+			fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
+			fairlearn_epsilon_eval=fairlearn_epsilon_eval,
+			fairlearn_eval_kwargs=fairlearn_eval_kwargs,
+			perf_eval_fn=self.perf_eval_fn,
+			perf_eval_kwargs=self.perf_eval_kwargs,
+			constraint_eval_fns=self.constraint_eval_fns,
+			constraint_eval_kwargs=self.constraint_eval_kwargs,
+			verbose=verbose,
+			)
+
+		## Run experiment 
+		fl_exp = FairlearnExperiment(
+			results_dir=self.results_dir,
+			)
+
+		fl_exp.run_experiment(**run_fairlearn_kwargs)
+		return
+
 
 class RLPlotGenerator(PlotGenerator):
 	def __init__(self,
