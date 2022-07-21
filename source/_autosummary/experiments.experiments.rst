@@ -21,6 +21,7 @@
    
       BaselineExperiment
       Experiment
+      FairlearnExperiment
       SeldonianExperiment
    
    

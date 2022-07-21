@@ -94,7 +94,8 @@ the constraint_eval_fns</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.make_plots">
 <span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_performance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.make_plots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make the three plots</p>
+<dd><p>Make the three plots from results files saved to
+self.results_dir</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -109,6 +110,19 @@ a horizontal dashed line in the performance plot</p></li>
 <li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename path to which the plot 
 will be saved on disk.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.run_fairlearn_experiment">
+<span class="sig-name descname"><span class="pre">run_fairlearn_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fairlearn_sensitive_feature_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_constraint_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_epsilon_constraint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_epsilon_eval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.run_fairlearn_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a supervised experiment using the fairlearn
+library</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout 
+while the fairlearn algorithms are running in each trial</p>
 </dd>
 </dl>
 </dd></dl>

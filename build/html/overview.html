@@ -37,21 +37,21 @@
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h1>
 <p>This document explains how to run experiments with <a class="reference internal" href="glossary.html#term-Seldonian-algorithm"><span class="xref std std-term">Seldonian algorithms</span></a> (SAs) using this library. For a detailed description of what SAs are, see <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">the UMass AI Safety page</a>, specifically <a class="reference external" href="http://aisafety.cs.umass.edu/paper.html">the 2019 Science paper</a>.</p>
-<p>This document references the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
+<p>This document makes frequent references to the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
 <section id="seldonian-experiments">
 <h2>Seldonian experiments<a class="headerlink" href="#seldonian-experiments" title="Permalink to this heading">¶</a></h2>
-<p>A Seldonian experiment is a way to evaluate the safety and performance of an SA. It involves running the SA many times with varying amounts of input data.  The way we evaluate safety and performance in this library is with the “Three Plots”.</p>
+<p>A Seldonian experiment is a way to evaluate the safety and performance of a SA. It involves running the SA many times with increasing amounts of input data. The way we evaluate safety and performance in this library is with the “Three Plots”.</p>
 </section>
 <section id="three-plots">
 <h2>Three Plots<a class="headerlink" href="#three-plots" title="Permalink to this heading">¶</a></h2>
-<p>The “Three Plots” that we implement in this library are:</p>
+<p>The “Three Plots” that are generated using this library are:</p>
 <ol class="arabic simple">
-<li><p>Performance: the value of your primary objective, for example accuracy, evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance.</p></li>
+<li><p>Performance: the value of the primary objective function (e.g. accuracy), evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off.</p></li>
 <li><p>Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found.</p></li>
-<li><p>Failure rate: the probability that a solution is not safe despite the SA returning a solution it determined to be safe (i.e. it passed the safety test). A  ground truth dataset is required to determine the failure rate.</p></li>
+<li><p>Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e. it passed the safety test.</p></li>
 </ol>
 <p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis.</p>
-<p>Figure 1 shows a supervised learning (classification) example of these three plots: the GPA prediction problem discussed in the Science paper.</p>
+<p>Figure 1 shows a the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem.</p>
 <figure class="align-left" id="id1">
 <a class="reference internal image-reference" href="_images/disparate_impact.png"><img alt="disparate_impact" src="_images/disparate_impact.png" style="width: 100%;" /></a>
 <figcaption>
@@ -61,7 +61,7 @@
 </section>
 <section id="plot-generator">
 <h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this heading">¶</a></h2>
-<p>Depending on the <a class="reference internal" href="glossary.html#term-Regime"><span class="xref std std-term">regime</span></a> of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a>. or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>, respectively. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
+<p>Depending on the <a class="reference internal" href="glossary.html#term-Regime"><span class="xref std std-term">regime</span></a> of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a>. or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
 <p>Regardless of regime, the following inputs are required:</p>
 <section id="spec-object">
 <h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this heading">¶</a></h3>
