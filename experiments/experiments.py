@@ -18,12 +18,15 @@ from sklearn.model_selection import train_test_split
 from seldonian.utils.io_utils import load_pickle
 from seldonian.dataset import (SupervisedDataSet,RLDataSet)
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
+from seldonian.models.models import (LogisticRegressionModel,
+	DummyClassifierModel)
 
 from fairlearn.reductions import ExponentiatedGradient
 from fairlearn.metrics import (MetricFrame,selection_rate,
-	false_positive_rate,true_positive_rate)
+	false_positive_rate,true_positive_rate,false_negative_rate)
 from fairlearn.reductions import (
-	DemographicParity,FalsePositiveRateParity)
+	DemographicParity,FalsePositiveRateParity,
+	EqualizedOdds)
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning) 
@@ -123,30 +126,22 @@ class BaselineExperiment(Experiment):
 		:vartype model_class_dict: dict
 		"""
 		super().__init__(model_name,results_dir)
-		self.model_class_dict = {
-			'logistic_regression':self.logistic_regression,
-			'linear_svm':self.linear_svm}
 
 	def run_experiment(self,**kwargs):
 		""" Run the baseline experiment """
 
-		test_features = kwargs['test_features']
-		test_labels = kwargs['test_labels']
-
 		helper = partial(
-			self.model_class_dict[self.model_name],
-			test_features=test_features,
-			test_labels=test_labels,
-			dataset=kwargs['dataset'],
-			constraint_funcs=kwargs['constraint_funcs'],
+			self.run_baseline_trial,
+			spec=kwargs['spec'],
 			datagen_method=kwargs['datagen_method'],
-			results_dir=kwargs['results_dir'],
-			max_iter=kwargs['max_iter'],
+			perf_eval_fn=kwargs['perf_eval_fn'],
+			perf_eval_kwargs=kwargs['perf_eval_kwargs'],
 			verbose=kwargs['verbose'],
 			n_workers=kwargs['n_workers'],
 		)
 		data_pcts = kwargs['data_pcts']
 		n_trials = kwargs['n_trials']
+		n_workers=kwargs['n_workers']
 
 		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
 		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
@@ -166,12 +161,12 @@ class BaselineExperiment(Experiment):
 					if exc:
 						print(exc)
 		else:
-			raise ValueError(f"n_workers value of {n_workers} must be >=1 ")
+			raise ValueError(f"value of {n_workers} must be >=1 ")
 
 		self.aggregate_results(**kwargs)
 	
-	def logistic_regression(self,data_pct,trial_i,**kwargs):
-		""" Run a trial of logistic regression 
+	def run_baseline_trial(self,data_pct,trial_i,**kwargs):
+		""" Run a trial of the baseline model  
 		
 		:param data_pct: Fraction of overall dataset size to use
 		:type data_pct: float
@@ -179,146 +174,124 @@ class BaselineExperiment(Experiment):
 		:param trial_i: The index of the trial 
 		:type trial_i: int
 		"""
+
+		spec = kwargs['spec']
+		dataset = spec.dataset
+		parse_trees = spec.parse_trees
+		verbose=kwargs['verbose']
+		datagen_method = kwargs['datagen_method']
+		perf_eval_fn = kwargs['perf_eval_fn']
+		perf_eval_kwargs = kwargs['perf_eval_kwargs']
+
 		trial_dir = os.path.join(
-				kwargs['results_dir'],
-				'logistic_regression_results',
+				self.results_dir,
+				f'{self.model_name}_results',
 				'trial_data')
 
 		os.makedirs(trial_dir,exist_ok=True)
-		dataset = kwargs['dataset']
+
+		savename = os.path.join(trial_dir,
+			f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+
+		if os.path.exists(savename):
+			if verbose:
+				print(f"Trial {trial_i} already run for"
+					  f"this data_pct: {data_pct}. Skipping this trial. ")
+			return
+
+		##############################################
+		""" Setup for running baseline algorithm """
+		##############################################
+
+		sensitive_column_names = dataset.sensitive_column_names
+		include_sensitive_columns = dataset.include_sensitive_columns
+		include_intercept_term = dataset.include_intercept_term
 		label_column = dataset.label_column
-		orig_df = dataset.df
-		# number of points in this partition of the data
-		n_points = int(round(data_pct*len(orig_df))) 
 
-		test_features = kwargs['test_features']
-		test_labels = kwargs['test_labels']
-		
-		if kwargs['datagen_method'] == 'resample':
-			resampled_filename = os.path.join(kwargs['results_dir'],
-			'resampled_dataframes',f'trial_{trial_i}.pkl')
+		if datagen_method == 'resample':
+			resampled_filename = os.path.join(self.results_dir,
+				'resampled_dataframes',f'trial_{trial_i}.pkl')
+			n_points = int(round(data_pct*len(dataset.df))) 
+
 			with open(resampled_filename,'rb') as infile:
-				df = pickle.load(infile).iloc[:n_points]
-			# df = pd.read_csv(resampled_filename).iloc[:n_points]
+				resampled_df = pickle.load(infile).iloc[:n_points]
 
+			if verbose:
+				print(f"Using resampled dataset {resampled_filename} "
+					  f"with {len(resampled_df)} datapoints")
 		else:
-			raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
-
-		# Set up for initial solution
-		labels = df[label_column]
-		features = df.loc[:,
-			df.columns != label_column]
+			raise NotImplementedError(
+				f"datagen_method: {datagen_method} "
+				f"not supported for regime: {regime}")
 		
-		if not dataset.include_sensitive_columns:
-			features = features.drop(
-				columns=dataset.sensitive_column_names)
+
+		# Prepare features and labels
+
+		features = resampled_df.loc[:,
+		    resampled_df.columns != label_column]
+		labels = resampled_df[label_column].astype('int')
+
+		# Drop sensitive features from training set
+		if not include_sensitive_columns:
+		    features = features.drop(
+		        columns=dataset.sensitive_column_names)	
 
 		if dataset.include_intercept_term:
 			features.insert(0,'offset',1.0) # inserts a column of 1's
 		
-		lr_model = LogisticRegression(max_iter=kwargs['max_iter'])
-		lr_model.fit(features, labels)
-		theta_solution = np.hstack([lr_model.intercept_,lr_model.coef_[0]])
-		# predict the class label, not the probability
-		prediction_test = lr_model.predict(test_features) 
+		####################################################
+		"""" Instantiate model and fit to resampled data """
+		####################################################
+		X_test = perf_eval_kwargs['X']
 		
-		# Calculate accuracy 
-		acc = np.mean(1.0*prediction_test==test_labels)
-		performance = acc
-		print(f"Accuracy = {performance}")
+		if self.model_name == 'logistic_regression':
+			baseline_model = LogisticRegressionModel()
+			solution = baseline_model.fit(features, labels)
+			# predict the class label, not the probability
+			y_pred = baseline_model.predict(solution,X_test)
+		
+		elif self.model_name == 'dummy_classifier':
+			baseline_model = DummyClassifierModel()
+			solution = None
+			y_pred = baseline_model.predict(solution,X_test)
+			y = perf_eval_kwargs['y']
+			from sklearn.metrics import precision_score,recall_score,accuracy_score,f1_score,fbeta_score
+			precision = precision_score(y,y_pred)
+			recall = recall_score(y,y_pred)
+			accuracy = accuracy_score(y,y_pred)
+			f1 = f1_score(y,y_pred)
+			fbeta = fbeta_score(y,y_pred,beta=2)
+			print(y.value_counts())
+			print(precision,recall,accuracy,f1,fbeta)
+		
+		#########################################################
+		"""" Calculate performance and safety on ground truth """
+		#########################################################
+		
+		performance = perf_eval_fn(
+			y_pred,
+			**perf_eval_kwargs)
+
+		if verbose:
+			print(f"Performance = {performance}")
+
 		# Determine whether this solution
 		# violates any of the constraints 
 		# on the test dataset
 		failed = False
 		for parse_tree in parse_trees:
-			parse_tree.evaluate_constraint(theta=theta_solution,
+			parse_tree.evaluate_constraint(theta=solution,
 				dataset=dataset,
-				model=lr_model,regime='supervised',
+				model=baseline_model,regime='supervised',
 				branch='safety_test')
 
 			g = parse_tree.root.value
 			if g > 0:
 				failed = True
-
-		# Write out file for this data_pct,trial_i combo
-		data = [data_pct,
-			trial_i,
-			performance,
-			failed]
-		colnames = ['data_pct','trial_i','performance','failed']
-		self.write_trial_result(
-			data,
-			colnames,
-			trial_dir,
-			verbose=kwargs['verbose'])
-		return 
-
-	def linear_svm(self,data_pct,trial_i,**kwargs):
-		""" Run a trial of logistic regression 
-		
-		:param data_pct: Fraction of overall dataset size to use
-		:type data_pct: float
-
-		:param trial_i: The index of the trial 
-		:type trial_i: int
-		"""
-		trial_dir = os.path.join(
-				kwargs['results_dir'],
-				'linear_svm_results',
-				'trial_data')
-
-		os.makedirs(trial_dir,exist_ok=True)
-		dataset = kwargs['dataset']
-		orig_df = dataset.df
-		# number of points in this partition of the data
-		n_points = int(round(data_pct*len(orig_df))) 
-
-		test_features = kwargs['test_features']
-		test_labels = kwargs['test_labels']
-		
-		if kwargs['datagen_method'] == 'resample':
-			resampled_filename = os.path.join(kwargs['results_dir'],
-			'resampled_dataframes',f'trial_{trial_i}.csv')
-			n_points = int(round(data_pct*len(test_features))) 
-			with open(resampled_filename,'rb') as infile:
-				df = pickle.load(infile).iloc[:n_points]
-			# df = pd.read_csv(resampled_filename).iloc[:n_points]
-		else:
-			raise NotImplementedError(f"datagen_method: {datagen_method} not implemented")
-		# set labels to 0 and 1, not -1 and 1, like some classification datasets will have
-		df.loc[df[dataset.label_column]==-1.0,dataset.label_column]=0.0
-
-		features = df.loc[:,
-			df.columns != dataset.label_column]
-
-		features = features.drop(
-			columns=dataset.sensitive_column_names)
-
-		labels = df[dataset.label_column]
-		
-		clf = make_pipeline(StandardScaler(),
-		  SGDClassifier(loss='hinge',max_iter=kwargs['max_iter']))
-		
-		clf.fit(features, labels)
-
-		prediction = clf.predict(test_features)
-		
-		# Calculate accuracy 
-		acc = np.mean(1.0*prediction==test_labels)
-		performance = acc
-		# Determine whether this solution
-		# violates any of the constraints 
-		# on the test dataset
-		failed = False
-		for gfunc in kwargs['constraint_funcs']:
-			for parse_tree in parse_trees:
-				parse_tree.evaluate_constraint(theta=candidate_solution,
-					dataset=dataset,
-					model=model,regime='supervised',
-					branch='safety_test')
-				g = parse_tree.root.value
-				if g > 0:
-					failed = True
+				if verbose:
+					print("Failed on test set")
+			if verbose:
+				print(f"g = {g}")
 
 		# Write out file for this data_pct,trial_i combo
 		data = [data_pct,
@@ -472,23 +445,26 @@ class FairlearnExperiment(Experiment):
 		fairlearn_sensitive_features = resampled_df.loc[:,
 			fairlearn_sensitive_feature_names]
 
-		
-
 		##############################################
 		"""" Run Fairlearn algorithm on trial data """
 		##############################################
 
 		if fairlearn_constraint_name == "disparate_impact":
-			print("Enforcing demographic parity with epsilon: "
-				  f"{fairlearn_epsilon_constraint}")
 			fairlearn_constraint = DemographicParity(
-				difference_bound=fairlearn_epsilon_constraint)
+				ratio_bound=fairlearn_epsilon_constraint)
+		
 		elif fairlearn_constraint_name == "demographic_parity":
 			fairlearn_constraint = DemographicParity(
 				difference_bound=fairlearn_epsilon_constraint)
+		
 		elif fairlearn_constraint_name == "predictive_equality":
 			fairlearn_constraint = FalsePositiveRateParity(
 				difference_bound=fairlearn_epsilon_constraint)
+		
+		elif fairlearn_constraint_name == "equalized_odds":
+			fairlearn_constraint = EqualizedOdds(
+				difference_bound=fairlearn_epsilon_constraint)
+		
 		else:
 			raise NotImplementedError(
 				"Fairlearn constraints of type: "
@@ -502,7 +478,8 @@ class FairlearnExperiment(Experiment):
 		
 		mitigator.fit(features, labels, 
 			sensitive_features=fairlearn_sensitive_features)
-
+		X_test_fairlearn = fairlearn_eval_kwargs['X'] # same as X_test but drops the offset column
+		y_pred = mitigator.predict(X_test_fairlearn)
 		#########################################################
 		"""" Calculate performance and safety on ground truth """
 		#########################################################
@@ -510,7 +487,7 @@ class FairlearnExperiment(Experiment):
 		fairlearn_eval_kwargs['model'] = mitigator
 
 		performance = perf_eval_fn(
-			solution=None,
+			y_pred,
 			**fairlearn_eval_kwargs)
 			
 		if verbose:
@@ -536,6 +513,10 @@ class FairlearnExperiment(Experiment):
 			epsilon_eval=fairlearn_epsilon_eval,
 			sensitive_features=fairlearn_eval_kwargs['sensitive_features'])
 		
+		if failed:
+			print("Fairlearn trial UNSAFE on ground truth")
+		else:
+			print("Fairlearn trial SAFE on ground truth")
 		# Write out file for this data_pct,trial_i combo
 		data = [data_pct,
 			trial_i,
@@ -599,13 +580,33 @@ class FairlearnExperiment(Experiment):
 			PR_group2 = PR_grouped.iloc[1]
 			print(PR_group1,PR_group2,PR_group1/PR_group2,PR_group2,PR_group1)
 			g = epsilon_eval - min(PR_group1/PR_group2,PR_group2/PR_group1) 
+
+		elif fairlearn_constraint_name == "equalized_odds":
+			# g = abs((FNR | [M]) - (FNR | [F])) + abs((FPR | [M]) - (FPR | [F])) - epsilon
+			FPR_frame = MetricFrame(
+				metrics=false_positive_rate,
+				y_true=test_labels, y_pred=y_pred,
+				sensitive_features=sensitive_features)
+			FPR_grouped = FPR_frame.by_group
+			FPR_group1 = FPR_grouped.iloc[0]
+			FPR_group2 = FPR_grouped.iloc[1]
+
+			FNR_frame = MetricFrame(
+				metrics=false_negative_rate,
+				y_true=test_labels, y_pred=y_pred,
+				sensitive_features=sensitive_features)
+			FNR_grouped = FNR_frame.by_group
+			FNR_group1 = FNR_grouped.iloc[0]
+			FNR_group2 = FNR_grouped.iloc[1]
+
+			g = abs(FPR_group1 - FPR_group2) + abs(FNR_group1 - FNR_group2) - epsilon_eval
 		else:
 			raise NotImplementedError(
 				"Evaluation for Fairlearn constraints of type: "
 			   f"{fairlearn_constraint.short_name} "
 			    "is not supported.")
 		
-		print(f"g = {g}")
+		print(f"g (fairlearn) = {g}")
 		if g > 0:
 			failed = True
 
@@ -818,9 +819,10 @@ class SeldonianExperiment(Experiment):
 				#############################
 				""" Calculate performance """
 				#############################
-			
+				X_test = perf_eval_kwargs['X']
+				y_pred = model_instance.predict(solution,X_test)
 				performance = perf_eval_fn(
-					solution,
+					y_pred,
 					**perf_eval_kwargs)
 					
 				if verbose:
@@ -873,9 +875,6 @@ class SeldonianExperiment(Experiment):
 			trial_dir,
 			verbose=kwargs['verbose'])
 		return
-		# except Exception as e:
-		# 	return e
-		# return None
 
 	def evaluate_constraint_functions(self,
 		solution,constraint_eval_fns,

@@ -18,7 +18,7 @@ from experiments.experiments import (
 from experiments.utils import generate_resampled_datasets
 
 seldonian_model_set = set(['qsa','sa'])
-baseline_colormap = matplotlib.cm.get_cmap('tab10')
+plot_colormap = matplotlib.cm.get_cmap('tab10')
 
 class PlotGenerator():
 	def __init__(self,
@@ -148,22 +148,14 @@ class PlotGenerator():
 		all_models = [x.split('_results')[0] for x in subfolders]
 		seldonian_models = list(set(all_models).intersection(seldonian_model_set))
 		baselines = list(set(all_models).difference(seldonian_model_set))
-		
+		# baselines = ['fairlearn']
 		## BASELINE RESULTS SETUP -- same for all constraints
 		baseline_dict = {}
 		for baseline in baselines:
 			baseline_dict[baseline] = {}
 			savename_baseline = os.path.join(
 				self.results_dir,f"{baseline}_results",f"{baseline}_results.csv")
-			df_baseline = pd.read_csv(savename_baseline)
-			n_trials = df_baseline['trial_i'].max()+1
-
-			# Performance
-			baseline_mean_performance=df_baseline.groupby('data_pct').mean()['performance']
-			baseline_std_performance=df_baseline.groupby('data_pct').std()['performance']
-			baseline_ste_performance = baseline_std_performance/np.sqrt(n_trials)
-			baseline_dict[baseline]['mean_performance'] = baseline_mean_performance
-			baseline_dict[baseline]['ste_performance'] = baseline_ste_performance
+			baseline_dict[baseline]['df_baseline'] = pd.read_csv(savename_baseline).copy()
 
 		## SELDONIAN RESULTS SETUP 
 		savename_seldonian = os.path.join(
@@ -227,6 +219,8 @@ class PlotGenerator():
 				ax.xaxis.set_minor_locator(locmin)
 				ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 			
+			qsa_color = plot_colormap(0)
+
 			########################
 			### PERFORMANCE PLOT ###
 			########################
@@ -238,10 +232,15 @@ class PlotGenerator():
 
 			# Baseline performance
 			for baseline_i,baseline in enumerate(baselines):
-				baseline_color = baseline_colormap(baseline_i)
-				baseline_mean_performance = baseline_dict[baseline]['mean_performance']
+				baseline_color = plot_colormap(baseline_i+1) # 0 is reserved for Seldonian model
+				df_baseline = baseline_dict[baseline]['df_baseline']
+				n_trials = df_baseline['trial_i'].max()+1
+
+				# Performance
+				baseline_mean_performance=df_baseline.groupby('data_pct').mean()['performance']
+				baseline_std_performance=df_baseline.groupby('data_pct').std()['performance']
+				baseline_ste_performance = baseline_std_performance/np.sqrt(n_trials)
 				
-				baseline_ste_performance = baseline_dict[baseline]['ste_performance']
 				ax_performance.plot(X_all,baseline_mean_performance,color=baseline_color,label=baseline)
 				ax_performance.fill_between(X_all,
 					baseline_mean_performance-baseline_ste_performance,
@@ -249,26 +248,23 @@ class PlotGenerator():
 					color=baseline_color,alpha=0.5)
 
 			# Seldonian performance
-			ax_performance.plot(X,mean_performance,color='g',
+			ax_performance.plot(X,mean_performance,color=qsa_color,
 				linestyle='--',label='QSA')
-			ax_performance.scatter(X,mean_performance,color='g',s=25)
+			ax_performance.scatter(X,mean_performance,color=qsa_color,s=25)
 			ax_performance.fill_between(X,
 				mean_performance-ste_performance,
 				mean_performance+ste_performance,
-				color='g',alpha=0.5)
-
-			# ax_performance.set_ylim(0,1.0)
+				color=qsa_color,alpha=0.5)
 
 			if best_performance:
 				ax_performance.plot(X,[best_performance for x in X],
 					color='k',linestyle='--',label='optimal performance')
 
 			ax_performance.legend(loc='best',fontsize=legend_fontsize)
-			
-			# ax_performance.tick_params(axis='x', which='minor',length=10,width=2)
-			# ax_performance.xaxis.set_minor_formatter(FormatStrFormatter("%.1f"))
 
-			# Solution rate - calculated on all points
+			##########################
+			### SOLUTION RATE PLOT ###
+			##########################
 			n_trials = df_qsa['trial_i'].max()+1
 			mean_sr = df_qsa.groupby('data_pct').mean()['passed_safety']
 			std_sr = df_qsa.groupby('data_pct').std()['passed_safety']
@@ -279,26 +275,35 @@ class PlotGenerator():
 
 			# Plot baseline solution rate (by default 1.0)
 			for baseline_i,baseline in enumerate(baselines):
-				baseline_color = baseline_colormap(baseline_i)
-				ax_sr.plot(X_all,np.ones_like(X_all),color=baseline_color,label=baseline)
+				baseline_color = plot_colormap(baseline_i+1)
+				ax_sr.plot(X_all,np.ones_like(X_all),
+					color=baseline_color,label=baseline)
 
-			ax_sr.plot(X_all,mean_sr,color='g',linestyle='--',label='QSA')
-			ax_sr.scatter(X_all,mean_sr,color='g',s=25)
-			ax_sr.fill_between(X_all,mean_sr-ste_sr,mean_sr+ste_sr,color='g',alpha=0.5)
-			ax_sr.set_ylim(-0.05,1.05)
+			ax_sr.plot(X_all,mean_sr,color=qsa_color,linestyle='--',label='QSA')
+			ax_sr.scatter(X_all,mean_sr,color=qsa_color,s=25)
+			ax_sr.fill_between(X_all,mean_sr-ste_sr,mean_sr+ste_sr,color=qsa_color,alpha=0.5)
+			# ax_sr.set_ylim(-0.05,1.05)
 			
 			ax_sr.legend(loc='best',fontsize=legend_fontsize)
 
-			## Failure rate - calculated on all points
-			# First baseline
+			##########################
+			### FAILURE RATE PLOT ###
+			##########################
 			
+			# Baseline failure rate
 			for baseline_i,baseline in enumerate(baselines):
-				baseline_color = baseline_colormap(baseline_i)
-				# Failure rate
-				baseline_mean_fr= df_baseline.groupby('data_pct').mean()['failed']
-				baseline_std_fr = df_baseline.groupby('data_pct').std()['failed']
-				baseline_ste_fr = baseline_std_fr/np.sqrt(n_trials)	
+				# print("Baseline: ",baseline)
+				# if baseline != 'fairlearn':
+				# 	continue
+				baseline_color = plot_colormap(baseline_i+1)
+				# Baseline performance
+				df_baseline = baseline_dict[baseline]['df_baseline']
+				n_trials = df_baseline['trial_i'].max()+1
 
+				baseline_mean_fr = df_baseline.groupby('data_pct').mean()['failed']
+				baseline_std_fr = df_baseline.groupby('data_pct').std()['failed']
+				baseline_ste_fr = baseline_std_fr/np.sqrt(n_trials)
+					
 				ax_fr.plot(X_all,baseline_mean_fr,color=baseline_color,label=baseline)
 				ax_fr.fill_between(X_all,baseline_mean_fr-baseline_ste_fr,
 					baseline_mean_fr+baseline_ste_fr,
@@ -307,11 +312,11 @@ class PlotGenerator():
 			mean_fr=df_qsa.groupby('data_pct').mean()['failed']
 			std_fr=df_qsa.groupby('data_pct').std()['failed']
 			ste_fr = std_fr/np.sqrt(n_trials)	
-			ax_fr.plot(X_all,mean_fr,color='g',linestyle='--',label='QSA')
+			ax_fr.plot(X_all,mean_fr,color=qsa_color,linestyle='--',label='QSA')
 			ax_fr.fill_between(X_all,
 				mean_fr-ste_fr,
-				mean_fr+ste_fr,color='g',alpha=0.5)
-			ax_fr.scatter(X_all,mean_fr,color='g',s=25)
+				mean_fr+ste_fr,color=qsa_color,alpha=0.5)
+			ax_fr.scatter(X_all,mean_fr,color=qsa_color,s=25)
 			ax_fr.axhline(y=delta,color='k',
 				linestyle='--',label=f'delta={delta}')
 			ax_fr.legend(loc='best',fontsize=legend_fontsize)
@@ -325,6 +330,7 @@ class PlotGenerator():
 			print(f"Saved {savename}")
 		else:
 			plt.show()
+
 
 class SupervisedPlotGenerator(PlotGenerator):
 	def __init__(self,
@@ -447,6 +453,58 @@ class SupervisedPlotGenerator(PlotGenerator):
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)
 		return
+
+	def run_baseline_experiment(self,model_name,verbose=False):
+		""" Run a supervised Seldonian experiment using the spec attribute
+		assigned to the class in __init__().
+
+		:param model_name: The name of the baseline model to use
+	
+		:type model_name: str
+
+		:param verbose: Whether to display results to stdout 
+			while the Seldonian algorithms are running in each trial
+		:type verbose: bool, defaults to False
+		"""
+
+		dataset = self.spec.dataset
+
+		label_column = dataset.label_column
+		sensitive_column_names = dataset.sensitive_column_names
+		include_sensitive_columns = dataset.include_sensitive_columns
+		include_intercept_term = dataset.include_intercept_term
+		
+		if self.datagen_method == 'resample':
+			# Generate n_trials resampled datasets of full length
+			# These will be cropped to data_pct fractional size
+			print("checking for resampled datasets")
+			generate_resampled_datasets(dataset.df,
+				self.n_trials,
+				self.results_dir,
+				file_format='pkl')
+			print("Done checking for resampled datasets")
+			print()
+
+		run_baseline_kwargs = dict(
+			spec=self.spec,
+			data_pcts=self.data_pcts,
+			n_trials=self.n_trials,
+			n_workers=self.n_workers,
+			datagen_method=self.datagen_method,
+			perf_eval_fn=self.perf_eval_fn,
+			perf_eval_kwargs=self.perf_eval_kwargs,
+			constraint_eval_fns=self.constraint_eval_fns,
+			constraint_eval_kwargs=self.constraint_eval_kwargs,
+			verbose=verbose,
+			)
+
+		## Run experiment 
+		bl_exp = BaselineExperiment(model_name=model_name,
+			results_dir=self.results_dir)
+
+		bl_exp.run_experiment(**run_baseline_kwargs)
+		return
+
 
 	def run_fairlearn_experiment(self,
 		fairlearn_sensitive_feature_names,
