@@ -74,7 +74,6 @@ def gpa_regression_spec():
 			parse_trees=parse_trees,
 			initial_solution_fn=model_class().fit,
 			use_builtin_primary_gradient_fn=True,
-			bound_method='ttest',
 			optimization_technique='gradient_descent',
 			optimizer='adam',
 			optimization_hyperparams={

@@ -119,7 +119,7 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	# Now make plot
 	savename = os.path.join(results_dir,"test_gpa_regression_plot.png")
 	spg.make_plots(fontsize=12,legend_fontsize=8,
-		performance_label='MSE',best_performance=None,
+		performance_label='MSE',
 		savename=savename)
 	# Make sure it was saved
 	assert os.path.exists(savename)
