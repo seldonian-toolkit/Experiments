@@ -7,10 +7,9 @@ import pytest
 from experiments.generate_plots import (
 	SupervisedPlotGenerator)
 
-def MSE(theta,model,X,y):
-	n = len(X)
-	prediction = model.predict(theta,X) # vector of values
-	res = sum(pow(prediction-y,2))/n
+def MSE(y_pred,y,**kwargs):
+	n = len(y)
+	res = sum(pow(y_pred-y,2))/n
 	return res
 
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
@@ -20,8 +19,8 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	deltas = [0.05,0.1]
 	spec = gpa_regression_spec(constraint_strs,deltas)
 	n_trials = 5
-	# data_pcts = [0.001,0.05,0.5,1.0]
-	data_pcts = [0.01,0.25]
+	# data_fracs = [0.001,0.05,0.5,1.0]
+	data_fracs = [0.01,0.25]
 	datagen_method="resample"
 	perf_eval_fn = MSE
 	results_dir = "./tests/static/results"
@@ -48,7 +47,6 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	# of the performance evaluation function,
 	# which in our case is accuracy
 	perf_eval_kwargs = {
-		'model':spec.model_class(),
 		'X':test_features,
 		'y':test_labels,
 		}
@@ -56,7 +54,7 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	spg = SupervisedPlotGenerator(
 		spec=spec,
 		n_trials=n_trials,
-		data_pcts=data_pcts,
+		data_fracs=data_fracs,
 		datagen_method=datagen_method,
 		perf_eval_fn=perf_eval_fn,
 		results_dir=results_dir,
@@ -78,7 +76,7 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	df = pd.read_csv(results_file)
 	print(df)
 	assert len(df) == 10
-	dps = df.data_pct
+	dps = df.data_frac
 	trial_is = df.trial_i
 	perfs = df.performance
 	passed_safetys = df.passed_safety
