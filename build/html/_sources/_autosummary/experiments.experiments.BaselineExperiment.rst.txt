@@ -22,9 +22,7 @@ experiments.experiments.BaselineExperiment
    ..
    ..    ~BaselineExperiment.aggregate_results
    ..
-   ..    ~BaselineExperiment.linear_svm
-   ..
-   ..    ~BaselineExperiment.logistic_regression
+   ..    ~BaselineExperiment.run_baseline_trial
    ..
    ..    ~BaselineExperiment.run_experiment
    ..

@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>experiments.experiments.BaselineExperiment &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -80,27 +80,13 @@ trial file into a single CSV file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.linear_svm">
-<span class="sig-name descname"><span class="pre">linear_svm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_pct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.linear_svm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of logistic regression</p>
+<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.run_baseline_trial">
+<span class="sig-name descname"><span class="pre">run_baseline_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.run_baseline_trial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a trial of the baseline model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data_pct</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
-<li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.logistic_regression">
-<span class="sig-name descname"><span class="pre">logistic_regression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_pct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.logistic_regression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of logistic regression</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_pct</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
+<li><p><strong>data_frac</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
 <li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
 </ul>
 </dd>
@@ -169,8 +155,6 @@ These will comprise the header of the saved file</p></li>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -214,7 +198,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -1,4 +1,4 @@
-﻿experiments.generate\_plots.SupervisedPlotGenerator
+experiments.generate\_plots.SupervisedPlotGenerator
 ===================================================
 
 .. currentmodule:: experiments.generate_plots
@@ -21,6 +21,8 @@
    ..    ~SupervisedPlotGenerator.__init__
    ..
    ..    ~SupervisedPlotGenerator.make_plots
+   ..
+   ..    ~SupervisedPlotGenerator.run_baseline_experiment
    ..
    ..    ~SupervisedPlotGenerator.run_fairlearn_experiment
    ..

@@ -1,4 +1,4 @@
-experiments.experiments.FairlearnExperiment
+﻿experiments.experiments.FairlearnExperiment
 ===========================================
 
 .. currentmodule:: experiments.experiments
@@ -22,7 +22,9 @@ experiments.experiments.FairlearnExperiment
    ..
    ..    ~FairlearnExperiment.aggregate_results
    ..
-   ..    ~FairlearnExperiment.evaluate_constraint_functions
+   ..    ~FairlearnExperiment.evaluate_constraint_function
+   ..
+   ..    ~FairlearnExperiment.get_fairlearn_predictions
    ..
    ..    ~FairlearnExperiment.run_experiment
    ..
