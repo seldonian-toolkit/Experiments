@@ -21,7 +21,7 @@ The "Three Plots" that are generated using this library are:
 
 All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis.  
 
-Figure 1 shows a the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem. 
+Figure 1 shows the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem. 
 
 .. figure:: _static/disparate_impact.png
    :width: 100 %
@@ -46,17 +46,17 @@ Often, a `Seldonian interface <https://seldonian-toolkit.github.io/Engine/build/
 
 n_trials
 ++++++++
-The number of times the SA is run at each data fraction (point on the horizontal axis, see: `data_pcts`_). Used to estimate uncertainties in the quantities in the three plots. 
+The number of times the SA is run at each data fraction (point on the horizontal axis, see: `data_fracs`_). Used to estimate uncertainties in the quantities in the three plots. 
 
-data_pcts
+data_fracs
 +++++++++
 A list of fractions of the original dataset size at which to run the SA n_trials times. This list comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object. 
 
 datagen_method
 ++++++++++++++
-The method for generating data that is used to run the Seldonian algorithm for each trial. For supervised learning, the only currently supported option for this parameter is "resample". In this case, the original dataset is resampled with replacement n_trials times to obtain n_trials different datasets of the same length as the original dataset. At each data fraction, frac, in data_pcts, the first frac fraction of points in each of the n_trials datasets is used as input to the SA.
+The method for generating data that is used to run the Seldonian algorithm for each trial. For supervised learning, the only currently supported option for this parameter is "resample". In this case, the original dataset is resampled with replacement n_trials times to obtain n_trials different datasets of the same length as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of points in each of the n_trials datasets is used as input to the SA.
 
-For RL, the only currently supported option for this parameter is "generate_episodes". In this case, n_trials new datasets are generated with the same number of episodes as the original dataset. At each data fraction, frac, in data_pcts, the first frac fraction of episodes in each of the n_trials generated datasets is used as input to the SA.
+For RL, the only currently supported option for this parameter is "generate_episodes". In this case, n_trials new datasets are generated with the same number of episodes as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of episodes in each of the n_trials generated datasets is used as input to the SA.
 
 
 n_workers
@@ -96,57 +96,57 @@ The directory structure inside results_dir will look like this after running an 
 	├── qsa_results
 	│ ├── qsa_results.csv
 	│ └── trial_data
-	│     ├── data_pct_0.0010_trial_0.csv
-	│     ├── data_pct_0.0010_trial_1.csv
-	│     ├── data_pct_0.0010_trial_2.csv
-	│     ├── data_pct_0.0010_trial_3.csv
-	│     ├── data_pct_0.0010_trial_4.csv
-	│     ├── data_pct_0.0022_trial_0.csv
-	│     ├── data_pct_0.0022_trial_1.csv
-	│     ├── data_pct_0.0022_trial_2.csv
-	│     ├── data_pct_0.0022_trial_3.csv
-	│     ├── data_pct_0.0022_trial_4.csv
-	│     ├── data_pct_0.0046_trial_0.csv
-	│     ├── data_pct_0.0046_trial_1.csv
-	│     ├── data_pct_0.0046_trial_2.csv
-	│     ├── data_pct_0.0046_trial_3.csv
-	│     ├── data_pct_0.0046_trial_4.csv
-	│     ├── data_pct_0.0050_trial_0.csv
-	│     ├── data_pct_0.0100_trial_0.csv
-	│     ├── data_pct_0.0100_trial_1.csv
-	│     ├── data_pct_0.0100_trial_2.csv
-	│     ├── data_pct_0.0100_trial_3.csv
-	│     ├── data_pct_0.0100_trial_4.csv
-	│     ├── data_pct_0.0215_trial_0.csv
-	│     ├── data_pct_0.0215_trial_1.csv
-	│     ├── data_pct_0.0215_trial_2.csv
-	│     ├── data_pct_0.0215_trial_3.csv
-	│     ├── data_pct_0.0215_trial_4.csv
-	│     ├── data_pct_0.0464_trial_0.csv
-	│     ├── data_pct_0.0464_trial_1.csv
-	│     ├── data_pct_0.0464_trial_2.csv
-	│     ├── data_pct_0.0464_trial_3.csv
-	│     ├── data_pct_0.0464_trial_4.csv
-	│     ├── data_pct_0.1000_trial_0.csv
-	│     ├── data_pct_0.1000_trial_1.csv
-	│     ├── data_pct_0.1000_trial_2.csv
-	│     ├── data_pct_0.1000_trial_3.csv
-	│     ├── data_pct_0.1000_trial_4.csv
-	│     ├── data_pct_0.2154_trial_0.csv
-	│     ├── data_pct_0.2154_trial_1.csv
-	│     ├── data_pct_0.2154_trial_2.csv
-	│     ├── data_pct_0.2154_trial_3.csv
-	│     ├── data_pct_0.2154_trial_4.csv
-	│     ├── data_pct_0.4642_trial_0.csv
-	│     ├── data_pct_0.4642_trial_1.csv
-	│     ├── data_pct_0.4642_trial_2.csv
-	│     ├── data_pct_0.4642_trial_3.csv
-	│     ├── data_pct_0.4642_trial_4.csv
-	│     ├── data_pct_1.0000_trial_0.csv
-	│     ├── data_pct_1.0000_trial_1.csv
-	│     ├── data_pct_1.0000_trial_2.csv
-	│     ├── data_pct_1.0000_trial_3.csv
-	│     ├── data_pct_1.0000_trial_4.csv
+	│     ├── data_frac_0.0010_trial_0.csv
+	│     ├── data_frac_0.0010_trial_1.csv
+	│     ├── data_frac_0.0010_trial_2.csv
+	│     ├── data_frac_0.0010_trial_3.csv
+	│     ├── data_frac_0.0010_trial_4.csv
+	│     ├── data_frac_0.0022_trial_0.csv
+	│     ├── data_frac_0.0022_trial_1.csv
+	│     ├── data_frac_0.0022_trial_2.csv
+	│     ├── data_frac_0.0022_trial_3.csv
+	│     ├── data_frac_0.0022_trial_4.csv
+	│     ├── data_frac_0.0046_trial_0.csv
+	│     ├── data_frac_0.0046_trial_1.csv
+	│     ├── data_frac_0.0046_trial_2.csv
+	│     ├── data_frac_0.0046_trial_3.csv
+	│     ├── data_frac_0.0046_trial_4.csv
+	│     ├── data_frac_0.0050_trial_0.csv
+	│     ├── data_frac_0.0100_trial_0.csv
+	│     ├── data_frac_0.0100_trial_1.csv
+	│     ├── data_frac_0.0100_trial_2.csv
+	│     ├── data_frac_0.0100_trial_3.csv
+	│     ├── data_frac_0.0100_trial_4.csv
+	│     ├── data_frac_0.0215_trial_0.csv
+	│     ├── data_frac_0.0215_trial_1.csv
+	│     ├── data_frac_0.0215_trial_2.csv
+	│     ├── data_frac_0.0215_trial_3.csv
+	│     ├── data_frac_0.0215_trial_4.csv
+	│     ├── data_frac_0.0464_trial_0.csv
+	│     ├── data_frac_0.0464_trial_1.csv
+	│     ├── data_frac_0.0464_trial_2.csv
+	│     ├── data_frac_0.0464_trial_3.csv
+	│     ├── data_frac_0.0464_trial_4.csv
+	│     ├── data_frac_0.1000_trial_0.csv
+	│     ├── data_frac_0.1000_trial_1.csv
+	│     ├── data_frac_0.1000_trial_2.csv
+	│     ├── data_frac_0.1000_trial_3.csv
+	│     ├── data_frac_0.1000_trial_4.csv
+	│     ├── data_frac_0.2154_trial_0.csv
+	│     ├── data_frac_0.2154_trial_1.csv
+	│     ├── data_frac_0.2154_trial_2.csv
+	│     ├── data_frac_0.2154_trial_3.csv
+	│     ├── data_frac_0.2154_trial_4.csv
+	│     ├── data_frac_0.4642_trial_0.csv
+	│     ├── data_frac_0.4642_trial_1.csv
+	│     ├── data_frac_0.4642_trial_2.csv
+	│     ├── data_frac_0.4642_trial_3.csv
+	│     ├── data_frac_0.4642_trial_4.csv
+	│     ├── data_frac_1.0000_trial_0.csv
+	│     ├── data_frac_1.0000_trial_1.csv
+	│     ├── data_frac_1.0000_trial_2.csv
+	│     ├── data_frac_1.0000_trial_3.csv
+	│     ├── data_frac_1.0000_trial_4.csv
 	└── resampled_datasets
 	    ├── resampled_data_trial0.pkl
 	    ├── resampled_data_trial1.pkl
@@ -154,5 +154,5 @@ The directory structure inside results_dir will look like this after running an 
 	    ├── resampled_data_trial3.pkl
 	    ├── resampled_data_trial4.pkl
 
-In this example, :code:`n_trials=5` and the default was used for data_pcts, i.e. :code:`np.logspace(-3,0,10)`, which creates an log-spaced array of length 10 starting at :code:`10**(-3)=0.001` and ending at `10**0=1.0`		
+In this example, :code:`n_trials=5` and the default was used for data_fracs, i.e. :code:`np.logspace(-3,0,10)`, which creates an log-spaced array of length 10 starting at :code:`10**(-3)=0.001` and ending at `10**0=1.0`		
 

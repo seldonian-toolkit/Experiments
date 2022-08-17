@@ -11,6 +11,6 @@ qsa*
 **/pyproject.toml
 **/logs
 **/.coverage
-build
+**/build
 dist
 docs/source/_autosummary
