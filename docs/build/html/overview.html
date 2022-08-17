@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API" href="api.html" />
@@ -50,18 +51,18 @@
 <li><p>Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found.</p></li>
 <li><p>Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e. it passed the safety test.</p></li>
 </ol>
-<p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis.</p>
+<p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis. Evaluating the performance and failure rate of the algorithm assumes access to ground truth values for performance and safety. For a real-world problem with only a single data set, one typically does not have access to these ground truth quantities. Instead, one can use a single data set to bootstrap resample and generate the three plots. In that case, the resulting plots will show performance/safety/efficiency for a bootstrap-approximation of the problem at hand.</p>
 <p>Figure 1 shows the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem.</p>
 <figure class="align-left" id="id1">
 <a class="reference internal image-reference" href="_images/disparate_impact.png"><img alt="disparate_impact" src="_images/disparate_impact.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 1</strong>: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed in Thomas et al. 2019. The fairness constraint in this case is disparate impact. Two Seldonain algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right).</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text"><strong>Figure 1</strong>: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed by Thomas et al. (2019). Ground truth was approximated using bootstrap resampling of the original dataset. The fairness constraint in this case is disparate impact. Two Seldonain algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right). The black dotted line in right panel represents the confidence threshold, $delta=0.05$ used in the constraint.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="plot-generator">
 <h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this heading">¶</a></h2>
-<p>Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a>. or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
+<p>Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a> or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
 <p>Regardless of regime, the following inputs are required:</p>
 <section id="spec-object">
 <h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this heading">¶</a></h3>
@@ -69,11 +70,11 @@
 </section>
 <section id="n-trials">
 <h3>n_trials<a class="headerlink" href="#n-trials" title="Permalink to this heading">¶</a></h3>
-<p>The number of times the SA is run at each data fraction (point on the horizontal axis, see: <a class="reference internal" href="#data-fracs">data_fracs</a>). Used to estimate uncertainties in the quantities in the three plots.</p>
+<p>The number of times the SA is run for each amount of data (point on the horizontal axis, see: <a class="reference internal" href="#data-fracs">data_fracs</a>). Used to estimate uncertainties in the quantities in the three plots.</p>
 </section>
 <section id="data-fracs">
 <h3>data_fracs<a class="headerlink" href="#data-fracs" title="Permalink to this heading">¶</a></h3>
-<p>A list of fractions of the original dataset size at which to run the SA n_trials times. This list comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object.</p>
+<p>A list of fractions of the original dataset size at which to run the SA n_trials times. This list of fractions, multiplied by the number of points in the original dataset, comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object.</p>
 </section>
 <section id="datagen-method">
 <h3>datagen_method<a class="headerlink" href="#datagen-method" title="Permalink to this heading">¶</a></h3>
@@ -170,7 +171,11 @@
     ├── resampled_data_trial4.pkl
 </pre></div>
 </div>
-<p>In this example, <code class="code docutils literal notranslate"><span class="pre">n_trials=5</span></code> and the default was used for data_fracs, i.e. <code class="code docutils literal notranslate"><span class="pre">np.logspace(-3,0,10)</span></code>, which creates an log-spaced array of length 10 starting at <code class="code docutils literal notranslate"><span class="pre">10**(-3)=0.001</span></code> and ending at <cite>10**0=1.0</cite></p>
+<p>In this example experiment, <code class="code docutils literal notranslate"><span class="pre">n_trials=5</span></code> and the default was used for <code class="code docutils literal notranslate"><span class="pre">data_fracs</span></code>, i.e., <code class="code docutils literal notranslate"><span class="pre">np.logspace(-3,0,10)</span></code>, which creates a log-spaced array of length 10 starting at <span class="math notranslate nohighlight">\(10^{-3}=0.001\)</span> and ending at <span class="math notranslate nohighlight">\(10^0=1.0\)</span>. As a result, there are <span class="math notranslate nohighlight">\(5*10=50\)</span> CSV files created in <code class="code docutils literal notranslate"><span class="pre">trial_data/</span></code>. Each of these CSV files contains the performance, a boolean flag for whether the solution passed the safety test, and a boolean flag for whether the solution failed on the ground truth data set for the given trial at a given data fraction. For example, the contents of the file <code class="code docutils literal notranslate"><span class="pre">data_frac_0.6105_trial36.csv</span></code> are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_frac</span><span class="p">,</span><span class="n">trial_i</span><span class="p">,</span><span class="n">performance</span><span class="p">,</span><span class="n">passed_safety</span><span class="p">,</span><span class="n">failed</span>
+<span class="mf">0.6105402296585326</span><span class="p">,</span><span class="mi">36</span><span class="p">,</span><span class="mf">0.6746247014792527</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span>
+</pre></div>
+</div>
 </section>
 </section>
 

@@ -19,7 +19,7 @@ The "Three Plots" that are generated using this library are:
 2. Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found. 
 3. Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e. it passed the safety test.
 
-All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis.  
+All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis. Evaluating the performance and failure rate of the algorithm assumes access to ground truth values for performance and safety. For a real-world problem with only a single data set, one typically does not have access to these ground truth quantities. Instead, one can use a single data set to bootstrap resample and generate the three plots. In that case, the resulting plots will show performance/safety/efficiency for a bootstrap-approximation of the problem at hand.
 
 Figure 1 shows the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem. 
 
@@ -28,14 +28,14 @@ Figure 1 shows the three plots from the GPA prediction problem discussed in the 
    :alt: disparate_impact
    :align: left
 
-   **Figure 1**: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed in Thomas et al. 2019. The fairness constraint in this case is disparate impact. Two Seldonain algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right). 
+   **Figure 1**: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed by Thomas et al. (2019). Ground truth was approximated using bootstrap resampling of the original dataset. The fairness constraint in this case is disparate impact. Two Seldonain algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right). The black dotted line in right panel represents the confidence threshold, $\delta=0.05$ used in the constraint.
 
 
 
 Plot generator
 --------------
 
-Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either :py:class:`.SupervisedPlotGenerator`. or :py:class:`.RLPlotGenerator`. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here. 
+Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either :py:class:`.SupervisedPlotGenerator` or :py:class:`.RLPlotGenerator`. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here. 
 
 Regardless of regime, the following inputs are required:
 
@@ -46,11 +46,11 @@ Often, a `Seldonian interface <https://seldonian-toolkit.github.io/Engine/build/
 
 n_trials
 ++++++++
-The number of times the SA is run at each data fraction (point on the horizontal axis, see: `data_fracs`_). Used to estimate uncertainties in the quantities in the three plots. 
+The number of times the SA is run for each amount of data (point on the horizontal axis, see: `data_fracs`_). Used to estimate uncertainties in the quantities in the three plots. 
 
 data_fracs
 ++++++++++
-A list of fractions of the original dataset size at which to run the SA n_trials times. This list comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object. 
+A list of fractions of the original dataset size at which to run the SA n_trials times. This list of fractions, multiplied by the number of points in the original dataset, comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object. 
 
 datagen_method
 ++++++++++++++
@@ -154,5 +154,9 @@ The directory structure inside results_dir will look like this after running an 
 	    ├── resampled_data_trial3.pkl
 	    ├── resampled_data_trial4.pkl
 
-In this example, :code:`n_trials=5` and the default was used for data_fracs, i.e. :code:`np.logspace(-3,0,10)`, which creates an log-spaced array of length 10 starting at :code:`10**(-3)=0.001` and ending at `10**0=1.0`		
+In this example experiment, :code:`n_trials=5` and the default was used for :code:`data_fracs`, i.e., :code:`np.logspace(-3,0,10)`, which creates a log-spaced array of length 10 starting at :math:`10^{-3}=0.001` and ending at :math:`10^0=1.0`. As a result, there are :math:`5*10=50` CSV files created in :code:`trial_data/`. Each of these CSV files contains the performance, a boolean flag for whether the solution passed the safety test, and a boolean flag for whether the solution failed on the ground truth data set for the given trial at a given data fraction. For example, the contents of the file :code:`data_frac_0.6105_trial36.csv` are:
 
+.. code::
+
+	data_frac,trial_i,performance,passed_safety,failed
+	0.6105402296585326,36,0.6746247014792527,True,False
