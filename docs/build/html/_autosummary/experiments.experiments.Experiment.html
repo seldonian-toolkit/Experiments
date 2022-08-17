@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>experiments.experiments.Experiment &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,10 +12,11 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.experiments.SeldonianExperiment" href="experiments.experiments.SeldonianExperiment.html" />
+    <link rel="next" title="experiments.experiments.FairlearnExperiment" href="experiments.experiments.FairlearnExperiment.html" />
     <link rel="prev" title="experiments.experiments.BaselineExperiment" href="experiments.experiments.BaselineExperiment.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -34,7 +35,7 @@
           <div class="body" role="main">
             
   <section id="experiments-experiments-experiment">
-<h1>experiments.experiments.Experiment<a class="headerlink" href="#experiments-experiments-experiment" title="Permalink to this headline">¶</a></h1>
+<h1>experiments.experiments.Experiment<a class="headerlink" href="#experiments-experiments-experiment" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.experiments.Experiment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment" title="Permalink to this definition">¶</a></dt>
@@ -44,7 +45,7 @@
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.Experiment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for running experiments</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model_name</strong> (<em>str</em>) – The string name of the baseline model, 
 e.g ‘logistic_regression’</p></li>
@@ -63,10 +64,6 @@ experimental results</p></li>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 </tbody>
 </table>
@@ -83,7 +80,7 @@ trial file into a single CSV file.</p>
 <dd><p>Write out the results from a single trial
 to a file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
 <li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
@@ -123,6 +120,7 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.Experiment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiments.FairlearnExperiment.html">experiments.experiments.FairlearnExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.SeldonianExperiment.html">experiments.experiments.SeldonianExperiment</a></li>
 </ul>
 </li>
@@ -132,8 +130,6 @@ These will comprise the header of the saved file</p></li>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -144,7 +140,7 @@ These will comprise the header of the saved file</p></li>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.experiments.html">experiments.experiments</a><ul>
       <li>Previous: <a href="experiments.experiments.BaselineExperiment.html" title="previous chapter">experiments.experiments.BaselineExperiment</a></li>
-      <li>Next: <a href="experiments.experiments.SeldonianExperiment.html" title="next chapter">experiments.experiments.SeldonianExperiment</a></li>
+      <li>Next: <a href="experiments.experiments.FairlearnExperiment.html" title="next chapter">experiments.experiments.FairlearnExperiment</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -160,7 +156,7 @@ These will comprise the header of the saved file</p></li>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -177,7 +173,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

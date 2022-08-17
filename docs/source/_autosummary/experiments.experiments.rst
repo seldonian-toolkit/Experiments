@@ -1,4 +1,4 @@
-﻿experiments.experiments
+experiments.experiments
 =======================
 
 .. automodule:: experiments.experiments 
@@ -21,6 +21,7 @@
    
       BaselineExperiment
       Experiment
+      FairlearnExperiment
       SeldonianExperiment
    
    

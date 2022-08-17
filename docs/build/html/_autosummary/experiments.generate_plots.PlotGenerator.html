@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>experiments.generate_plots.PlotGenerator &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,19 +35,22 @@
           <div class="body" role="main">
             
   <section id="experiments-generate-plots-plotgenerator">
-<h1>experiments.generate_plots.PlotGenerator<a class="headerlink" href="#experiments-generate-plots-plotgenerator" title="Permalink to this headline">¶</a></h1>
+<h1>experiments.generate_plots.PlotGenerator<a class="headerlink" href="#experiments-generate-plots-plotgenerator" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PlotGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class for running Seldonian experiments 
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for running Seldonian experiments 
 and generating the three plots:
 1) Performance
 2) Solution rate
 3) Failure rate 
 all plotted vs. amount of data used</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<em>seldonian.spec.Spec object</em>) – Specification object for running the 
 Seldonian algorithm</p></li>
@@ -69,13 +73,14 @@ using multiprocessing</p></li>
 </em><em>defaults to</em><em> [</em><em>]</em>) – List of functions used to evaluate
 the constraints on ground truth. If an empty list is provided,
 the constraints are evaluated using the parse tree</p></li>
+<li><p><strong>perf_eval_kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to
+perf_eval_fn</p></li>
+<li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to
+the constraint_eval_fns</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator.__init__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator.__repr__">
@@ -85,13 +90,29 @@ the constraints are evaluated using the parse tree</p></li>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 </tbody>
 </table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.PlotGenerator.make_plots">
+<span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.PlotGenerator.make_plots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the three plots from results files saved to
+self.results_dir</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fontsize</strong> (<em>int</em>) – The font size to use for the axis labels</p></li>
+<li><p><strong>legend_fontsize</strong> (<em>int</em>) – The font size to use for text 
+in the legend</p></li>
+<li><p><strong>performance_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;accuracy&quot;</em>) – The y axis label on the performance
+plot you want to use.</p></li>
+<li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename path to which the plot 
+will be saved on disk.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -129,8 +150,6 @@ the constraints are evaluated using the parse tree</p></li>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -157,7 +176,7 @@ the constraints are evaluated using the parse tree</p></li>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -174,7 +193,7 @@ the constraints are evaluated using the parse tree</p></li>
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -14,6 +14,4 @@ Table of contents
 
    overview
    api
-   usage
-   glossary
 

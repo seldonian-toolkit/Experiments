@@ -22,6 +22,10 @@ experiments.generate\_plots.SupervisedPlotGenerator
    ..
    ..    ~SupervisedPlotGenerator.make_plots
    ..
+   ..    ~SupervisedPlotGenerator.run_baseline_experiment
+   ..
+   ..    ~SupervisedPlotGenerator.run_fairlearn_experiment
+   ..
    ..    ~SupervisedPlotGenerator.run_seldonian_experiment
    ..
    

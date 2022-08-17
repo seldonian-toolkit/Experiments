@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 from seldonian.utils.io_utils import save_pickle
 from seldonian.RL.RL_runner import run_trial
 
-from experiments.experiments import (
+from .experiments import (
 	BaselineExperiment,SeldonianExperiment,
 	FairlearnExperiment)
-from experiments.utils import generate_resampled_datasets
+from .utils import generate_resampled_datasets
 
 seldonian_model_set = set(['qsa','sa'])
 plot_colormap = matplotlib.cm.get_cmap('tab10')

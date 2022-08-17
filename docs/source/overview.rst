@@ -1,7 +1,7 @@
 Overview
 ========
 
-This document explains how to run experiments with :term:`Seldonian algorithms<Seldonian Algorithm>` (SAs) using this library. For a detailed description of what SAs are, see `the UMass AI Safety page <http://aisafety.cs.umass.edu/overview.html>`_, specifically `the 2019 Science paper <http://aisafety.cs.umass.edu/paper.html>`_. 
+This document explains how to run experiments with Seldonian algorithms (SAs) using this library. For a detailed description of what SAs are, see `the UMass AI Safety page <http://aisafety.cs.umass.edu/overview.html>`_, specifically `the 2019 Science paper <http://aisafety.cs.umass.edu/paper.html>`_. 
 
 This document makes frequent references to the `Seldonian Engine library <https://seldonian-framework.github.io/Engine>`_, the core library for running Seldonian algorithms.  
 
@@ -35,7 +35,7 @@ Figure 1 shows the three plots from the GPA prediction problem discussed in the 
 Plot generator
 --------------
 
-Depending on the :term:`regime<Regime>` of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either :py:class:`.SupervisedPlotGenerator`. or :py:class:`.RLPlotGenerator`. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here. 
+Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either :py:class:`.SupervisedPlotGenerator`. or :py:class:`.RLPlotGenerator`. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here. 
 
 Regardless of regime, the following inputs are required:
 
@@ -49,7 +49,7 @@ n_trials
 The number of times the SA is run at each data fraction (point on the horizontal axis, see: `data_fracs`_). Used to estimate uncertainties in the quantities in the three plots. 
 
 data_fracs
-+++++++++
+++++++++++
 A list of fractions of the original dataset size at which to run the SA n_trials times. This list comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object. 
 
 datagen_method

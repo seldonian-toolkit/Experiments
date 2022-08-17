@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>experiments.experiments.BaselineExperiment &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,18 +35,18 @@
           <div class="body" role="main">
             
   <section id="experiments-experiments-baselineexperiment">
-<h1>experiments.experiments.BaselineExperiment<a class="headerlink" href="#experiments-experiments-baselineexperiment" title="Permalink to this headline">¶</a></h1>
+<h1>experiments.experiments.BaselineExperiment<a class="headerlink" href="#experiments-experiments-baselineexperiment" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BaselineExperiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="experiments.experiments.Experiment.html#experiments.experiments.Experiment" title="experiments.experiments.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">experiments.experiments.Experiment</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="experiments.experiments.Experiment.html#experiments.experiments.Experiment" title="experiments.experiments.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for running baseline experiments
 against which to compare Seldonian Experiments</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model_name</strong> (<em>str</em>) – The string name of the baseline model, 
 e.g ‘logistic_regression’</p></li>
@@ -53,7 +54,7 @@ e.g ‘logistic_regression’</p></li>
 experimental results</p></li>
 </ul>
 </dd>
-<dt class="field-even">Variables</dt>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>model_class_dict</strong> (<em>dict</em>) – Dictionary mapping model_name 
 to a method of this class that runs the baseline model</p>
 </dd>
@@ -68,10 +69,6 @@ to a method of this class that runs the baseline model</p>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
 </tbody>
 </table>
@@ -83,25 +80,11 @@ trial file into a single CSV file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.linear_svm">
-<span class="sig-name descname"><span class="pre">linear_svm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.linear_svm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of logistic regression</p>
+<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.run_baseline_trial">
+<span class="sig-name descname"><span class="pre">run_baseline_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.run_baseline_trial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a trial of the baseline model</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_frac</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
-<li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.logistic_regression">
-<span class="sig-name descname"><span class="pre">logistic_regression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.logistic_regression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of logistic regression</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data_frac</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
 <li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
@@ -122,7 +105,7 @@ trial file into a single CSV file.</p>
 <dd><p>Write out the results from a single trial
 to a file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
 <li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
@@ -162,6 +145,7 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.BaselineExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.Experiment.html">experiments.experiments.Experiment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiments.FairlearnExperiment.html">experiments.experiments.FairlearnExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.SeldonianExperiment.html">experiments.experiments.SeldonianExperiment</a></li>
 </ul>
 </li>
@@ -171,8 +155,6 @@ These will comprise the header of the saved file</p></li>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -199,7 +181,7 @@ These will comprise the header of the saved file</p></li>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -216,7 +198,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

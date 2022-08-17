@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Seldonian Experiments documentation &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,12 +34,12 @@
           <div class="body" role="main">
             
   <section id="seldonian-experiments-documentation">
-<h1>Seldonian Experiments documentation<a class="headerlink" href="#seldonian-experiments-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Seldonian Experiments documentation<a class="headerlink" href="#seldonian-experiments-documentation" title="Permalink to this heading">¶</a></h1>
 <p>Welcome to the documentation for the Seldonian Experiments library. This library is designed to help you evaluate the performance and safety of <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">Seldonian algorithms</a>. The source code is hosted on <a class="reference external" href="https://github.com/seldonian-framework/Experiments">GitHub</a>.</p>
 <p>This library makes heavy use of the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
 <p>If you are completely new to this library, see the <a class="reference internal" href="overview.html"><span class="doc">Overview</span></a>.</p>
 <section id="table-of-contents">
-<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
@@ -47,7 +48,7 @@
 <li class="toctree-l2"><a class="reference internal" href="overview.html#plot-generator">Plot generator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="overview.html#spec-object">Spec object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="overview.html#n-trials">n_trials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="overview.html#data-pcts">data_fracs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#data-fracs">data_fracs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="overview.html#datagen-method">datagen_method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="overview.html#n-workers">n_workers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="overview.html#perf-eval-fn">perf_eval_fn</a></li>
@@ -65,6 +66,7 @@
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/experiments.experiments.html">experiments.experiments</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.experiments.Experiment.html">experiments.experiments.Experiment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.experiments.FairlearnExperiment.html">experiments.experiments.FairlearnExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.experiments.SeldonianExperiment.html">experiments.experiments.SeldonianExperiment</a></li>
 </ul>
 </li>
@@ -82,8 +84,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
 </div>
 </section>
@@ -109,8 +109,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -130,7 +128,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -147,7 +145,7 @@
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

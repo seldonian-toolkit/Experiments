@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Overview &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,23 +35,23 @@
           <div class="body" role="main">
             
   <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>This document explains how to run experiments with <a class="reference internal" href="glossary.html#term-Seldonian-algorithm"><span class="xref std std-term">Seldonian algorithms</span></a> (SAs) using this library. For a detailed description of what SAs are, see <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">the UMass AI Safety page</a>, specifically <a class="reference external" href="http://aisafety.cs.umass.edu/paper.html">the 2019 Science paper</a>.</p>
-<p>This document references the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h1>
+<p>This document explains how to run experiments with Seldonian algorithms (SAs) using this library. For a detailed description of what SAs are, see <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">the UMass AI Safety page</a>, specifically <a class="reference external" href="http://aisafety.cs.umass.edu/paper.html">the 2019 Science paper</a>.</p>
+<p>This document makes frequent references to the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
 <section id="seldonian-experiments">
-<h2>Seldonian experiments<a class="headerlink" href="#seldonian-experiments" title="Permalink to this headline">¶</a></h2>
-<p>A Seldonian experiment is a way to evaluate the safety and performance of an SA. It involves running the SA many times with varying amounts of input data.  The way we evaluate safety and performance in this library is with the “Three Plots”.</p>
+<h2>Seldonian experiments<a class="headerlink" href="#seldonian-experiments" title="Permalink to this heading">¶</a></h2>
+<p>A Seldonian experiment is a way to evaluate the safety and performance of a SA. It involves running the SA many times with increasing amounts of input data. The way we evaluate safety and performance in this library is with the “Three Plots”.</p>
 </section>
 <section id="three-plots">
-<h2>Three Plots<a class="headerlink" href="#three-plots" title="Permalink to this headline">¶</a></h2>
-<p>The “Three Plots” that we implement in this library are:</p>
+<h2>Three Plots<a class="headerlink" href="#three-plots" title="Permalink to this heading">¶</a></h2>
+<p>The “Three Plots” that are generated using this library are:</p>
 <ol class="arabic simple">
-<li><p>Performance: the value of your primary objective, for example accuracy, evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance.</p></li>
+<li><p>Performance: the value of the primary objective function (e.g. accuracy), evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off.</p></li>
 <li><p>Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found.</p></li>
-<li><p>Failure rate: the probability that a solution is not safe despite the SA returning a solution it determined to be safe (i.e. it passed the safety test). A  ground truth dataset is required to determine the failure rate.</p></li>
+<li><p>Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e. it passed the safety test.</p></li>
 </ol>
 <p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis.</p>
-<p>Figure 1 shows a supervised learning (classification) example of these three plots: the GPA prediction problem discussed in the Science paper.</p>
+<p>Figure 1 shows the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem.</p>
 <figure class="align-left" id="id1">
 <a class="reference internal image-reference" href="_images/disparate_impact.png"><img alt="disparate_impact" src="_images/disparate_impact.png" style="width: 100%;" /></a>
 <figcaption>
@@ -59,53 +60,53 @@
 </figure>
 </section>
 <section id="plot-generator">
-<h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this headline">¶</a></h2>
-<p>Depending on the <a class="reference internal" href="glossary.html#term-Regime"><span class="xref std std-term">regime</span></a> of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a>. or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>, respectively. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
+<h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this heading">¶</a></h2>
+<p>Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a>. or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
 <p>Regardless of regime, the following inputs are required:</p>
 <section id="spec-object">
-<h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this headline">¶</a></h3>
+<h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this heading">¶</a></h3>
 <p>Often, a <a class="reference external" href="https://seldonian-toolkit.github.io/Engine/build/html/overview.html#interface">Seldonian interface</a> is used to create the <a class="reference external" href="https://seldonian-toolkit.github.io/Engine/build/html/overview.html#spec-object">Spec</a> object. The Spec object contains everything that is needed to run the SA, such as the original dataset, the parse trees (containing the behavioral constraints), the underlying machine learning model, etc…</p>
 </section>
 <section id="n-trials">
-<h3>n_trials<a class="headerlink" href="#n-trials" title="Permalink to this headline">¶</a></h3>
-<p>The number of times the SA is run at each data fraction (point on the horizontal axis, see: <a class="reference internal" href="#data-pcts">data_fracs</a>). Used to estimate uncertainties in the quantities in the three plots.</p>
+<h3>n_trials<a class="headerlink" href="#n-trials" title="Permalink to this heading">¶</a></h3>
+<p>The number of times the SA is run at each data fraction (point on the horizontal axis, see: <a class="reference internal" href="#data-fracs">data_fracs</a>). Used to estimate uncertainties in the quantities in the three plots.</p>
 </section>
-<section id="data-pcts">
-<h3>data_fracs<a class="headerlink" href="#data-pcts" title="Permalink to this headline">¶</a></h3>
+<section id="data-fracs">
+<h3>data_fracs<a class="headerlink" href="#data-fracs" title="Permalink to this heading">¶</a></h3>
 <p>A list of fractions of the original dataset size at which to run the SA n_trials times. This list comprises the horizontal axis of each of the three plots. The original dataset is contained within the Spec object.</p>
 </section>
 <section id="datagen-method">
-<h3>datagen_method<a class="headerlink" href="#datagen-method" title="Permalink to this headline">¶</a></h3>
+<h3>datagen_method<a class="headerlink" href="#datagen-method" title="Permalink to this heading">¶</a></h3>
 <p>The method for generating data that is used to run the Seldonian algorithm for each trial. For supervised learning, the only currently supported option for this parameter is “resample”. In this case, the original dataset is resampled with replacement n_trials times to obtain n_trials different datasets of the same length as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of points in each of the n_trials datasets is used as input to the SA.</p>
 <p>For RL, the only currently supported option for this parameter is “generate_episodes”. In this case, n_trials new datasets are generated with the same number of episodes as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of episodes in each of the n_trials generated datasets is used as input to the SA.</p>
 </section>
 <section id="n-workers">
-<h3>n_workers<a class="headerlink" href="#n-workers" title="Permalink to this headline">¶</a></h3>
+<h3>n_workers<a class="headerlink" href="#n-workers" title="Permalink to this heading">¶</a></h3>
 <p>The number of parallel workers to use when running an experiment, if multiple cores are available on the machine running the experiment. Because each trial is independent of all other trials, Seldonian experiments are <a class="reference external" href="https://en.wikipedia.org/wiki/Embarrassingly_parallel">embarrassingly parallel</a> programs. If the number of cores on the machine running the experiment is less than n_workers, then the max number of cores available will be used.</p>
 </section>
 <section id="perf-eval-fn">
-<h3>perf_eval_fn<a class="headerlink" href="#perf-eval-fn" title="Permalink to this headline">¶</a></h3>
+<h3>perf_eval_fn<a class="headerlink" href="#perf-eval-fn" title="Permalink to this heading">¶</a></h3>
 <p>The function or method used to evaluate the performance of the SA in each trial (plot 1/3). This can be the same as the primary objective specified in the Spec object, but it must be explicitly specified. The only required input to this function is the solution returned by the SA. If NSF is returned for a given trial, then this function will not be evaluated for that trial.</p>
 </section>
 <section id="perf-eval-kwargs">
-<h3>perf_eval_kwargs<a class="headerlink" href="#perf-eval-kwargs" title="Permalink to this headline">¶</a></h3>
+<h3>perf_eval_kwargs<a class="headerlink" href="#perf-eval-kwargs" title="Permalink to this heading">¶</a></h3>
 <p>If the perf_eval_fn has more arguments than the solution, pass them as a dictionary in this parameter.</p>
 </section>
 <section id="constraint-eval-fns">
-<h3>constraint_eval_fns<a class="headerlink" href="#constraint-eval-fns" title="Permalink to this headline">¶</a></h3>
+<h3>constraint_eval_fns<a class="headerlink" href="#constraint-eval-fns" title="Permalink to this heading">¶</a></h3>
 <p>In order to make plot 3/3 (failure rate) the behavioral constraints are evaluated on a ground truth dataset. If this parameter is left as an empty list (default), the constraints will be evaluated using built-in methods in the parse trees. If instead you have custom functions that you want to use to evaluate the behavioral constraints, pass them as a list in this parameter. The list must be the same length as the number of behavioral constraints.</p>
 </section>
 <section id="constraint-eval-kwargs">
-<h3>constraint_eval_kwargs<a class="headerlink" href="#constraint-eval-kwargs" title="Permalink to this headline">¶</a></h3>
+<h3>constraint_eval_kwargs<a class="headerlink" href="#constraint-eval-kwargs" title="Permalink to this heading">¶</a></h3>
 <p>If your constraint_eval_fns have more arguments than the solution returned by the SA, pass them as a dictionary in this parameter.</p>
 </section>
 <section id="results-dir">
-<h3>results_dir<a class="headerlink" href="#results-dir" title="Permalink to this headline">¶</a></h3>
+<h3>results_dir<a class="headerlink" href="#results-dir" title="Permalink to this heading">¶</a></h3>
 <p>The directory in which to save the results of the experiment.</p>
 </section>
 </section>
 <section id="files-generated-in-an-experiment">
-<h2>Files generated in an experiment<a class="headerlink" href="#files-generated-in-an-experiment" title="Permalink to this headline">¶</a></h2>
+<h2>Files generated in an experiment<a class="headerlink" href="#files-generated-in-an-experiment" title="Permalink to this heading">¶</a></h2>
 <p>The directory structure inside results_dir will look like this after running an experiment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── qsa_results
 │ ├── qsa_results.csv
@@ -197,7 +198,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#plot-generator">Plot generator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#spec-object">Spec object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#n-trials">n_trials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#data-pcts">data_fracs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-fracs">data_fracs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#datagen-method">datagen_method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#n-workers">n_workers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#perf-eval-fn">perf_eval_fn</a></li>
@@ -211,8 +212,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
 </ul>
 
 <div class="relations">
@@ -233,7 +232,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -250,7 +249,7 @@
       &copy;2022, University of Massachusetts, Amherst.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
