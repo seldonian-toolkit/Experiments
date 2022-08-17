@@ -43,16 +43,15 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.FairlearnExperiment.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_epsilon_constraint</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for running Seldonian experiments</p>
+<dd><p>Class for running Fairlearn experiments</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<em>str</em>) – The string name of the Seldonian model, 
-only option is currently: ‘qsa’ (quasi-Seldonian algorithm)</p></li>
 <li><p><strong>results_dir</strong> (<em>str</em>) – Parent directory for saving any
 experimental results</p></li>
-<li><p><strong>fairlearn_sensitive_feature_names</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of column names
-that Fairlearn will use as sensitive features</p></li>
+<li><p><strong>fairlearn_epsilon_constraint</strong> (<em>float</em>) – The value of epsilon
+(the threshold) to use in the constraint 
+to the Fairlearn model</p></li>
 </ul>
 </dd>
 </dl>
@@ -126,7 +125,7 @@ to predict the labels</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.FairlearnExperiment.run_fairlearn_trial">
 <span class="sig-name descname"><span class="pre">run_fairlearn_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.run_fairlearn_trial" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of the quasi-Seldonian algorithm</p>
+<dd><p>Run a Fairlearn trial</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
