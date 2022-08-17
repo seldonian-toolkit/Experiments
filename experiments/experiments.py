@@ -12,14 +12,14 @@ import copy
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
-from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 
 from seldonian.utils.io_utils import load_pickle
 from seldonian.dataset import (SupervisedDataSet,RLDataSet)
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
 from seldonian.models.models import (LogisticRegressionModel,
-	DummyClassifierModel)
+	DummyClassifierModel,RandomClassifierModel)
+from seldonian.RL.RL_runner import run_trial
 
 from fairlearn.reductions import ExponentiatedGradient
 from fairlearn.metrics import (MetricFrame,selection_rate,
@@ -50,9 +50,7 @@ class Experiment():
 	def aggregate_results(self,**kwargs):
 		""" Group together the data in each 
 		trial file into a single CSV file.
-
 		"""
-
 		savedir_results = os.path.join(
 			self.results_dir,
 			f'{self.model_name}_results')
@@ -65,10 +63,10 @@ class Experiment():
 			f'{self.model_name}_results',
 			'trial_data')
 		df_list = []
-		for data_pct in kwargs['data_pcts']:
+		for data_frac in kwargs['data_fracs']:
 			for trial_i in range(kwargs['n_trials']):
 				filename = os.path.join(trial_dir,
-					f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+					f'data_frac_{data_frac:.4f}_trial_{trial_i}.csv')
 				df = pd.read_csv(filename)
 				df_list.append(df)
 
@@ -98,10 +96,10 @@ class Experiment():
 		"""
 		result_df = pd.DataFrame([data])
 		result_df.columns = colnames
-		data_pct,trial_i = data[0:2]
+		data_frac,trial_i = data[0:2]
 
 		savename = os.path.join(trial_dir,
-			f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+			f'data_frac_{data_frac:.4f}_trial_{trial_i}.csv')
 
 		result_df.to_csv(savename,index=False)
 		if verbose:
@@ -139,24 +137,24 @@ class BaselineExperiment(Experiment):
 			verbose=kwargs['verbose'],
 			n_workers=kwargs['n_workers'],
 		)
-		data_pcts = kwargs['data_pcts']
+		data_fracs = kwargs['data_fracs']
 		n_trials = kwargs['n_trials']
 		n_workers=kwargs['n_workers']
 
-		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
-		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
+		data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
+		trials_vector = np.array([x for y in range(len(data_fracs)) for x in range(n_trials)])
 		
 		if n_workers == 1:
-			for ii in range(len(data_pcts_vector)):
-				data_pct = data_pcts_vector[ii]
+			for ii in range(len(data_fracs_vector)):
+				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_pct,trial_i)
-				helper(data_pct,trial_i)
+				print(data_frac,trial_i)
+				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
 				mp_context=mp.get_context('fork')) as ex:
-				results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
-					total=len(data_pcts_vector))
+				results = tqdm(ex.map(helper,data_fracs_vector,trials_vector),
+					total=len(data_fracs_vector))
 				for exc in results:
 					if exc:
 						print(exc)
@@ -165,11 +163,11 @@ class BaselineExperiment(Experiment):
 
 		self.aggregate_results(**kwargs)
 	
-	def run_baseline_trial(self,data_pct,trial_i,**kwargs):
+	def run_baseline_trial(self,data_frac,trial_i,**kwargs):
 		""" Run a trial of the baseline model  
 		
-		:param data_pct: Fraction of overall dataset size to use
-		:type data_pct: float
+		:param data_frac: Fraction of overall dataset size to use
+		:type data_frac: float
 
 		:param trial_i: The index of the trial 
 		:type trial_i: int
@@ -191,12 +189,12 @@ class BaselineExperiment(Experiment):
 		os.makedirs(trial_dir,exist_ok=True)
 
 		savename = os.path.join(trial_dir,
-			f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+			f'data_frac_{data_frac:.4f}_trial_{trial_i}.csv')
 
 		if os.path.exists(savename):
 			if verbose:
-				print(f"Trial {trial_i} already run for"
-					  f"this data_pct: {data_pct}. Skipping this trial. ")
+				print(f"Trial {trial_i} already run for "
+					  f"this data_frac: {data_frac}. Skipping this trial. ")
 			return
 
 		##############################################
@@ -211,10 +209,9 @@ class BaselineExperiment(Experiment):
 		if datagen_method == 'resample':
 			resampled_filename = os.path.join(self.results_dir,
 				'resampled_dataframes',f'trial_{trial_i}.pkl')
-			n_points = int(round(data_pct*len(dataset.df))) 
+			n_points = int(round(data_frac*len(dataset.df))) 
 
-			with open(resampled_filename,'rb') as infile:
-				resampled_df = pickle.load(infile).iloc[:n_points]
+			resampled_df = load_pickle(resampled_filename).iloc[:n_points]
 
 			if verbose:
 				print(f"Using resampled dataset {resampled_filename} "
@@ -224,7 +221,6 @@ class BaselineExperiment(Experiment):
 				f"datagen_method: {datagen_method} "
 				f"not supported for regime: {regime}")
 		
-
 		# Prepare features and labels
 
 		features = resampled_df.loc[:,
@@ -242,63 +238,79 @@ class BaselineExperiment(Experiment):
 		####################################################
 		"""" Instantiate model and fit to resampled data """
 		####################################################
-		X_test = perf_eval_kwargs['X']
+		# X_test_baseline = perf_eval_kwargs['X'].drop(columns=['offset'])
+		X_test_baseline = perf_eval_kwargs['X']
 		
 		if self.model_name == 'logistic_regression':
 			baseline_model = LogisticRegressionModel()
-			solution = baseline_model.fit(features, labels)
-			# predict the class label, not the probability
-			y_pred = baseline_model.predict(solution,X_test)
+			try:
+				# print(features,labels)
+				solution = baseline_model.fit(features, labels)
+				# y_pred = baseline_model.predict_proba(X_test_baseline)[:,1]
+				y_pred = baseline_model.predict(solution,X_test_baseline)
+				# predict the probabilities not the class labels
+			except ValueError:
+				solution = "NSF"
 		
 		elif self.model_name == 'dummy_classifier':
+			# Returns the positive class with p=1.0 every time
 			baseline_model = DummyClassifierModel()
 			solution = None
-			y_pred = baseline_model.predict(solution,X_test)
-			y = perf_eval_kwargs['y']
-			from sklearn.metrics import precision_score,recall_score,accuracy_score,f1_score,fbeta_score
-			precision = precision_score(y,y_pred)
-			recall = recall_score(y,y_pred)
-			accuracy = accuracy_score(y,y_pred)
-			f1 = f1_score(y,y_pred)
-			fbeta = fbeta_score(y,y_pred,beta=2)
-			print(y.value_counts())
-			print(precision,recall,accuracy,f1,fbeta)
+			y_pred = baseline_model.predict(solution,X_test_baseline)
+		elif self.model_name == 'random_classifier':
+			baseline_model = RandomClassifierModel()
+			solution = None
+			y_pred = baseline_model.predict(solution,X_test_baseline)
+		
+		#########################################################
+		"""" Calculate performance and safety on ground truth """
+		#########################################################
+		# Handle whether solution was found 
+		solution_found=True
+		if type(solution) == str and solution == 'NSF':
+			solution_found = False
 		
 		#########################################################
 		"""" Calculate performance and safety on ground truth """
 		#########################################################
 		
-		performance = perf_eval_fn(
-			y_pred,
-			**perf_eval_kwargs)
+		failed=False # flag for whether we were actually safe on test set
+		if solution_found:
+			performance = perf_eval_fn(
+				y_pred,
+				**perf_eval_kwargs)
 
-		if verbose:
-			print(f"Performance = {performance}")
-
-		# Determine whether this solution
-		# violates any of the constraints 
-		# on the test dataset
-		failed = False
-		for parse_tree in parse_trees:
-			parse_tree.evaluate_constraint(theta=solution,
-				dataset=dataset,
-				model=baseline_model,regime='supervised',
-				branch='safety_test')
-
-			g = parse_tree.root.value
-			if g > 0:
-				failed = True
-				if verbose:
-					print("Failed on test set")
 			if verbose:
-				print(f"g = {g}")
+				print(f"Performance = {performance}")
 
-		# Write out file for this data_pct,trial_i combo
-		data = [data_pct,
+			# Determine whether this solution
+			# violates any of the constraints 
+			# on the test dataset
+			for parse_tree in parse_trees:
+				parse_tree.reset_base_node_dict(reset_data=True)
+				parse_tree.evaluate_constraint(theta=solution,
+					dataset=dataset,
+					model=baseline_model,regime='supervised',
+					branch='safety_test')
+
+				g = parse_tree.root.value
+				print(f"g (logistic regression) = {g}")
+				if g > 0:
+					failed = True
+					if verbose:
+						print("Failed on test set")
+				if verbose:
+					print(f"g = {g}")
+		else:
+			print("NSF")
+			performance = np.nan
+
+		# Write out file for this data_frac,trial_i combo
+		data = [data_frac,
 			trial_i,
 			performance,
 			failed]
-		colnames = ['data_pct','trial_i','performance','failed']
+		colnames = ['data_frac','trial_i','performance','failed']
 		self.write_trial_result(
 			data,
 			colnames,
@@ -308,7 +320,7 @@ class BaselineExperiment(Experiment):
 
 class FairlearnExperiment(Experiment):
 
-	def __init__(self,results_dir):
+	def __init__(self,results_dir,fairlearn_epsilon_constraint):
 		""" Class for running Seldonian experiments
 
 		:param model_name: The string name of the Seldonian model, 
@@ -323,35 +335,36 @@ class FairlearnExperiment(Experiment):
 			that Fairlearn will use as sensitive features
 		:type fairlearn_sensitive_feature_names: List(str) 
 		"""
-		super().__init__(results_dir=results_dir,model_name='Fairlearn')
+		super().__init__(results_dir=results_dir,
+			model_name=f'Fairlearn_eps{fairlearn_epsilon_constraint:.2f}')
 
 	def run_experiment(self,**kwargs):
 		""" Run the Fairlearn experiment """
 		n_workers = kwargs['n_workers']
 		partial_kwargs = {key:kwargs[key] for key in kwargs \
-			if key not in ['data_pcts','n_trials']}
+			if key not in ['data_fracs','n_trials']}
 
 		helper = partial(
 			self.run_fairlearn_trial,
 			**partial_kwargs
 		)
 
-		data_pcts = kwargs['data_pcts']
+		data_fracs = kwargs['data_fracs']
 		n_trials = kwargs['n_trials']
-		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
-		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
+		data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
+		trials_vector = np.array([x for y in range(len(data_fracs)) for x in range(n_trials)])
 
 		if n_workers == 1:
-			for ii in range(len(data_pcts_vector)):
-				data_pct = data_pcts_vector[ii]
+			for ii in range(len(data_fracs_vector)):
+				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_pct,trial_i)
-				helper(data_pct,trial_i)
+				print(data_frac,trial_i)
+				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
 				mp_context=mp.get_context('fork')) as ex:
-				results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
-					total=len(data_pcts_vector))
+				results = tqdm(ex.map(helper,data_fracs_vector,trials_vector),
+					total=len(data_fracs_vector))
 				for exc in results:
 					if exc:
 						print(exc)
@@ -360,11 +373,11 @@ class FairlearnExperiment(Experiment):
 
 		self.aggregate_results(**kwargs)
 	
-	def run_fairlearn_trial(self,data_pct,trial_i,**kwargs):
+	def run_fairlearn_trial(self,data_frac,trial_i,**kwargs):
 		""" Run a trial of the quasi-Seldonian algorithm  
 		
-		:param data_pct: Fraction of overall dataset size to use
-		:type data_pct: float
+		:param data_frac: Fraction of overall dataset size to use
+		:type data_frac: float
 
 		:param trial_i: The index of the trial 
 		:type trial_i: int
@@ -387,16 +400,16 @@ class FairlearnExperiment(Experiment):
 
 		trial_dir = os.path.join(
 				self.results_dir,
-				'fairlearn_results',
+				f'fairlearn_eps{fairlearn_epsilon_constraint:.2f}_results',
 				'trial_data')
 
 		savename = os.path.join(trial_dir,
-			f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+			f'data_frac_{data_frac:.4f}_trial_{trial_i}.csv')
 
 		if os.path.exists(savename):
 			if verbose:
-				print(f"Trial {trial_i} already run for"
-					  f"this data_pct: {data_pct}. Skipping this trial. ")
+				print(f"Trial {trial_i} already run for "
+					  f"this data_frac: {data_frac}. Skipping this trial. ")
 			return
 
 		os.makedirs(trial_dir,exist_ok=True)
@@ -416,7 +429,7 @@ class FairlearnExperiment(Experiment):
 		if datagen_method == 'resample':
 			resampled_filename = os.path.join(self.results_dir,
 				'resampled_dataframes',f'trial_{trial_i}.pkl')
-			n_points = int(round(data_pct*len(dataset.df))) 
+			n_points = int(round(data_frac*len(dataset.df))) 
 
 			with open(resampled_filename,'rb') as infile:
 				resampled_df = pickle.load(infile).iloc[:n_points]
@@ -464,6 +477,10 @@ class FairlearnExperiment(Experiment):
 		elif fairlearn_constraint_name == "equalized_odds":
 			fairlearn_constraint = EqualizedOdds(
 				difference_bound=fairlearn_epsilon_constraint)
+
+		elif fairlearn_constraint_name == "equal_opportunity":
+			fairlearn_constraint = EqualizedOdds(
+				difference_bound=fairlearn_epsilon_constraint)
 		
 		else:
 			raise NotImplementedError(
@@ -475,21 +492,27 @@ class FairlearnExperiment(Experiment):
 		
 		mitigator = ExponentiatedGradient(classifier, 
 			fairlearn_constraint)
-		
-		mitigator.fit(features, labels, 
-			sensitive_features=fairlearn_sensitive_features)
-		X_test_fairlearn = fairlearn_eval_kwargs['X'] # same as X_test but drops the offset column
-		y_pred = mitigator.predict(X_test_fairlearn)
+		solution_found = True
+
+		try:
+			mitigator.fit(features, labels, 
+				sensitive_features=fairlearn_sensitive_features)
+			X_test_fairlearn = fairlearn_eval_kwargs['X'] # same as X_test but drops the offset column
+			y_pred = self.get_fairlearn_predictions(mitigator,X_test_fairlearn)
+		except:
+			print("Error when fitting. Returning NSF")
+			solution_found = False
+			performance = np.nan
 		#########################################################
 		"""" Calculate performance and safety on ground truth """
 		#########################################################
-		
-		fairlearn_eval_kwargs['model'] = mitigator
+		if solution_found:
+			fairlearn_eval_kwargs['model'] = mitigator
 
-		performance = perf_eval_fn(
-			y_pred,
-			**fairlearn_eval_kwargs)
-			
+			performance = perf_eval_fn(
+				y_pred,
+				**fairlearn_eval_kwargs)
+				
 		if verbose:
 			print(f"Performance = {performance}")
 			
@@ -504,26 +527,30 @@ class FairlearnExperiment(Experiment):
 		# Determine whether this solution
 		# violates any of the constraints 
 		# on the test dataset
-		
-		failed = self.evaluate_constraint_functions(
-			mitigator=mitigator,
-			test_features=fairlearn_eval_kwargs['X'],
-			test_labels=fairlearn_eval_kwargs['y'],
-			fairlearn_constraint_name=fairlearn_constraint_name,
-			epsilon_eval=fairlearn_epsilon_eval,
-			sensitive_features=fairlearn_eval_kwargs['sensitive_features'])
-		
+		failed=False
+		if solution_found:
+			fairlearn_eval_method = fairlearn_eval_kwargs['eval_method']
+			failed = self.evaluate_constraint_function(
+				y_pred=y_pred,
+				test_labels=fairlearn_eval_kwargs['y'],
+				fairlearn_constraint_name=fairlearn_constraint_name,
+				epsilon_eval=fairlearn_epsilon_eval,
+				eval_method=fairlearn_eval_method,
+				sensitive_features=fairlearn_eval_kwargs['sensitive_features'])
+		else:
+			failed = False
+
 		if failed:
 			print("Fairlearn trial UNSAFE on ground truth")
 		else:
 			print("Fairlearn trial SAFE on ground truth")
-		# Write out file for this data_pct,trial_i combo
-		data = [data_pct,
+		# Write out file for this data_frac,trial_i combo
+		data = [data_frac,
 			trial_i,
 			performance,
 			failed]
 
-		colnames = ['data_pct','trial_i','performance','failed']
+		colnames = ['data_frac','trial_i','performance','failed']
 		self.write_trial_result(
 			data,
 			colnames,
@@ -531,75 +558,158 @@ class FairlearnExperiment(Experiment):
 			verbose=kwargs['verbose'])
 		return
 	
-	def evaluate_constraint_functions(self,
-		mitigator,
-		test_features,
+	def get_fairlearn_predictions(self,mitigator,X_test_fairlearn):
+		"""
+		Get the predicted labels from the fairlearn mitigator.
+		The mitigator consists of potentially more than one predictor
+		and as many weights as predictors. For each predictor with non-zero
+		weight, predict the proportion of points given by the weight
+		of each predictor. 
+
+		:param mitigator: The Fairlearn mitigator
+
+		:param X_test_fairlearn: The test features from which 
+			to predict the labels
+		"""
+		y_pred = np.zeros(len(X_test_fairlearn))
+		assert len(mitigator.predictors_) == len(mitigator.weights_)
+		start_index = 0
+		for ii in range(len(mitigator.predictors_)):
+			weight = mitigator.weights_[ii]
+			if weight == 0:
+				continue
+			predictor = mitigator.predictors_[ii]
+			n_points_this_predictor = int(round(weight*len(X_test_fairlearn)))
+			end_index = start_index + n_points_this_predictor
+			X_test_this_predictor = X_test_fairlearn.iloc[start_index:end_index]
+
+			probs = predictor.predict_proba(X_test_this_predictor)
+			predictions = predictor.predict_proba(X_test_this_predictor)[:,1]
+			y_pred[start_index:end_index] = predictions
+			start_index = end_index
+		return y_pred
+	
+	def evaluate_constraint_function(self,
+		y_pred,
 		test_labels,
 		fairlearn_constraint_name,
 		epsilon_eval,
-		sensitive_features):
-		""" Helper function 
+		eval_method='native',
+		sensitive_features=[]):
+		""" Evaluate the constraint function using the 
+		Fairlearn predictions
+
+		:param y_pred: Predicted labels, same shape as test_labels
+		:type y_pred: 1D array
+
+		:param test_labels: True labels
+		:type test_labels: 1D array
+
+		:param fairlearn_constraint_name: The name of the constraint
+		:type fairlearn_constraint_name: str
+
+		:param epsilon_eval: The threshold in the constraint to use for 
+			evaluation
+		:type epsilon_eval: float
+
+		:param eval_method: The method for evaluating the constraint, 
+			two options: 'native' or 'two-groups'
+		:type eval_method: str, defaults to 'native'
 		
+		:param sensitive_features: List of column names that are considered
+			sensitive in the Fairlearn dataset
+		:type sensitive_features: List(str)
 		"""
 		print(f"Evaluating constraint for: {fairlearn_constraint_name}")
 		failed = False
-
-		# print(f"Epsilon = {epsilon}")
-		y_pred = mitigator.predict(test_features)
 
 		if fairlearn_constraint_name == "demographic_parity":
 			# g = abs((PR | ATR1) - (PR | ATR2)) - eps
 			PR_frame = MetricFrame(
 				metrics=selection_rate,
-				y_true=test_labels, y_pred=y_pred,
+				y_true=test_labels, y_pred=y_pred>=0.5,
 				sensitive_features=sensitive_features)
 			PR_grouped = PR_frame.by_group
 			PR_group1 = PR_grouped.iloc[0]
-			PR_group2 = PR_grouped.iloc[1]
-			g = abs(PR_group1 - PR_group2) - epsilon_eval
+			if eval_method == 'native':
+				PR_overall = PR_frame.overall
+				g = abs(PR_group1 - PR_overall) - epsilon_eval
+			elif eval_method == 'two-groups':
+				PR_group2 = PR_grouped.iloc[1]
+				g = abs(PR_group1 - PR_group2) - epsilon_eval
 
 		elif fairlearn_constraint_name == "predictive_equality":
 			# g = abs((FPR | ATR1) - (FPR | ATR2)) - eps
 			FPR_frame = MetricFrame(
 				metrics=false_positive_rate,
-				y_true=test_labels, y_pred=y_pred,
+				y_true=test_labels, y_pred=y_pred>=0.5,
 				sensitive_features=sensitive_features)
 			FPR_grouped = FPR_frame.by_group
 			FPR_group1 = FPR_grouped.iloc[0]
-			FPR_group2 = FPR_grouped.iloc[1]
-			g = abs(FPR_group1 - FPR_group2) - epsilon_eval
+			if eval_method == 'native':
+				FPR_overall = FPR_frame.overall
+				g = abs(FPR_group1 - FPR_overall) - epsilon_eval
+			elif eval_method == 'two-groups':
+				FPR_group2 = FPR_grouped.iloc[1]
+				g = abs(FPR_group1 - FPR_group2) - epsilon_eval
 
 		elif fairlearn_constraint_name == "disparate_impact":
 			# g = epsilon - min((PR | ATR1)/(PR | ATR2),(PR | ATR2)/(PR | ATR1))
 			PR_frame = MetricFrame(
 				metrics=selection_rate,
-				y_true=test_labels, y_pred=y_pred,
+				y_true=test_labels, y_pred=y_pred>=0.5,
 				sensitive_features=sensitive_features)
+
 			PR_grouped = PR_frame.by_group
 			PR_group1 = PR_grouped.iloc[0]
-			PR_group2 = PR_grouped.iloc[1]
-			print(PR_group1,PR_group2,PR_group1/PR_group2,PR_group2,PR_group1)
-			g = epsilon_eval - min(PR_group1/PR_group2,PR_group2/PR_group1) 
+			if eval_method == 'native':
+				PR_overall = PR_frame.overall
+				g = epsilon_eval - min(PR_group1/PR_overall,PR_overall/PR_group1) 
+			elif eval_method == 'two-groups':
+				PR_group2 = PR_grouped.iloc[1]
+				g = epsilon_eval - min(PR_group1/PR_group2,PR_group2/PR_group1) 
 
 		elif fairlearn_constraint_name == "equalized_odds":
 			# g = abs((FNR | [M]) - (FNR | [F])) + abs((FPR | [M]) - (FPR | [F])) - epsilon
 			FPR_frame = MetricFrame(
 				metrics=false_positive_rate,
-				y_true=test_labels, y_pred=y_pred,
+				y_true=test_labels, y_pred=y_pred>=0.5,
 				sensitive_features=sensitive_features)
 			FPR_grouped = FPR_frame.by_group
 			FPR_group1 = FPR_grouped.iloc[0]
-			FPR_group2 = FPR_grouped.iloc[1]
 
 			FNR_frame = MetricFrame(
 				metrics=false_negative_rate,
-				y_true=test_labels, y_pred=y_pred,
+				y_true=test_labels, y_pred=y_pred>=0.5,
 				sensitive_features=sensitive_features)
 			FNR_grouped = FNR_frame.by_group
 			FNR_group1 = FNR_grouped.iloc[0]
-			FNR_group2 = FNR_grouped.iloc[1]
-
-			g = abs(FPR_group1 - FPR_group2) + abs(FNR_group1 - FNR_group2) - epsilon_eval
+			
+			if eval_method == 'native':
+				FPR_overall = FPR_frame.overall
+				FNR_overall = FNR_frame.overall	
+				g = abs(FPR_group1 - FPR_overall) + abs(FNR_group1 - FNR_overall) - epsilon_eval
+			elif eval_method == 'two-groups':
+				FPR_group2 = FPR_grouped.iloc[1]
+				FNR_group2 = FNR_grouped.iloc[1]
+				g = abs(FPR_group1 - FPR_group2) + abs(FNR_group1 - FNR_group2) - epsilon_eval
+		
+		elif fairlearn_constraint_name == "equal_opportunity":
+			# g = abs((FNR | [M]) - (FNR | [F])) - epsilon
+			
+			FNR_frame = MetricFrame(
+				metrics=false_negative_rate,
+				y_true=test_labels, y_pred=y_pred>=0.5,
+				sensitive_features=sensitive_features)
+			FNR_grouped = FNR_frame.by_group
+			FNR_group1 = FNR_grouped.iloc[0]
+			
+			if eval_method == 'native':
+				FNR_overall = FNR_frame.overall	
+				g = abs(FNR_group1 - FNR_overall) - epsilon_eval
+			elif eval_method == 'two-groups':
+				FNR_group2 = FNR_grouped.iloc[1]
+				g = abs(FNR_group1 - FNR_group2) - epsilon_eval
 		else:
 			raise NotImplementedError(
 				"Evaluation for Fairlearn constraints of type: "
@@ -607,7 +717,7 @@ class FairlearnExperiment(Experiment):
 			    "is not supported.")
 		
 		print(f"g (fairlearn) = {g}")
-		if g > 0:
+		if g > 0 or np.isnan(g) or np.isinf(g):
 			failed = True
 
 		return failed
@@ -635,29 +745,30 @@ class SeldonianExperiment(Experiment):
 		""" Run the Seldonian experiment """
 		n_workers = kwargs['n_workers']
 		partial_kwargs = {key:kwargs[key] for key in kwargs \
-			if key not in ['data_pcts','n_trials']}
+			if key not in ['data_fracs','n_trials']}
 
+		# Pass partial_kwargs onto self.QSA()
 		helper = partial(
 			self.QSA,
 			**partial_kwargs
 		)
 
-		data_pcts = kwargs['data_pcts']
+		data_fracs = kwargs['data_fracs']
 		n_trials = kwargs['n_trials']
-		data_pcts_vector = np.array([x for x in data_pcts for y in range(n_trials)])
-		trials_vector = np.array([x for y in range(len(data_pcts)) for x in range(n_trials)])
+		data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
+		trials_vector = np.array([x for y in range(len(data_fracs)) for x in range(n_trials)])
 
 		if n_workers == 1:
-			for ii in range(len(data_pcts_vector)):
-				data_pct = data_pcts_vector[ii]
+			for ii in range(len(data_fracs_vector)):
+				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_pct,trial_i)
-				helper(data_pct,trial_i)
+				print(data_frac,trial_i)
+				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
 				mp_context=mp.get_context('fork')) as ex:
-				results = tqdm(ex.map(helper,data_pcts_vector,trials_vector),
-					total=len(data_pcts_vector))
+				results = tqdm(ex.map(helper,data_fracs_vector,trials_vector),
+					total=len(data_fracs_vector))
 				for exc in results:
 					if exc:
 						print(exc)
@@ -666,11 +777,11 @@ class SeldonianExperiment(Experiment):
 
 		self.aggregate_results(**kwargs)
 	
-	def QSA(self,data_pct,trial_i,**kwargs):
+	def QSA(self,data_frac,trial_i,**kwargs):
 		""" Run a trial of the quasi-Seldonian algorithm  
 		
-		:param data_pct: Fraction of overall dataset size to use
-		:type data_pct: float
+		:param data_frac: Fraction of overall dataset size to use
+		:type data_frac: float
 
 		:param trial_i: The index of the trial 
 		:type trial_i: int
@@ -691,12 +802,12 @@ class SeldonianExperiment(Experiment):
 				'trial_data')
 
 		savename = os.path.join(trial_dir,
-			f'data_pct_{data_pct:.4f}_trial_{trial_i}.csv')
+			f'data_frac_{data_frac:.4f}_trial_{trial_i}.csv')
 
 		if os.path.exists(savename):
 			if verbose:
-				print(f"Trial {trial_i} already run for"
-					  f"this data_pct: {data_pct}. Skipping this trial. ")
+				print(f"Trial {trial_i} already run for "
+					  f"this data_frac: {data_frac}. Skipping this trial. ")
 			return
 
 		os.makedirs(trial_dir,exist_ok=True)
@@ -718,7 +829,7 @@ class SeldonianExperiment(Experiment):
 			if datagen_method == 'resample':
 				resampled_filename = os.path.join(self.results_dir,
 					'resampled_dataframes',f'trial_{trial_i}.pkl')
-				n_points = int(round(data_pct*len(dataset.df))) 
+				n_points = int(round(data_frac*len(dataset.df))) 
 
 				with open(resampled_filename,'rb') as infile:
 					resampled_df = pickle.load(infile).iloc[:n_points]
@@ -746,22 +857,22 @@ class SeldonianExperiment(Experiment):
 			model_instance = spec_for_experiment.model_class()
 
 		elif regime == 'RL':
-			RL_environment_obj = kwargs['RL_environment_obj']
+			hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
 			
 			if datagen_method == 'generate_episodes':
 				n_episodes_for_eval = perf_eval_kwargs['n_episodes']
 				# Sample from resampled dataset on disk of n_episodes
-				save_dir = os.path.join(self.results_dir,'resampled_datasets')
-				# savename = os.path.join(save_dir,f'resampled_df_trial{trial_i}.csv')
-				savename = os.path.join(save_dir,f'resampled_data_trial{trial_i}.pkl')
+				save_dir = os.path.join(self.results_dir,'regenerated_datasets')
+
+				savename = os.path.join(save_dir,f'regenerated_data_trial{trial_i}.pkl')
 				
 				episodes_all = load_pickle(savename)
-				# Take data_pct episodes from this df
+				# Take data_frac episodes from this df
 				n_episodes_all = len(episodes_all)
 
-				n_episodes_for_exp = int(round(n_episodes_all*data_pct))
+				n_episodes_for_exp = int(round(n_episodes_all*data_frac))
 				print(f"Orig dataset should have {n_episodes_all} episodes")
-				print(f"This dataset with data_pct={data_pct} should have"
+				print(f"This dataset with data_frac={data_frac} should have"
 					f" {n_episodes_for_exp} episodes")
 				
 				# Take first n_episodes episodes 
@@ -778,8 +889,6 @@ class SeldonianExperiment(Experiment):
 
 				spec_for_experiment = copy.deepcopy(spec)
 				spec_for_experiment.dataset = dataset_for_experiment
-				model_instance = spec_for_experiment.model_class(RL_environment_obj)
-
 			else:
 				raise NotImplementedError(
 					f"Eval method {datagen_method} "
@@ -789,17 +898,21 @@ class SeldonianExperiment(Experiment):
 		"""" Run Seldonian algorithm """
 		################################
 
-		SA = SeldonianAlgorithm(
-			spec_for_experiment)
-		passed_safety,candidate_solution = SA.run()
+		try:
+			SA = SeldonianAlgorithm(
+				spec_for_experiment)
+			passed_safety,solution = SA.run(write_cs_logfile=True)
+		except (ValueError,ZeroDivisionError):
+			passed_safety=False
+			solution = "NSF"
 
 		print("Solution from running seldonian algorithm:")
-		print(candidate_solution)
+		print(solution)
 		print()
 		
 		# Handle whether solution was found 
 		solution_found=True
-		if type(candidate_solution) == str and candidate_solution == 'NSF':
+		if type(solution) == str and solution == 'NSF':
 			solution_found = False
 		
 		#########################################################
@@ -809,7 +922,7 @@ class SeldonianExperiment(Experiment):
 		failed=False # flag for whether we were actually safe on test set
 
 		if solution_found:
-			solution = copy.deepcopy(candidate_solution)
+			solution = copy.deepcopy(solution)
 			# If passed the safety test, calculate performance
 			# using solution 
 			if passed_safety:
@@ -819,12 +932,18 @@ class SeldonianExperiment(Experiment):
 				#############################
 				""" Calculate performance """
 				#############################
-				X_test = perf_eval_kwargs['X']
-				y_pred = model_instance.predict(solution,X_test)
-				performance = perf_eval_fn(
-					y_pred,
-					**perf_eval_kwargs)
-					
+				if regime == 'supervised':
+					X_test = perf_eval_kwargs['X']
+					y_pred = model_instance.predict(solution,X_test)
+					performance = perf_eval_fn(
+						y_pred,
+						**perf_eval_kwargs)
+				
+				if regime == 'RL':
+					model_instance = copy.deepcopy(SA.model_instance)
+					model_instance.agent.set_new_params(solution)
+					perf_eval_kwargs['model'] = model_instance
+					episodes_for_eval,performance = perf_eval_fn(**perf_eval_kwargs)
 				if verbose:
 					print(f"Performance = {performance}")
 			
@@ -842,6 +961,9 @@ class SeldonianExperiment(Experiment):
 					constraint_eval_kwargs['regime']=regime
 					constraint_eval_kwargs['branch'] = 'safety_test'
 					constraint_eval_kwargs['verbose']=verbose
+
+				if regime == 'RL':
+					constraint_eval_kwargs['episodes_for_eval'] = episodes_for_eval
 
 				failed = self.evaluate_constraint_functions(
 					solution=solution,
@@ -862,13 +984,13 @@ class SeldonianExperiment(Experiment):
 		else:
 			print("NSF")
 			performance = np.nan
-		# Write out file for this data_pct,trial_i combo
-		data = [data_pct,
+		# Write out file for this data_frac,trial_i combo
+		data = [data_frac,
 			trial_i,
 			performance,
 			passed_safety,
 			failed]
-		colnames = ['data_pct','trial_i','performance','passed_safety','failed']
+		colnames = ['data_frac','trial_i','performance','passed_safety','failed']
 		self.write_trial_result(
 			data,
 			colnames,
@@ -916,12 +1038,13 @@ class SeldonianExperiment(Experiment):
 
 			if regime == 'RL':
 				# Generate episodes and create dataset object
-				RL_environment_obj = constraint_eval_kwargs['RL_environment_obj']
-				RL_environment_obj.param_weights = solution
-				episodes_for_eval = RL_environment_obj.generate_data(
-					n_episodes=constraint_eval_kwargs['n_episodes'],
-					n_workers=1,
-					parallel=False) 
+				# RL_environment_obj = constraint_eval_kwargs['RL_environment_obj']
+				# RL_environment_obj.param_weights = solution
+				# episodes_for_eval = RL_environment_obj.generate_data(
+				# 	n_episodes=constraint_eval_kwargs['n_episodes'],
+				# 	n_workers=1,
+				# 	parallel=False) 
+				episodes_for_eval = constraint_eval_kwargs['episodes_for_eval']
 
 				dataset_for_eval = RLDataSet(
 					episodes=episodes_for_eval,
@@ -929,12 +1052,11 @@ class SeldonianExperiment(Experiment):
 					regime=regime)
 
 				constraint_eval_kwargs['dataset'] = dataset_for_eval
-				constraint_eval_kwargs['gamma'] = RL_environment_obj.gamma
 				constraint_eval_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
 
-				if spec_for_experiment.normalize_returns:
-					constraint_eval_kwargs['min_return'] = RL_environment_obj.min_return
-					constraint_eval_kwargs['max_return'] = RL_environment_obj.max_return
+				# if spec_for_experiment.normalize_returns:
+				# 	constraint_eval_kwargs['min_return'] = RL_environment_obj.min_return
+				# 	constraint_eval_kwargs['max_return'] = RL_environment_obj.max_return
 
 			for parse_tree in spec_for_experiment.parse_trees:
 				parse_tree.evaluate_constraint(
