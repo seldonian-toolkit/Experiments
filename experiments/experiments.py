@@ -321,19 +321,16 @@ class BaselineExperiment(Experiment):
 class FairlearnExperiment(Experiment):
 
 	def __init__(self,results_dir,fairlearn_epsilon_constraint):
-		""" Class for running Seldonian experiments
-
-		:param model_name: The string name of the Seldonian model, 
-			only option is currently: 'qsa' (quasi-Seldonian algorithm) 
-		:type model_name: str
+		""" Class for running Fairlearn experiments
 
 		:param results_dir: Parent directory for saving any
 			experimental results
 		:type results_dir: str
 
-		:param fairlearn_sensitive_feature_names: List of column names
-			that Fairlearn will use as sensitive features
-		:type fairlearn_sensitive_feature_names: List(str) 
+		:param fairlearn_epsilon_constraint: The value of epsilon
+			(the threshold) to use in the constraint 
+			to the Fairlearn model
+		:type fairlearn_epsilon_constraint: float
 		"""
 		super().__init__(results_dir=results_dir,
 			model_name=f'Fairlearn_eps{fairlearn_epsilon_constraint:.2f}')
@@ -374,7 +371,7 @@ class FairlearnExperiment(Experiment):
 		self.aggregate_results(**kwargs)
 	
 	def run_fairlearn_trial(self,data_frac,trial_i,**kwargs):
-		""" Run a trial of the quasi-Seldonian algorithm  
+		""" Run a Fairlearn trial 
 		
 		:param data_frac: Fraction of overall dataset size to use
 		:type data_frac: float
