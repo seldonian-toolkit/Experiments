@@ -244,20 +244,14 @@ class BaselineExperiment(Experiment):
 		if self.model_name == 'logistic_regression':
 			baseline_model = LogisticRegressionModel()
 			try:
-				# print(features,labels)
 				solution = baseline_model.fit(features, labels)
-				# y_pred = baseline_model.predict_proba(X_test_baseline)[:,1]
-				y_pred = baseline_model.predict(solution,X_test_baseline)
 				# predict the probabilities not the class labels
+				y_pred = baseline_model.predict(solution,X_test_baseline)
 			except ValueError:
 				solution = "NSF"
 		
-		elif self.model_name == 'dummy_classifier':
-			# Returns the positive class with p=1.0 every time
-			baseline_model = DummyClassifierModel()
-			solution = None
-			y_pred = baseline_model.predict(solution,X_test_baseline)
 		elif self.model_name == 'random_classifier':
+			# Returns the positive class with p=0.5 every time
 			baseline_model = RandomClassifierModel()
 			solution = None
 			y_pred = baseline_model.predict(solution,X_test_baseline)
@@ -290,7 +284,7 @@ class BaselineExperiment(Experiment):
 				parse_tree.reset_base_node_dict(reset_data=True)
 				parse_tree.evaluate_constraint(theta=solution,
 					dataset=dataset,
-					model=baseline_model,regime='supervised',
+					model=baseline_model,regime='supervised_learning',
 					branch='safety_test')
 
 				g = parse_tree.root.value
@@ -393,7 +387,7 @@ class FairlearnExperiment(Experiment):
 		constraint_eval_kwargs = kwargs['constraint_eval_kwargs']
 
 		regime=spec.dataset.regime
-		assert regime == 'supervised'
+		assert regime == 'supervised_learning'
 
 		trial_dir = os.path.join(
 				self.results_dir,
@@ -816,7 +810,7 @@ class SeldonianExperiment(Experiment):
 		""" Setup for running Seldonian algorithm """
 		##############################################
 
-		if regime == 'supervised':
+		if regime == 'supervised_learning':
 
 			sensitive_column_names = dataset.sensitive_column_names
 			include_sensitive_columns = dataset.include_sensitive_columns
@@ -853,7 +847,7 @@ class SeldonianExperiment(Experiment):
 			spec_for_experiment.dataset = dataset_for_experiment
 			model_instance = spec_for_experiment.model_class()
 
-		elif regime == 'RL':
+		elif regime == 'reinforcement_learning':
 			hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
 			
 			if datagen_method == 'generate_episodes':
@@ -929,14 +923,14 @@ class SeldonianExperiment(Experiment):
 				#############################
 				""" Calculate performance """
 				#############################
-				if regime == 'supervised':
+				if regime == 'supervised_learning':
 					X_test = perf_eval_kwargs['X']
 					y_pred = model_instance.predict(solution,X_test)
 					performance = perf_eval_fn(
 						y_pred,
 						**perf_eval_kwargs)
 				
-				if regime == 'RL':
+				if regime == 'reinforcement_learning':
 					model_instance = copy.deepcopy(SA.model_instance)
 					model_instance.agent.set_new_params(solution)
 					perf_eval_kwargs['model'] = model_instance
@@ -959,7 +953,7 @@ class SeldonianExperiment(Experiment):
 					constraint_eval_kwargs['branch'] = 'safety_test'
 					constraint_eval_kwargs['verbose']=verbose
 
-				if regime == 'RL':
+				if regime == 'reinforcement_learning':
 					constraint_eval_kwargs['episodes_for_eval'] = episodes_for_eval
 
 				failed = self.evaluate_constraint_functions(
@@ -1029,11 +1023,11 @@ class SeldonianExperiment(Experiment):
 			spec_orig = constraint_eval_kwargs['spec_orig']
 			spec_for_experiment = constraint_eval_kwargs['spec_for_experiment']
 			regime = constraint_eval_kwargs['regime']
-			if regime == 'supervised':
+			if regime == 'supervised_learning':
 				# Use the original dataset as ground truth
 				constraint_eval_kwargs['dataset']=spec_orig.dataset 
 
-			if regime == 'RL':
+			if regime == 'reinforcement_learning':
 				# Generate episodes and create dataset object
 				# RL_environment_obj = constraint_eval_kwargs['RL_environment_obj']
 				# RL_environment_obj.param_weights = solution

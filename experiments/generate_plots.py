@@ -101,6 +101,7 @@ class PlotGenerator():
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',
 		marker_size=20,
+		include_legend=True,
 		savename=None):
 		""" Make the three plots from results files saved to
 		self.results_dir
@@ -122,11 +123,12 @@ class PlotGenerator():
 		"""
 		regime = self.spec.dataset.regime
 		
-		if regime == 'supervised':
+		if regime == 'supervised_learning':
 			tot_data_size = len(self.spec.dataset.df)
-		elif regime == 'RL':
+		elif regime == 'reinforcement_learning':
 			tot_data_size = self.perf_eval_kwargs['n_episodes']
-
+		else:
+			raise NotImplementedError(f"regime={regime} not supported.")
 		# Read in constraints
 		parse_trees = self.spec.parse_trees
 
@@ -385,11 +387,10 @@ class PlotGenerator():
 		plt.tight_layout()
 		fig.subplots_adjust(bottom=0.25)
 		ncol = 4
-
-		fig.legend(legend_handles,legend_labels,
-			bbox_to_anchor=(0.5,0.15),loc="upper center",ncol=ncol)
-		# ax_fr.legend(fontsize=legend_fontsize,
-		# 			loc='upper center', bbox_to_anchor=(0.5, 1.05))
+		if include_legend:
+			fig.legend(legend_handles,legend_labels,
+				bbox_to_anchor=(0.5,0.15),loc="upper center",ncol=ncol)
+		
 		if savename:
 			plt.savefig(savename,format='png',dpi=600)
 			print(f"Saved {savename}")
@@ -470,7 +471,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			perf_eval_kwargs=perf_eval_kwargs,
 			constraint_eval_kwargs=constraint_eval_kwargs,
 			)
-		self.regime = 'supervised'
+		self.regime = 'supervised_learning'
 
 	def run_seldonian_experiment(self,verbose=False):
 		""" Run a supervised Seldonian experiment using the spec attribute
@@ -706,7 +707,7 @@ class RLPlotGenerator(PlotGenerator):
 			constraint_eval_kwargs=constraint_eval_kwargs,
 			)
 		
-		self.regime = 'RL'
+		self.regime = 'reinforcement_learning'
 		self.hyperparameter_and_setting_dict=hyperparameter_and_setting_dict
 
 	def run_seldonian_experiment(self,verbose=False):
