@@ -37,32 +37,32 @@
             
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h1>
-<p>This document explains how to run experiments with Seldonian algorithms (SAs) using this library. For a detailed description of what SAs are, see <a class="reference external" href="http://aisafety.cs.umass.edu/overview.html">the UMass AI Safety page</a>, specifically <a class="reference external" href="http://aisafety.cs.umass.edu/paper.html">the 2019 Science paper</a>.</p>
-<p>This document makes frequent references to the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library for running Seldonian algorithms.</p>
+<p>This document explains how to run experiments with Seldonian algorithms (SAs) using this library. For a detailed description of what SAs are, see the <a class="reference external" href="https://seldonian.cs.umass.edu/">Seldonian Machine Learning Toolkit homepage</a>.</p>
+<p>This library is heavily dependent on the <a class="reference external" href="https://seldonian-framework.github.io/Engine">Seldonian Engine library</a>, the core library in the Seldonian Toolkit for running Seldonian algorithms.</p>
 <section id="seldonian-experiments">
 <h2>Seldonian experiments<a class="headerlink" href="#seldonian-experiments" title="Permalink to this heading">¶</a></h2>
 <p>A Seldonian experiment is a way to evaluate the safety and performance of a SA. It involves running the SA many times with increasing amounts of input data. The way we evaluate safety and performance in this library is with the “Three Plots”.</p>
 </section>
 <section id="three-plots">
 <h2>Three Plots<a class="headerlink" href="#three-plots" title="Permalink to this heading">¶</a></h2>
-<p>The “Three Plots” that are generated using this library are:</p>
+<p>The Three Plots that are generated using this library are:</p>
 <ol class="arabic simple">
-<li><p>Performance: the value of the primary objective function (e.g. accuracy), evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off.</p></li>
+<li><p>Performance: the value of the primary objective function (e.g., accuracy), evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off.</p></li>
 <li><p>Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found.</p></li>
-<li><p>Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e. it passed the safety test.</p></li>
+<li><p>Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e., it passed the safety test.</p></li>
 </ol>
-<p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis. Evaluating the performance and failure rate of the algorithm assumes access to ground truth values for performance and safety. For a real-world problem with only a single data set, one typically does not have access to these ground truth quantities. Instead, one can use a single data set to bootstrap resample and generate the three plots. In that case, the resulting plots will show performance/safety/efficiency for a bootstrap-approximation of the problem at hand.</p>
-<p>Figure 1 shows the three plots from the GPA prediction problem discussed in the Science paper, which is a Seldonian classification problem.</p>
+<p>All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis. Evaluating the performance and failure rate of the algorithm assumes access to ground truth values for performance and safety. For a real-world problem with only a single data set, one typically does not have access to these ground truth quantities. Instead, one can adopt strategies such as bootstrap resampling of their single dataset in order to approximate ground truth.</p>
+<p>Figure 1 shows the Three Plots from the GPA prediction problem discussed in the <a class="reference external" href="https://aisafety.cs.umass.edu/paper.html">Seldonian Science paper</a> (Figure 3, top panel).</p>
 <figure class="align-left" id="id1">
 <a class="reference internal image-reference" href="_images/disparate_impact.png"><img alt="disparate_impact" src="_images/disparate_impact.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 1</strong>: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed by Thomas et al. (2019). Ground truth was approximated using bootstrap resampling of the original dataset. The fairness constraint in this case is disparate impact. Two Seldonain algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right). The black dotted line in right panel represents the confidence threshold, $delta=0.05$ used in the constraint.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text"><strong>Figure 1</strong>: Accuracy (left), solution rate (middle), and failure rate (right) plotted as a function of number of training samples for GPA prediction problem discussed by Thomas et al. (2019). Ground truth was approximated using bootstrap resampling of the original dataset. The fairness constraint in this case is disparate impact. Two Seldonian algorithms, Seldonian Classification (green dotted) and Quasi-Seldonian Classification (green dashed), are compared to several standard ML classification algorithms (red) that do not include the fairness constraint. Also shown are two fairness-aware libraries, Fairlearn (blue) and Fairness Constraints (magenta). In this example, only Seldonian algorithms satisfy the disparate impact criteria (right). The black dotted line in right panel represents the confidence threshold, <span class="math notranslate nohighlight">\({\delta}=0.05\)</span>, used in the constraint.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </figcaption>
 </figure>
 </section>
 <section id="plot-generator">
 <h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this heading">¶</a></h2>
-<p>Depending on the regime of your problem, i.e. supervised learning or reinforcement learning (RL), the object used to produce the three plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a> or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
+<p>Depending on the regime of your problem, i.e., supervised learning or reinforcement learning (RL), the object used to produce the Three Plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a> or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
 <p>Regardless of regime, the following inputs are required:</p>
 <section id="spec-object">
 <h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this heading">¶</a></h3>
@@ -78,8 +78,8 @@
 </section>
 <section id="datagen-method">
 <h3>datagen_method<a class="headerlink" href="#datagen-method" title="Permalink to this heading">¶</a></h3>
-<p>The method for generating data that is used to run the Seldonian algorithm for each trial. For supervised learning, the only currently supported option for this parameter is “resample”. In this case, the original dataset is resampled with replacement n_trials times to obtain n_trials different datasets of the same length as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of points in each of the n_trials datasets is used as input to the SA.</p>
-<p>For RL, the only currently supported option for this parameter is “generate_episodes”. In this case, n_trials new datasets are generated with the same number of episodes as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of episodes in each of the n_trials generated datasets is used as input to the SA.</p>
+<p>The method for generating data that is used to run the Seldonian algorithm for each trial. For supervised learning, the only currently supported option for this parameter is “resample”. In this case, the original dataset is bootstrap resampled (with replacement) n_trials times to obtain n_trials different datasets of the same dimensions as the original dataset. At each data fraction, frac, in data_fracs, the first frac fraction of points in each of the n_trials datasets is used as input to the SA.</p>
+<p>For RL, the only currently supported option for this parameter is “generate_episodes”. In this case, n_trials new datasets are generated with the same number of episodes as the original dataset using the behavior policy. At each data fraction, frac, in data_fracs, the first frac fraction of episodes in each of the n_trials generated datasets is used as input to the SA.</p>
 </section>
 <section id="n-workers">
 <h3>n_workers<a class="headerlink" href="#n-workers" title="Permalink to this heading">¶</a></h3>
@@ -104,11 +104,49 @@
 <section id="results-dir">
 <h3>results_dir<a class="headerlink" href="#results-dir" title="Permalink to this heading">¶</a></h3>
 <p>The directory in which to save the results of the experiment.</p>
+<p>An example API call to make the three plots in the supervised learning regime is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_generator</span> <span class="o">=</span> <span class="n">SupervisedPlotGenerator</span><span class="p">(</span>
+        <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span>
+        <span class="n">n_trials</span><span class="o">=</span><span class="n">n_trials</span><span class="p">,</span>
+        <span class="n">data_fracs</span><span class="o">=</span><span class="n">data_fracs</span><span class="p">,</span>
+        <span class="n">n_workers</span><span class="o">=</span><span class="n">n_workers</span><span class="p">,</span>
+        <span class="n">datagen_method</span><span class="o">=</span><span class="s1">&#39;resample&#39;</span><span class="p">,</span>
+        <span class="n">perf_eval_fn</span><span class="o">=</span><span class="n">perf_eval_fn</span><span class="p">,</span>
+        <span class="n">constraint_eval_fns</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">results_dir</span><span class="o">=</span><span class="n">results_dir</span><span class="p">,</span>
+        <span class="n">perf_eval_kwargs</span><span class="o">=</span><span class="n">perf_eval_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="n">plot_generator</span><span class="o">.</span><span class="n">run_seldonian_experiment</span><span class="p">()</span>
+<span class="n">plot_generator</span><span class="o">.</span><span class="n">make_plots</span><span class="p">()</span>
+</pre></div>
+</div>
 </section>
+</section>
+<section id="baselines">
+<h2>Baselines<a class="headerlink" href="#baselines" title="Permalink to this heading">¶</a></h2>
+<p>Often one wants to evaluate the accuracy, solution rate and failure rate of their Seldonian algorithm against that of other machine learning models. In this library, we call all of these other models baselines. We created the <a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment" title="experiments.experiments.BaselineExperiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaselineExperiment</span></code></a> class to make it easy for developers to easily add their own baseline models. We added several example baselines already, including logistic regression and a random classifier which predicts the positive class with <span class="math notranslate nohighlight">\(p=0.5\)</span> every time. For example, to run the same experiment above including a baseline logistic regression experiment we would simply add one line to the code block above, like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_generator</span> <span class="o">=</span> <span class="n">SupervisedPlotGenerator</span><span class="p">(</span>
+        <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span>
+        <span class="n">n_trials</span><span class="o">=</span><span class="n">n_trials</span><span class="p">,</span>
+        <span class="n">data_fracs</span><span class="o">=</span><span class="n">data_fracs</span><span class="p">,</span>
+        <span class="n">n_workers</span><span class="o">=</span><span class="n">n_workers</span><span class="p">,</span>
+        <span class="n">datagen_method</span><span class="o">=</span><span class="s1">&#39;resample&#39;</span><span class="p">,</span>
+        <span class="n">perf_eval_fn</span><span class="o">=</span><span class="n">perf_eval_fn</span><span class="p">,</span>
+        <span class="n">constraint_eval_fns</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">results_dir</span><span class="o">=</span><span class="n">results_dir</span><span class="p">,</span>
+        <span class="n">perf_eval_kwargs</span><span class="o">=</span><span class="n">perf_eval_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="n">plot_generator</span><span class="o">.</span><span class="n">run_seldonian_experiment</span><span class="p">()</span>
+<span class="n">plot_generator</span><span class="o">.</span><span class="n">run_baseline_experiment</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;logistic_regression&#39;</span><span class="p">)</span>
+<span class="n">plot_generator</span><span class="o">.</span><span class="n">make_plots</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We use the same plot generator for both the Seldonian model and the baseline model because we want to use the same parameters for both experiments, such as <code class="code docutils literal notranslate"><span class="pre">n_trials</span></code> and <code class="code docutils literal notranslate"><span class="pre">data_fracs</span></code>. That way, they can be compared against each other in the Three Plots.</p>
+<p>We also created a <code class="code docutils literal notranslate"><span class="pre">.FairlearnExperiment</span></code> class which implements another type of fairness-aware machine learning model called <a class="reference external" href="https://fairlearn.org/">Fairlearn</a>. Fairlearn experiments are currently only supported for classification problems for a narrow range of behavioral constraints. The documentation for these experiments is currently in progress.</p>
 </section>
 <section id="files-generated-in-an-experiment">
 <h2>Files generated in an experiment<a class="headerlink" href="#files-generated-in-an-experiment" title="Permalink to this heading">¶</a></h2>
-<p>The directory structure inside results_dir will look like this after running an experiment:</p>
+<p>The directory structure inside results_dir will look like this after running a Seldonian experiment via <code class="code docutils literal notranslate"><span class="pre">plot_generator.run_seldonian_experiment()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── qsa_results
 │ ├── qsa_results.csv
 │ └── trial_data
@@ -171,11 +209,70 @@
     ├── resampled_data_trial4.pkl
 </pre></div>
 </div>
-<p>In this example experiment, <code class="code docutils literal notranslate"><span class="pre">n_trials=5</span></code> and the default was used for <code class="code docutils literal notranslate"><span class="pre">data_fracs</span></code>, i.e., <code class="code docutils literal notranslate"><span class="pre">np.logspace(-3,0,10)</span></code>, which creates a log-spaced array of length 10 starting at <span class="math notranslate nohighlight">\(10^{-3}=0.001\)</span> and ending at <span class="math notranslate nohighlight">\(10^0=1.0\)</span>. As a result, there are <span class="math notranslate nohighlight">\(5*10=50\)</span> CSV files created in <code class="code docutils literal notranslate"><span class="pre">trial_data/</span></code>. Each of these CSV files contains the performance, a boolean flag for whether the solution passed the safety test, and a boolean flag for whether the solution failed on the ground truth data set for the given trial at a given data fraction. For example, the contents of the file <code class="code docutils literal notranslate"><span class="pre">data_frac_0.6105_trial36.csv</span></code> are:</p>
+<p>In this example experiment, <code class="code docutils literal notranslate"><span class="pre">n_trials=5</span></code> and the default was used for <code class="code docutils literal notranslate"><span class="pre">data_fracs</span></code>, i.e., <code class="code docutils literal notranslate"><span class="pre">np.logspace(-3,0,10)</span></code>, which creates a log-spaced array of length 10 starting at <span class="math notranslate nohighlight">\(10^{-3}=0.001\)</span> and ending at <span class="math notranslate nohighlight">\(10^0=1.0\)</span>. As a result, there are <span class="math notranslate nohighlight">\(5*10=50\)</span> CSV files created in <code class="code docutils literal notranslate"><span class="pre">trial_data/</span></code>. Each of these CSV files contains the performance, a boolean flag for whether the solution passed the safety test, and a boolean flag for whether the solution failed on the ground truth data set for the given trial at the given data fraction. For example, the contents of the file <code class="code docutils literal notranslate"><span class="pre">data_frac_0.6105_trial36.csv</span></code> are:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_frac</span><span class="p">,</span><span class="n">trial_i</span><span class="p">,</span><span class="n">performance</span><span class="p">,</span><span class="n">passed_safety</span><span class="p">,</span><span class="n">failed</span>
 <span class="mf">0.6105402296585326</span><span class="p">,</span><span class="mi">36</span><span class="p">,</span><span class="mf">0.6746247014792527</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span>
 </pre></div>
 </div>
+<p>For each baseline experiment run, a new top level folder in <code class="code docutils literal notranslate"><span class="pre">results_dir</span></code> will be created with the name <code class="code docutils literal notranslate"><span class="pre">{model_name}_results</span></code>. For example if a logistic regression baseline was run with the code: <code class="code docutils literal notranslate"><span class="pre">plot_generator.run_baseline_experiment(model_name='logistic_regression')</span></code>, the folder will be called <code class="code docutils literal notranslate"><span class="pre">logistic_regression_results</span></code> and will have the contents:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── logistic_regression_results
+        │ ├── logistic_regression_results.csv
+        │ └── trial_data
+        │     ├── data_frac_0.0010_trial_0.csv
+        │     ├── data_frac_0.0010_trial_1.csv
+        │     ├── data_frac_0.0010_trial_2.csv
+        │     ├── data_frac_0.0010_trial_3.csv
+        │     ├── data_frac_0.0010_trial_4.csv
+        │     ├── data_frac_0.0022_trial_0.csv
+        │     ├── data_frac_0.0022_trial_1.csv
+        │     ├── data_frac_0.0022_trial_2.csv
+        │     ├── data_frac_0.0022_trial_3.csv
+        │     ├── data_frac_0.0022_trial_4.csv
+        │     ├── data_frac_0.0046_trial_0.csv
+        │     ├── data_frac_0.0046_trial_1.csv
+        │     ├── data_frac_0.0046_trial_2.csv
+        │     ├── data_frac_0.0046_trial_3.csv
+        │     ├── data_frac_0.0046_trial_4.csv
+        │     ├── data_frac_0.0050_trial_0.csv
+        │     ├── data_frac_0.0100_trial_0.csv
+        │     ├── data_frac_0.0100_trial_1.csv
+        │     ├── data_frac_0.0100_trial_2.csv
+        │     ├── data_frac_0.0100_trial_3.csv
+        │     ├── data_frac_0.0100_trial_4.csv
+        │     ├── data_frac_0.0215_trial_0.csv
+        │     ├── data_frac_0.0215_trial_1.csv
+        │     ├── data_frac_0.0215_trial_2.csv
+        │     ├── data_frac_0.0215_trial_3.csv
+        │     ├── data_frac_0.0215_trial_4.csv
+        │     ├── data_frac_0.0464_trial_0.csv
+        │     ├── data_frac_0.0464_trial_1.csv
+        │     ├── data_frac_0.0464_trial_2.csv
+        │     ├── data_frac_0.0464_trial_3.csv
+        │     ├── data_frac_0.0464_trial_4.csv
+        │     ├── data_frac_0.1000_trial_0.csv
+        │     ├── data_frac_0.1000_trial_1.csv
+        │     ├── data_frac_0.1000_trial_2.csv
+        │     ├── data_frac_0.1000_trial_3.csv
+        │     ├── data_frac_0.1000_trial_4.csv
+        │     ├── data_frac_0.2154_trial_0.csv
+        │     ├── data_frac_0.2154_trial_1.csv
+        │     ├── data_frac_0.2154_trial_2.csv
+        │     ├── data_frac_0.2154_trial_3.csv
+        │     ├── data_frac_0.2154_trial_4.csv
+        │     ├── data_frac_0.4642_trial_0.csv
+        │     ├── data_frac_0.4642_trial_1.csv
+        │     ├── data_frac_0.4642_trial_2.csv
+        │     ├── data_frac_0.4642_trial_3.csv
+        │     ├── data_frac_0.4642_trial_4.csv
+        │     ├── data_frac_1.0000_trial_0.csv
+        │     ├── data_frac_1.0000_trial_1.csv
+        │     ├── data_frac_1.0000_trial_2.csv
+        │     ├── data_frac_1.0000_trial_3.csv
+        │     ├── data_frac_1.0000_trial_4.csv
+</pre></div>
+</div>
+<p>When <code class="code docutils literal notranslate"><span class="pre">plot_generator.make_plots()</span></code> is called, it will look for all folders in <code class="code docutils literal notranslate"><span class="pre">results_dir</span></code> ending with <code class="code docutils literal notranslate"><span class="pre">_results</span></code>. Each folder will be considered its own model and will be plotted as a separate curve in the Three Plots figure.</p>
+<p>For an end-to-end example use case that makes use of the Seldonian Experiments library, see: <a class="reference external" href="https://seldonian.cs.umass.edu/Tutorials/tutorials/fair_loans_tutorial/">Fairness in Automated Loan Approval Systems tutorial</a>.</p>
 </section>
 </section>
 
@@ -213,6 +310,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#results-dir">results_dir</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#baselines">Baselines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#files-generated-in-an-experiment">Files generated in an experiment</a></li>
 </ul>
 </li>
