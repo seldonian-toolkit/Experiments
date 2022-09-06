@@ -17,7 +17,7 @@ print(sys.path)
 # -- Project information -----------------------------------------------------
 
 project = 'Seldonian Experiments'
-copyright = '2022, University of Massachusetts, Amherst'
+copyright = '2022, University of Massachusetts'
 author = 'Austin Hoag, Philip S. Thomas'
 
 # The full version, including alpha/beta/rc tags
