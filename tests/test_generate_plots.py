@@ -64,7 +64,7 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 		constraint_eval_kwargs={})
 	
 	assert spg.n_trials == n_trials
-	assert spg.regime == 'supervised'
+	assert spg.regime == 'supervised_learning'
 
 	spg.run_seldonian_experiment(verbose=True)
 

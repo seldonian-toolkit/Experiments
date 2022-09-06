@@ -1,5 +1,5 @@
 {
-	"regime":"supervised",
+	"regime":"supervised_learning",
 	"sub_regime":"classification",
 	"columns":["M", "F", "SAT_Physics", "SAT_Biology", 
 		"SAT_History", "SAT_Second_Language", "SAT_Geography", 

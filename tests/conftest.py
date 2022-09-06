@@ -4,6 +4,7 @@ import shutil
 import pytest
 
 from seldonian.models.models import LinearRegressionModel
+from seldonian.models import objectives
 from seldonian.utils.io_utils import load_json
 from seldonian.dataset import DataSetLoader
 from seldonian.parse_tree.parse_tree import ParseTree
@@ -20,18 +21,18 @@ def gpa_regression_spec():
 
 		metadata_dict = load_json(metadata_pth)
 		regime = metadata_dict['regime']
+		print(f"Regime={regime}")
 		sub_regime = metadata_dict['sub_regime']
 		columns = metadata_dict['columns']
 		sensitive_columns = metadata_dict['sensitive_columns']
 					
 		include_sensitive_columns = False
 		include_intercept_term = True
-		regime='supervised'
 
-		model_class = LinearRegressionModel
+		model = LinearRegressionModel()
 
 		# Mean squared error
-		primary_objective = model_class().default_objective
+		primary_objective = objectives.Mean_Squared_Error
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -52,7 +53,7 @@ def gpa_regression_spec():
 			delta = deltas[ii]
 			# Create parse tree object
 			parse_tree = ParseTree(delta=delta,
-				regime='supervised',sub_regime='regression',
+				regime=regime,sub_regime=sub_regime,
 				columns=sensitive_columns)
 
 			# Fill out tree
@@ -68,11 +69,12 @@ def gpa_regression_spec():
 
 		spec = SupervisedSpec(
 			dataset=dataset,
-			model_class=model_class,
+			model=model,
+			sub_regime="regression",
 			frac_data_in_safety=0.6,
 			primary_objective=primary_objective,
 			parse_trees=parse_trees,
-			initial_solution_fn=model_class().fit,
+			initial_solution_fn=model.fit,
 			use_builtin_primary_gradient_fn=True,
 			optimization_technique='gradient_descent',
 			optimizer='adam',

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 from seldonian.utils.io_utils import save_pickle
-from seldonian.RL.RL_runner import run_trial
+
 
 from .experiments import (
 	BaselineExperiment,SeldonianExperiment,
@@ -195,7 +195,11 @@ class PlotGenerator():
 			seldonian_dict[seldonian_model]['X_passed'] = X_passed
 
 		## PLOTTING SETUP
-		fig = plt.figure(figsize=(9,5))
+		if include_legend:
+			figsize=(9,4.5)
+		else:
+			figsize=(9,4)
+		fig = plt.figure(figsize=figsize)
 		plot_index=1
 		n_rows=len(constraints)
 		n_cols=3
@@ -385,9 +389,10 @@ class PlotGenerator():
 			ax_fr.set_ylim(-0.05,1.05)
 		
 		plt.tight_layout()
-		fig.subplots_adjust(bottom=0.25)
-		ncol = 4
+		
 		if include_legend:
+			fig.subplots_adjust(bottom=0.25)
+			ncol = 4
 			fig.legend(legend_handles,legend_labels,
 				bbox_to_anchor=(0.5,0.15),loc="upper center",ncol=ncol)
 		
@@ -718,6 +723,7 @@ class RLPlotGenerator(PlotGenerator):
 			while the Seldonian algorithms are running in each trial
 		:type verbose: bool, defaults to False
 		"""
+		from seldonian.RL.RL_runner import run_trial
 		print("Running experiment")
 		dataset = self.spec.dataset
 		

@@ -5,35 +5,29 @@ from experiments.generate_plots import SupervisedPlotGenerator
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
-
 if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = True
+	run_experiments = False
 	make_plots = True
-	save_plot = False
-	constraint_name = 'predictive_equality'
+	save_plot = True
+	include_legend = False
+	constraint_name = 'disparate_impact'
 	fairlearn_constraint_name = constraint_name
-	fairlearn_epsilon_eval = 0.2 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
+	fairlearn_epsilon_eval = 0.8 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_eval_method = 'two-groups' # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
 	performance_metric = 'accuracy'
-	n_trials = 25
+	n_trials = 50
 	data_fracs = np.logspace(-4,0,15)
 	n_workers = 8
 	results_dir = f'results/gpa_{constraint_name}_{performance_metric}'
-	plot_savename = os.path.join(results_dir,f'{constraint_name}_{performance_metric}.png')
+	plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
 
 	verbose=True
 
 	# Load spec
 	specfile = f'../interface_outputs/gpa_{constraint_name}/spec.pkl'
 	spec = load_pickle(specfile)
-
-	spec.primary_objective = spec.model_class().sample_logistic_loss
-	spec.use_builtin_primary_gradient_fn = False
-	spec.optimization_hyperparams['alpha_theta'] = 0.01
-	spec.optimization_hyperparams['alpha_lamb'] = 0.01
-	spec.optimization_hyperparams['num_iters'] = 1000
 
 	os.makedirs(results_dir,exist_ok=True)
 
@@ -129,7 +123,9 @@ if __name__ == "__main__":
 		if save_plot:
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
 				performance_label=performance_metric,
+				include_legend=include_legend,
 				savename=plot_savename)
 		else:
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
+				include_legend=include_legend,
 				performance_label=performance_metric)

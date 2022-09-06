@@ -19,7 +19,6 @@ from seldonian.dataset import (SupervisedDataSet,RLDataSet)
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
 from seldonian.models.models import (LogisticRegressionModel,
 	DummyClassifierModel,RandomClassifierModel)
-from seldonian.RL.RL_runner import run_trial
 
 from fairlearn.reductions import ExponentiatedGradient
 from fairlearn.metrics import (MetricFrame,selection_rate,
@@ -118,10 +117,6 @@ class BaselineExperiment(Experiment):
 		:param results_dir: Parent directory for saving any
 			experimental results
 		:type results_dir: str
-
-		:ivar model_class_dict: Dictionary mapping model_name 
-			to a method of this class that runs the baseline model
-		:vartype model_class_dict: dict
 		"""
 		super().__init__(model_name,results_dir)
 
@@ -845,7 +840,7 @@ class SeldonianExperiment(Experiment):
 
 			spec_for_experiment = copy.deepcopy(spec)
 			spec_for_experiment.dataset = dataset_for_experiment
-			model_instance = spec_for_experiment.model_class()
+			model_instance = spec_for_experiment.model
 
 		elif regime == 'reinforcement_learning':
 			hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
