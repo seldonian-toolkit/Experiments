@@ -517,7 +517,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			)
 
 		## Run experiment 
-		sd_exp = SeldonianExperiment(model_name='QSA',
+		sd_exp = SeldonianExperiment(model_name='qsa',
 			results_dir=self.results_dir)
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)
@@ -757,7 +757,7 @@ class RLPlotGenerator(PlotGenerator):
 
 
 		# # ## Run experiment 
-		sd_exp = SeldonianExperiment(model_name='QSA',
+		sd_exp = SeldonianExperiment(model_name='qsa',
 			results_dir=self.results_dir)
 
 		sd_exp.run_experiment(**run_seldonian_kwargs)

@@ -4,8 +4,8 @@ from experiments.experiments import (
 	BaselineExperiment,SeldonianExperiment)
 
 def test_create_seldonian_experiment():
-	sd_exp = SeldonianExperiment(model_name='QSA',results_dir="./results")
-	assert sd_exp.model_name == 'QSA'
+	sd_exp = SeldonianExperiment(model_name='qsa',results_dir="./results")
+	assert sd_exp.model_name == 'qsa'
 	with pytest.raises(NotImplementedError) as excinfo:
 		sd_exp_badname = SeldonianExperiment(model_name='SA',results_dir="./results")
 	error_str = (

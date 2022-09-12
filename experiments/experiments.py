@@ -722,7 +722,7 @@ class SeldonianExperiment(Experiment):
 
 		"""
 		super().__init__(model_name,results_dir)
-		if self.model_name != 'QSA':
+		if self.model_name != 'qsa':
 			raise NotImplementedError(
 				"Seldonian experiments for model: "
 				f"{self.model_name} are not supported.")
