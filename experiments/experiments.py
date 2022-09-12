@@ -844,7 +844,6 @@ class SeldonianExperiment(Experiment):
 
 			spec_for_experiment = copy.deepcopy(spec)
 			spec_for_experiment.dataset = dataset_for_experiment
-			model_instance = spec_for_experiment.model
 
 		elif regime == 'reinforcement_learning':
 			hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
@@ -940,7 +939,8 @@ class SeldonianExperiment(Experiment):
 				#############################
 				if regime == 'supervised_learning':
 					X_test = perf_eval_kwargs['X']
-					y_pred = model_instance.predict(solution,X_test)
+					model = copy.deepcopy(spec_for_experiment.model)
+					y_pred = model.predict(solution,X_test)
 					performance = perf_eval_fn(
 						y_pred,
 						**perf_eval_kwargs)
