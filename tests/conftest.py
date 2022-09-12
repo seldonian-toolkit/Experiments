@@ -140,10 +140,10 @@ def gridworld_spec():
 def experiment(request):
 	results_dir = request.param
 	""" Fixture to create and then remove results_dir and any files it may contain"""
-	print("Setup experiment_cleanup")
+	print("Setup experiment fixture")
 	os.makedirs(results_dir,exist_ok=True)
 	yield
-	print("Teardown experiment_cleanup")
+	print("Teardown experiment fixture")
 	shutil.rmtree(results_dir)
 
 

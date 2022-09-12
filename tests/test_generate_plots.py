@@ -145,7 +145,8 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	# Make sure it was saved
 	assert os.path.exists(savename)
 
-def test_too_few_datapoints(gpa_regression_spec):
+@pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
+def test_too_few_datapoints(gpa_regression_spec,experiment):
 	""" Test that too small of a data_frac resulting in < 1
 	data points in a trial raises an error """
 	np.random.seed(42)
@@ -208,7 +209,8 @@ def test_too_few_datapoints(gpa_regression_spec):
 
 	assert str(excinfo.value) == error_str
 
-def test_too_few_episodes(gridworld_spec):
+@pytest.mark.parametrize('experiment', ["./tests/static/gridworld_results"], indirect=True)
+def test_too_few_episodes(gridworld_spec,experiment):
 	""" Test that too small of a data_frac resulting in < 1
 	episodes in a trial raises an error """
 	np.random.seed(42)
