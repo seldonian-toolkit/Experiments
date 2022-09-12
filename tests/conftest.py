@@ -4,11 +4,15 @@ import shutil
 import pytest
 
 from seldonian.models.models import LinearRegressionModel
+from seldonian.RL.RL_model import RL_model
+from seldonian.RL.Agents.Policies.Softmax import Softmax
+from seldonian.RL.Env_Description.Env_Description import Env_Description
+from seldonian.RL.Env_Description.Spaces import Discrete_Space
 from seldonian.models import objectives
-from seldonian.utils.io_utils import load_json
-from seldonian.dataset import DataSetLoader
+from seldonian.utils.io_utils import load_json,load_pickle
+from seldonian.dataset import DataSetLoader,RLDataSet
 from seldonian.parse_tree.parse_tree import ParseTree
-from seldonian.spec import SupervisedSpec
+from seldonian.spec import SupervisedSpec,createRLSpec
 
 @pytest.fixture
 def gpa_regression_spec():
@@ -95,6 +99,43 @@ def gpa_regression_spec():
 	yield spec_maker
 	print("Teardown gpa_regression_spec")
 	
+
+@pytest.fixture
+def gridworld_spec():
+	print("Setup gridworld_spec")
+	
+	def spec_maker(constraint_strs,deltas):
+
+		episodes_file = 'static/datasets/RL/gridworld/gridworld_1000episodes.pkl'
+		episodes = load_pickle(episodes_file)
+		dataset = RLDataSet(episodes=episodes)
+
+		# Initialize policy
+		num_states = 9
+		observation_space = Discrete_Space(0, num_states-1)
+		action_space = Discrete_Space(0, 3)
+		env_description =  Env_Description(observation_space, action_space)
+		policy = Softmax(hyperparam_and_setting_dict={},
+			env_description=env_description)
+		env_kwargs={'gamma':0.9}
+		save_dir = '.'
+
+		spec = createRLSpec(
+			dataset=dataset,
+			policy=policy,
+			constraint_strs=constraint_strs,
+			deltas=deltas,
+			env_kwargs=env_kwargs,
+			save=True,
+			save_dir='.',
+			verbose=True)
+
+		return spec
+	
+	yield spec_maker
+	print("Teardown gridworld_spec")
+	
+
 @pytest.fixture
 def experiment(request):
 	results_dir = request.param

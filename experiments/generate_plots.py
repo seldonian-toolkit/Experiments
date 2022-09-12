@@ -9,9 +9,7 @@ import matplotlib
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 
-
 from seldonian.utils.io_utils import save_pickle
-
 
 from .experiments import (
 	BaselineExperiment,SeldonianExperiment,
@@ -126,7 +124,7 @@ class PlotGenerator():
 		if regime == 'supervised_learning':
 			tot_data_size = len(self.spec.dataset.df)
 		elif regime == 'reinforcement_learning':
-			tot_data_size = self.perf_eval_kwargs['n_episodes']
+			tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
 		else:
 			raise NotImplementedError(f"regime={regime} not supported.")
 		# Read in constraints

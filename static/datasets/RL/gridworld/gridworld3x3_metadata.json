@@ -1,5 +1,0 @@
-{
-	"columns":["episode_index","O","A","R","pi"],
-	"regime":"RL",
-	"RL_environment_name":"gridworld3x3"
-}

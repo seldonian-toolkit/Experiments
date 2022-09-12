@@ -816,7 +816,11 @@ class SeldonianExperiment(Experiment):
 				resampled_filename = os.path.join(self.results_dir,
 					'resampled_dataframes',f'trial_{trial_i}.pkl')
 				n_points = int(round(data_frac*len(dataset.df))) 
-
+				if n_points < 1:
+					raise ValueError(
+						f"This data_frac={data_frac} "
+						f"results in {n_points} data points. "
+						 "Must have at least 1 data point to run a trial.")
 				with open(resampled_filename,'rb') as infile:
 					resampled_df = pickle.load(infile).iloc[:n_points]
 
@@ -846,7 +850,7 @@ class SeldonianExperiment(Experiment):
 			hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
 			
 			if datagen_method == 'generate_episodes':
-				n_episodes_for_eval = perf_eval_kwargs['n_episodes']
+				n_episodes_for_eval = perf_eval_kwargs['n_episodes_for_eval']
 				# Sample from resampled dataset on disk of n_episodes
 				save_dir = os.path.join(self.results_dir,'regenerated_datasets')
 
@@ -857,6 +861,12 @@ class SeldonianExperiment(Experiment):
 				n_episodes_all = len(episodes_all)
 
 				n_episodes_for_exp = int(round(n_episodes_all*data_frac))
+				if n_episodes_for_exp < 1:
+					raise ValueError(
+						f"This data_frac={data_frac} "
+						f"results in {n_episodes_for_exp} episodes. "
+						 "Must have at least 1 episode to run a trial.")
+
 				print(f"Orig dataset should have {n_episodes_all} episodes")
 				print(f"This dataset with data_frac={data_frac} should have"
 					f" {n_episodes_for_exp} episodes")
@@ -888,6 +898,16 @@ class SeldonianExperiment(Experiment):
 			SA = SeldonianAlgorithm(
 				spec_for_experiment)
 			passed_safety,solution = SA.run(write_cs_logfile=True)
+			# passed_safety = True
+			# solution = np.array([[ 0.34001577,  0.34267462, -0.34279294, -0.34151587,],
+			# 	 [-0.34663281,  0.35019924, -0.34458054, -0.04185576,],
+			# 	 [ 0.34712598, -0.34419491,  0.34238666, -0.34335544,],
+			# 	 [ 0.34397238,  0.33953057, -0.34252446, -0.33902633,],
+			# 	 [ 0.34150872,  0.34750852, -0.34645805, -0.3403591, ],
+			# 	 [-0.34568824,  0.34041549,  0.34733168, -0.35410552,],
+			# 	 [ 0.34438843, -0.34260529, -0.34821049,  0.34190867,],
+			# 	 [-0.3485607,   0.34279701,  0.33897544, -0.34100706,],
+			# 	 [ 0.,          0.,          0.,          0.,        ]])
 		except (ValueError,ZeroDivisionError):
 			passed_safety=False
 			solution = "NSF"
@@ -913,7 +933,7 @@ class SeldonianExperiment(Experiment):
 			# using solution 
 			if passed_safety:
 				if verbose:
-					print("Passed safety test. Calculating performance")
+					print("Passed safety test! Calculating performance")
 
 				#############################
 				""" Calculate performance """
@@ -926,9 +946,10 @@ class SeldonianExperiment(Experiment):
 						**perf_eval_kwargs)
 				
 				if regime == 'reinforcement_learning':
-					model_instance = copy.deepcopy(SA.model_instance)
-					model_instance.agent.set_new_params(solution)
-					perf_eval_kwargs['model'] = model_instance
+					model = copy.deepcopy(SA.model)
+					model.policy.set_new_params(solution)
+					perf_eval_kwargs['model'] = model
+					perf_eval_kwargs['hyperparameter_and_setting_dict'] = hyperparameter_and_setting_dict
 					episodes_for_eval,performance = perf_eval_fn(**perf_eval_kwargs)
 				if verbose:
 					print(f"Performance = {performance}")
@@ -941,7 +962,7 @@ class SeldonianExperiment(Experiment):
 						  "is actually safe on ground truth")
 				
 				if constraint_eval_fns == []:
-					constraint_eval_kwargs['model']=model_instance
+					constraint_eval_kwargs['model']=model
 					constraint_eval_kwargs['spec_orig']=spec
 					constraint_eval_kwargs['spec_for_experiment']=spec_for_experiment
 					constraint_eval_kwargs['regime']=regime
@@ -1038,7 +1059,7 @@ class SeldonianExperiment(Experiment):
 					regime=regime)
 
 				constraint_eval_kwargs['dataset'] = dataset_for_eval
-				constraint_eval_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
+				# constraint_eval_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
 
 				# if spec_for_experiment.normalize_returns:
 				# 	constraint_eval_kwargs['min_return'] = RL_environment_obj.min_return
