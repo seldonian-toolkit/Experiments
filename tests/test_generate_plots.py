@@ -53,7 +53,7 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	spec = gpa_regression_spec(constraint_strs,deltas)
 	n_trials = 5
 	# data_fracs = [0.001,0.05,0.5,1.0]
-	data_fracs = [0.01,0.25]
+	data_fracs = [0.01,0.02]
 	datagen_method="resample"
 	perf_eval_fn = MSE
 	results_dir = "./tests/static/results"
@@ -121,10 +121,10 @@ def test_supervised_plot_generator(gpa_regression_spec,experiment):
 	assert dps[4] == 0.01
 	assert trial_is[4] == 4
 
-	assert dps[5] == 0.25
+	assert dps[5] == 0.02
 	assert trial_is[5] == 0
 
-	assert dps[9] == 0.25
+	assert dps[9] == 0.02
 	assert trial_is[9] == 4
 	
 	# Make sure number of trial files created is correct

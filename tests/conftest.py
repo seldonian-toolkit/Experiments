@@ -9,10 +9,12 @@ from seldonian.RL.Agents.Policies.Softmax import Softmax
 from seldonian.RL.Env_Description.Env_Description import Env_Description
 from seldonian.RL.Env_Description.Spaces import Discrete_Space
 from seldonian.models import objectives
-from seldonian.utils.io_utils import load_json,load_pickle
+from seldonian.utils.io_utils import (load_json,
+	load_pickle,load_supervised_metadata)
 from seldonian.dataset import DataSetLoader,RLDataSet
-from seldonian.parse_tree.parse_tree import ParseTree
-from seldonian.spec import SupervisedSpec,createRLSpec
+from seldonian.parse_tree.parse_tree import (ParseTree,
+	make_parse_trees_from_constraints)
+from seldonian.spec import createSupervisedSpec,createRLSpec
 
 @pytest.fixture
 def gpa_regression_spec():
@@ -23,20 +25,11 @@ def gpa_regression_spec():
 		data_pth = 'static/datasets/supervised/GPA/gpa_regression_dataset.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_regression.json'
 
-		metadata_dict = load_json(metadata_pth)
-		regime = metadata_dict['regime']
-		print(f"Regime={regime}")
-		sub_regime = metadata_dict['sub_regime']
-		columns = metadata_dict['columns']
-		sensitive_columns = metadata_dict['sensitive_columns']
+		(regime, sub_regime, columns,
+	        sensitive_columns) = load_supervised_metadata(metadata_pth)
 					
 		include_sensitive_columns = False
 		include_intercept_term = True
-
-		model = LinearRegressionModel()
-
-		# Mean squared error
-		primary_objective = objectives.Mean_Squared_Error
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -49,51 +42,25 @@ def gpa_regression_spec():
 			include_intercept_term=include_intercept_term,
 			file_type='csv')
 
-		# For each constraint, make a parse tree
-		parse_trees = []
-		for ii in range(len(constraint_strs)):
-			constraint_str = constraint_strs[ii]
-
-			delta = deltas[ii]
-			# Create parse tree object
-			parse_tree = ParseTree(delta=delta,
-				regime=regime,sub_regime=sub_regime,
-				columns=sensitive_columns)
-
-			# Fill out tree
-			parse_tree.create_from_ast(constraint_str)
-			# assign deltas for each base node
-			# use equal weighting for each base node
-			parse_tree.assign_deltas(weight_method='equal')
-
-			# Assign bounds needed on the base nodes
-			parse_tree.assign_bounds_needed()
-			
-			parse_trees.append(parse_tree)
-
-		spec = SupervisedSpec(
+		spec = createSupervisedSpec(
 			dataset=dataset,
-			model=model,
-			sub_regime="regression",
-			frac_data_in_safety=0.6,
-			primary_objective=primary_objective,
-			parse_trees=parse_trees,
-			initial_solution_fn=model.fit,
-			use_builtin_primary_gradient_fn=True,
-			optimization_technique='gradient_descent',
-			optimizer='adam',
-			optimization_hyperparams={
+			metadata_pth=metadata_pth,
+			constraint_strs=constraint_strs,
+			deltas=deltas,
+			save=False,
+			verbose=False)
+
+		spec.optimization_hyperparams = {
 				'lambda_init'   : 0.5,
 				'alpha_theta'   : 0.005,
 				'alpha_lamb'    : 0.005,
 				'beta_velocity' : 0.9,
 				'beta_rmsprop'  : 0.95,
-				'num_iters'     : 200,
+				'num_iters'     : 10,
 				'gradient_library': "autograd",
 				'hyper_search'  : None,
 				'verbose'       : True,
 			}
-		)
 		return spec
 	
 	yield spec_maker
@@ -126,8 +93,7 @@ def gridworld_spec():
 			constraint_strs=constraint_strs,
 			deltas=deltas,
 			env_kwargs=env_kwargs,
-			save=True,
-			save_dir='.',
+			save=False,
 			verbose=True)
 
 		return spec
