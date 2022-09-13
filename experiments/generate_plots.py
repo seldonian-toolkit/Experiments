@@ -730,12 +730,14 @@ class RLPlotGenerator(PlotGenerator):
 			# we can reference them for each data_frac
 			save_dir = os.path.join(self.results_dir,'regenerated_datasets')
 			os.makedirs(save_dir,exist_ok=True)
-			print("generating regenerated datasets")
+			print("generating new episodes for each trial")
 			for trial_i in range(self.n_trials):
 				print(f"Trial: {trial_i}")
 				savename = os.path.join(save_dir,f'regenerated_data_trial{trial_i}.pkl')
 				if not os.path.exists(savename):
-					episodes,agent = run_trial(self.hyperparameter_and_setting_dict)
+					episodes,agent = run_trial(
+						self.hyperparameter_and_setting_dict,
+						parallel=True,n_workers=8)
 					# Save episodes
 					save_pickle(savename,episodes,verbose=True)
 				else:
