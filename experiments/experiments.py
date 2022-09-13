@@ -284,7 +284,7 @@ class BaselineExperiment(Experiment):
 
 				g = parse_tree.root.value
 				print(f"g (logistic regression) = {g}")
-				if g > 0:
+				if g > 0 or np.nan(g):
 					failed = True
 					if verbose:
 						print("Failed on test set")
@@ -703,7 +703,7 @@ class FairlearnExperiment(Experiment):
 			    "is not supported.")
 		
 		print(f"g (fairlearn) = {g}")
-		if g > 0 or np.isnan(g) or np.isinf(g):
+		if g > 0 or np.isnan(g):
 			failed = True
 
 		return failed
@@ -897,16 +897,7 @@ class SeldonianExperiment(Experiment):
 			SA = SeldonianAlgorithm(
 				spec_for_experiment)
 			passed_safety,solution = SA.run(write_cs_logfile=True)
-			# passed_safety = True
-			# solution = np.array([[ 0.34001577,  0.34267462, -0.34279294, -0.34151587,],
-			# 	 [-0.34663281,  0.35019924, -0.34458054, -0.04185576,],
-			# 	 [ 0.34712598, -0.34419491,  0.34238666, -0.34335544,],
-			# 	 [ 0.34397238,  0.33953057, -0.34252446, -0.33902633,],
-			# 	 [ 0.34150872,  0.34750852, -0.34645805, -0.3403591, ],
-			# 	 [-0.34568824,  0.34041549,  0.34733168, -0.35410552,],
-			# 	 [ 0.34438843, -0.34260529, -0.34821049,  0.34190867,],
-			# 	 [-0.3485607,   0.34279701,  0.33897544, -0.34100706,],
-			# 	 [ 0.,          0.,          0.,          0.,        ]])
+			
 		except (ValueError,ZeroDivisionError):
 			passed_safety=False
 			solution = "NSF"
@@ -1044,13 +1035,6 @@ class SeldonianExperiment(Experiment):
 				constraint_eval_kwargs['dataset']=spec_orig.dataset 
 
 			if regime == 'reinforcement_learning':
-				# Generate episodes and create dataset object
-				# RL_environment_obj = constraint_eval_kwargs['RL_environment_obj']
-				# RL_environment_obj.param_weights = solution
-				# episodes_for_eval = RL_environment_obj.generate_data(
-				# 	n_episodes=constraint_eval_kwargs['n_episodes'],
-				# 	n_workers=1,
-				# 	parallel=False) 
 				episodes_for_eval = constraint_eval_kwargs['episodes_for_eval']
 
 				dataset_for_eval = RLDataSet(
@@ -1059,24 +1043,19 @@ class SeldonianExperiment(Experiment):
 					regime=regime)
 
 				constraint_eval_kwargs['dataset'] = dataset_for_eval
-				# constraint_eval_kwargs['normalize_returns'] = spec_for_experiment.normalize_returns
-
-				# if spec_for_experiment.normalize_returns:
-				# 	constraint_eval_kwargs['min_return'] = RL_environment_obj.min_return
-				# 	constraint_eval_kwargs['max_return'] = RL_environment_obj.max_return
-
+	
 			for parse_tree in spec_for_experiment.parse_trees:
 				parse_tree.evaluate_constraint(
 					**constraint_eval_kwargs)
 				
 				g = parse_tree.root.value
-				if g > 0:
+				if g > 0 or np.nan(g):
 					failed = True
 
 		else:
 			# User provided functions to evaluate constraints
 			for eval_fn in constraint_eval_fns:
 				g = eval_fn(solution)
-				if g > 0:
+				if g > 0 or np.nan(g):
 					failed = True
 		return failed
