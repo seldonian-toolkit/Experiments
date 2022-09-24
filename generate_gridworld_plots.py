@@ -45,16 +45,18 @@ if __name__ == "__main__":
 	make_plots = True
 	save_plot = True
 	performance_metric = 'J(pi_new)'
-	n_trials = 20
+	# n_trials = 20
+	n_trials = 5
 	data_fracs = np.logspace(-2.3,0,10)
-	n_workers = 8
+	# data_fracs = [0.01]
+	n_workers = 7
 	verbose=True
-	results_dir = f'results/gridworld_2022Sep09_{n_trials}trials'
+	results_dir = f'results/gridworld_2022Sep19_debug7'
 	os.makedirs(results_dir,exist_ok=True)
 	plot_savename = os.path.join(results_dir,f'gridworld_{n_trials}trials.png')
 	n_episodes_for_eval = 1000
 	# Load spec
-	specfile = f'../engine-repo/examples/gridworld_tutorial/spec.pkl'
+	specfile = f'../engine-repo-dev/examples/gridworld_tutorial/spec.pkl'
 	spec = load_pickle(specfile)
 	spec.optimization_hyperparams['num_iters'] = 40
 	spec.optimization_hyperparams['alpha_theta'] = 0.01
@@ -63,7 +65,8 @@ if __name__ == "__main__":
 	spec.optimization_hyperparams['beta_rmspropr'] = 0.95
 
 	perf_eval_fn = generate_episodes_and_calc_J
-	perf_eval_kwargs = {'n_episodes_for_eval':n_episodes_for_eval}
+	perf_eval_kwargs = {
+	'n_episodes_for_eval':n_episodes_for_eval}
 
 	hyperparameter_and_setting_dict = {}
 	hyperparameter_and_setting_dict["env"] = "gridworld"

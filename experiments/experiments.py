@@ -284,7 +284,7 @@ class BaselineExperiment(Experiment):
 
 				g = parse_tree.root.value
 				print(f"g (logistic regression) = {g}")
-				if g > 0 or np.nan(g):
+				if g > 0 or np.isnan(g):
 					failed = True
 					if verbose:
 						print("Failed on test set")
@@ -1049,13 +1049,13 @@ class SeldonianExperiment(Experiment):
 					**constraint_eval_kwargs)
 				
 				g = parse_tree.root.value
-				if g > 0 or np.nan(g):
+				if g > 0 or np.isnan(g):
 					failed = True
 
 		else:
 			# User provided functions to evaluate constraints
 			for eval_fn in constraint_eval_fns:
 				g = eval_fn(solution)
-				if g > 0 or np.nan(g):
+				if g > 0 or np.isnan(g):
 					failed = True
 		return failed
