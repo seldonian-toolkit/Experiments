@@ -14,6 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="experiments.experiments.FairlearnExperiment" href="experiments.experiments.FairlearnExperiment.html" />
@@ -119,7 +120,16 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.Experiment</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.Experiment</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#experiments.experiments.Experiment"><code class="docutils literal notranslate"><span class="pre">Experiment</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.Experiment.__init__"><code class="docutils literal notranslate"><span class="pre">Experiment.__init__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.Experiment.__repr__"><code class="docutils literal notranslate"><span class="pre">Experiment.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.Experiment.aggregate_results"><code class="docutils literal notranslate"><span class="pre">Experiment.aggregate_results()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.Experiment.write_trial_result"><code class="docutils literal notranslate"><span class="pre">Experiment.write_trial_result()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.FairlearnExperiment.html">experiments.experiments.FairlearnExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.SeldonianExperiment.html">experiments.experiments.SeldonianExperiment</a></li>
 </ul>
@@ -173,7 +183,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

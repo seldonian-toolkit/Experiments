@@ -14,6 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="experiments.generate_plots" href="experiments.generate_plots.html" />
@@ -164,7 +165,19 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.Experiment.html">experiments.experiments.Experiment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.FairlearnExperiment.html">experiments.experiments.FairlearnExperiment</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.SeldonianExperiment</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.experiments.SeldonianExperiment</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.__init__"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.__init__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.__repr__"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.QSA"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.QSA()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.aggregate_results"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.aggregate_results()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.evaluate_constraint_functions"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.evaluate_constraint_functions()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.run_experiment()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.write_trial_result"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.write_trial_result()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
@@ -216,7 +229,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -14,9 +14,10 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.utils.generate_resampled_datasets" href="experiments.utils.generate_resampled_datasets.html" />
+    <link rel="next" title="experiments.utils.MSE" href="experiments.utils.MSE.html" />
     <link rel="prev" title="experiments.generate_plots.SupervisedPlotGenerator" href="experiments.generate_plots.SupervisedPlotGenerator.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -40,6 +41,12 @@
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.utils.MSE.html#experiments.utils.MSE" title="experiments.utils.MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MSE</span></code></a>(y_pred, y, **kwargs)</p></td>
+<td><p>Calculate sample mean squared error</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.utils.generate_episodes_and_calc_J.html#experiments.utils.generate_episodes_and_calc_J" title="experiments.utils.generate_episodes_and_calc_J"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_episodes_and_calc_J</span></code></a>(**kwargs)</p></td>
+<td><p>Calculate the expected discounted return  by generating episodes</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.utils.generate_resampled_datasets.html#experiments.utils.generate_resampled_datasets" title="experiments.utils.generate_resampled_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_resampled_datasets</span></code></a>(df, n_trials, ...)</p></td>
 <td><p>Utility function for supervised learning to generate the resampled datasets to use in each trial.</p></td>
 </tr>
@@ -71,6 +78,8 @@
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">experiments.utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.MSE.html">experiments.utils.MSE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_episodes_and_calc_J.html">experiments.utils.generate_episodes_and_calc_J</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_resampled_datasets.html">experiments.utils.generate_resampled_datasets</a></li>
 </ul>
 </li>
@@ -87,7 +96,7 @@
   <li><a href="../api.html">API</a><ul>
   <li><a href="experiments.html">experiments</a><ul>
       <li>Previous: <a href="experiments.generate_plots.SupervisedPlotGenerator.html" title="previous chapter">experiments.generate_plots.SupervisedPlotGenerator</a></li>
-      <li>Next: <a href="experiments.utils.generate_resampled_datasets.html" title="next chapter">experiments.utils.generate_resampled_datasets</a></li>
+      <li>Next: <a href="experiments.utils.MSE.html" title="next chapter">experiments.utils.MSE</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -119,7 +128,7 @@
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
