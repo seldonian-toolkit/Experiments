@@ -14,3 +14,4 @@ qsa*
 **/build
 dist
 docs/source/_autosummary
+htmlcov
