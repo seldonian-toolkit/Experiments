@@ -322,7 +322,7 @@ class FairlearnExperiment(Experiment):
 		:type fairlearn_epsilon_constraint: float
 		"""
 		super().__init__(results_dir=results_dir,
-			model_name=f'Fairlearn_eps{fairlearn_epsilon_constraint:.2f}')
+			model_name=f'fairlearn_eps{fairlearn_epsilon_constraint:.2f}')
 
 	def run_experiment(self,**kwargs):
 		""" Run the Fairlearn experiment """
