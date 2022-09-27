@@ -41,17 +41,17 @@ def generate_episodes_and_calc_J(**kwargs):
 	
 if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = False
+	run_experiments = True
 	make_plots = True
-	save_plot = True
+	save_plot = False
 	performance_metric = 'J(pi_new)'
 	# n_trials = 20
-	n_trials = 5
+	n_trials = 10
 	data_fracs = np.logspace(-2.3,0,10)
 	# data_fracs = [0.01]
 	n_workers = 7
 	verbose=True
-	results_dir = f'results/gridworld_2022Sep19_debug7'
+	results_dir = f'results/gridworld_2022Sep23_debug'
 	os.makedirs(results_dir,exist_ok=True)
 	plot_savename = os.path.join(results_dir,f'gridworld_{n_trials}trials.png')
 	n_episodes_for_eval = 1000
@@ -66,7 +66,8 @@ if __name__ == "__main__":
 
 	perf_eval_fn = generate_episodes_and_calc_J
 	perf_eval_kwargs = {
-	'n_episodes_for_eval':n_episodes_for_eval}
+		'n_episodes_for_eval':n_episodes_for_eval
+	}
 
 	hyperparameter_and_setting_dict = {}
 	hyperparameter_and_setting_dict["env"] = "gridworld"
