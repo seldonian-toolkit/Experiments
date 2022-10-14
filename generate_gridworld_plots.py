@@ -51,7 +51,7 @@ if __name__ == "__main__":
 	# data_fracs = [0.01]
 	n_workers = 7
 	verbose=True
-	results_dir = f'results/gridworld_2022Sep23_debug'
+	results_dir = f'results/gridworld_2022Oct14_debug'
 	os.makedirs(results_dir,exist_ok=True)
 	plot_savename = os.path.join(results_dir,f'gridworld_{n_trials}trials.png')
 	n_episodes_for_eval = 1000

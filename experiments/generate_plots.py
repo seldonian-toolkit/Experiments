@@ -737,7 +737,7 @@ class RLPlotGenerator(PlotGenerator):
 				if not os.path.exists(savename):
 					episodes,agent = run_trial(
 						self.hyperparameter_and_setting_dict,
-						parallel=True,n_workers=8)
+						parallel=False)
 					# Save episodes
 					save_pickle(savename,episodes,verbose=True)
 				else:
