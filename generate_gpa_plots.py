@@ -1,16 +1,24 @@
 import os
 import numpy as np 
+import tracemalloc,linecache
 
 from experiments.generate_plots import SupervisedPlotGenerator
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
-if __name__ == "__main__":
+def perf_eval_fn(y_pred,y,**kwargs):
+	performance_metric = kwargs['performance_metric']
+	if performance_metric == 'log_loss':
+		return log_loss(y,y_pred)
+	elif performance_metric == 'accuracy':
+		return accuracy_score(y,y_pred > 0.5)
+
+def main():
 	# Parameter setup
-	run_experiments = False
+	run_experiments = True
 	make_plots = True
-	save_plot = True
-	include_legend = False
+	save_plot = False
+	include_legend = True
 	constraint_name = 'disparate_impact'
 	fairlearn_constraint_name = constraint_name
 	fairlearn_epsilon_eval = 0.8 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
@@ -19,8 +27,9 @@ if __name__ == "__main__":
 	performance_metric = 'accuracy'
 	n_trials = 50
 	data_fracs = np.logspace(-4,0,15)
-	n_workers = 8
-	results_dir = f'results/gpa_{constraint_name}_{performance_metric}'
+	# data_fracs = [0.25]
+	n_workers = 7
+	results_dir = f'results/gpa_{constraint_name}_{performance_metric}_2022Oct18_debug'
 	plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
 
 	verbose=True
@@ -35,7 +44,6 @@ if __name__ == "__main__":
 	dataset = spec.dataset
 	label_column = dataset.label_column
 	include_sensitive_columns = dataset.include_sensitive_columns
-	include_intercept_term = dataset.include_intercept_term
 
 	test_features = dataset.df.loc[:,
 		dataset.df.columns != label_column]
@@ -45,22 +53,12 @@ if __name__ == "__main__":
 		test_features = test_features.drop(
 			columns=dataset.sensitive_column_names) 
 
-	if include_intercept_term:
-		test_features.insert(0,'offset',1.0) # inserts a column of 1's in place
-
 	# Setup performance evaluation function and kwargs 
-	# of the performance evaluation function
-
-	# perf_eval_fn = lambda y_pred,y,X: fbeta_score(y,y_pred,beta=2)
-	def perf_eval_fn(y_pred,y,**kwargs):
-		if performance_metric == 'log_loss':
-			return log_loss(y,y_pred)
-		elif performance_metric == 'accuracy':
-			return accuracy_score(y,y_pred > 0.5)
 
 	perf_eval_kwargs = {
 		'X':test_features,
 		'y':test_labels,
+		'performance_metric':performance_metric
 		}
 
 	plot_generator = SupervisedPlotGenerator(
@@ -95,17 +93,15 @@ if __name__ == "__main__":
 	
 	# Make dict of test set features, labels and sensitive feature vectors
 	
-	# Make dict of test set features, labels and sensitive feature vectors
-	if 'offset' in test_features.columns:
-		test_features_fairlearn = test_features.drop(columns=['offset'])
-	else:
-		test_features_fairlearn = test_features
 	fairlearn_eval_kwargs = {
-		'X':test_features_fairlearn,
+
+		'X':test_features,
 		'y':test_labels,
 		'sensitive_features':dataset.df.loc[:,
 			fairlearn_sensitive_feature_names],
 		'eval_method':fairlearn_eval_method,
+		'performance_metric':performance_metric
+
 		}
 
 	if run_experiments:
@@ -129,3 +125,9 @@ if __name__ == "__main__":
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
 				include_legend=include_legend,
 				performance_label=performance_metric)
+
+
+
+if __name__ == "__main__":
+
+	main()

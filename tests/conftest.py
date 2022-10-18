@@ -29,7 +29,6 @@ def gpa_regression_spec():
 	        sensitive_columns) = load_supervised_metadata(metadata_pth)
 					
 		include_sensitive_columns = False
-		include_intercept_term = True
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -39,7 +38,6 @@ def gpa_regression_spec():
 			filename=data_pth,
 			metadata_filename=metadata_pth,
 			include_sensitive_columns=include_sensitive_columns,
-			include_intercept_term=include_intercept_term,
 			file_type='csv')
 
 		spec = createSupervisedSpec(
@@ -80,7 +78,6 @@ def gpa_classification_spec():
 	        sensitive_columns) = load_supervised_metadata(metadata_pth)
 					
 		include_sensitive_columns = False
-		include_intercept_term = True
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -90,7 +87,6 @@ def gpa_classification_spec():
 			filename=data_pth,
 			metadata_filename=metadata_pth,
 			include_sensitive_columns=include_sensitive_columns,
-			include_intercept_term=include_intercept_term,
 			file_type='csv')
 
 		spec = createSupervisedSpec(

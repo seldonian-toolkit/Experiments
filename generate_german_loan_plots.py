@@ -21,15 +21,13 @@ if __name__ == "__main__":
 	data_fracs = np.logspace(-3,0,15)
 	n_workers = 7
 	verbose=True
-	results_dir = f'results/loan_{constraint_name}_seldodef_log_loss_debug'
+	results_dir = f'results/loan_{constraint_name}_seldodef_log_loss_debug_2022Oct17'
 	plot_savename = os.path.join(results_dir,f'{constraint_name}_{performance_metric}.png')
 
 	# Load spec
-	specfile = f'../interface_outputs/loan_{constraint_name}_seldodef/spec.pkl'
+	# specfile = f'../interface_outputs/loan_{constraint_name}_seldodef/spec.pkl'
+	specfile = f'../engine-repo-dev/examples/loan_tutorial/spec.pkl'
 	spec = load_pickle(specfile)
-
-	spec.primary_objective = spec.model_class().sample_logistic_loss
-	# spec.use_builtin_primary_gradient_fn = False
 
 	os.makedirs(results_dir,exist_ok=True)
 
@@ -37,7 +35,6 @@ if __name__ == "__main__":
 	dataset = spec.dataset
 	label_column = dataset.label_column
 	include_sensitive_columns = dataset.include_sensitive_columns
-	include_intercept_term = dataset.include_intercept_term
 
 	test_features = dataset.df.loc[:,
 		dataset.df.columns != label_column]
@@ -47,8 +44,6 @@ if __name__ == "__main__":
 		test_features = test_features.drop(
 			columns=dataset.sensitive_column_names) 
 
-	if include_intercept_term:
-		test_features.insert(0,'offset',1.0) # inserts a column of 1's in place
 
 	# Setup performance evaluation function and kwargs 
 	# of the performance evaluation function
@@ -58,7 +53,6 @@ if __name__ == "__main__":
 		if performance_metric == 'log_loss':
 			return log_loss(y,y_pred)
 		elif performance_metric == 'accuracy':
-			print("calculating accuracy")
 			return accuracy_score(y,y_pred > 0.5)
 
 	perf_eval_kwargs = {

@@ -17,7 +17,9 @@ from sklearn.linear_model import LogisticRegression
 from seldonian.utils.io_utils import load_pickle
 from seldonian.dataset import (SupervisedDataSet,RLDataSet)
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
-from seldonian.models.models import (LogisticRegressionModel,
+from seldonian.spec import RLSpec
+from seldonian.models.models import (LinearRegressionModel,
+	BinaryLogisticRegressionModel,
 	DummyClassifierModel,RandomClassifierModel)
 
 from fairlearn.reductions import ExponentiatedGradient
@@ -159,7 +161,8 @@ class BaselineExperiment(Experiment):
 		self.aggregate_results(**kwargs)
 	
 	def run_baseline_trial(self,data_frac,trial_i,**kwargs):
-		""" Run a trial of the baseline model  
+		""" Run a trial of the baseline model. Currently only 
+		supports supervised learning experiments. 
 		
 		:param data_frac: Fraction of overall dataset size to use
 		:type data_frac: float
@@ -169,6 +172,8 @@ class BaselineExperiment(Experiment):
 		"""
 
 		spec = kwargs['spec']
+		if isinstance(spec,RLSpec):
+			raise NotImplementedError("Baselines are not yet implemented for RL")
 		dataset = spec.dataset
 		parse_trees = spec.parse_trees
 		verbose=kwargs['verbose']
@@ -198,7 +203,6 @@ class BaselineExperiment(Experiment):
 
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
-		include_intercept_term = dataset.include_intercept_term
 		label_column = dataset.label_column
 
 		if datagen_method == 'resample':
@@ -220,24 +224,33 @@ class BaselineExperiment(Experiment):
 
 		features = resampled_df.loc[:,
 		    resampled_df.columns != label_column]
-		labels = resampled_df[label_column].astype('int')
+		if spec.sub_regime == 'regression':
+			labels = resampled_df[label_column]
+		else:
+			labels = resampled_df[label_column].astype('int')
 
 		# Drop sensitive features from training set
 		if not include_sensitive_columns:
 		    features = features.drop(
 		        columns=dataset.sensitive_column_names)	
 
-		if dataset.include_intercept_term:
-			features.insert(0,'offset',1.0) # inserts a column of 1's
 		
 		####################################################
 		"""" Instantiate model and fit to resampled data """
 		####################################################
-		# X_test_baseline = perf_eval_kwargs['X'].drop(columns=['offset'])
 		X_test_baseline = perf_eval_kwargs['X']
 		
+		if self.model_name == 'linear_regression':
+			baseline_model = LinearRegressionModel()
+			try:
+				solution = baseline_model.fit(features, labels)
+				# predict the probabilities not the class labels
+				y_pred = baseline_model.predict(solution,X_test_baseline)
+			except ValueError:
+				solution = "NSF"
+
 		if self.model_name == 'logistic_regression':
-			baseline_model = LogisticRegressionModel()
+			baseline_model = BinaryLogisticRegressionModel()
 			try:
 				solution = baseline_model.fit(features, labels)
 				# predict the probabilities not the class labels
@@ -283,13 +296,13 @@ class BaselineExperiment(Experiment):
 					branch='safety_test')
 
 				g = parse_tree.root.value
-				print(f"g (logistic regression) = {g}")
+				
 				if g > 0 or np.isnan(g):
 					failed = True
 					if verbose:
 						print("Failed on test set")
 				if verbose:
-					print(f"g = {g}")
+					print(f"g (baseline={self.model_name}) = {g}")
 		else:
 			print("NSF")
 			performance = np.nan
@@ -409,7 +422,6 @@ class FairlearnExperiment(Experiment):
 
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
-		include_intercept_term = False 
 		label_column = dataset.label_column
 
 		if datagen_method == 'resample':
@@ -809,7 +821,6 @@ class SeldonianExperiment(Experiment):
 
 			sensitive_column_names = dataset.sensitive_column_names
 			include_sensitive_columns = dataset.include_sensitive_columns
-			include_intercept_term = dataset.include_intercept_term
 			label_column = dataset.label_column
 
 			if datagen_method == 'resample':
@@ -836,8 +847,7 @@ class SeldonianExperiment(Experiment):
 				meta_information=resampled_df.columns,
 				label_column=label_column,
 				sensitive_column_names=sensitive_column_names,
-				include_sensitive_columns=include_sensitive_columns,
-				include_intercept_term=include_intercept_term)
+				include_sensitive_columns=include_sensitive_columns)
 
 			# Make a new spec object where the 
 			# only thing that is different is the dataset

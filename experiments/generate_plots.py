@@ -490,7 +490,6 @@ class SupervisedPlotGenerator(PlotGenerator):
 		label_column = dataset.label_column
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
-		include_intercept_term = dataset.include_intercept_term
 		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
@@ -541,7 +540,6 @@ class SupervisedPlotGenerator(PlotGenerator):
 		label_column = dataset.label_column
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
-		include_intercept_term = dataset.include_intercept_term
 		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
@@ -594,7 +592,6 @@ class SupervisedPlotGenerator(PlotGenerator):
 		label_column = dataset.label_column
 		sensitive_column_names = dataset.sensitive_column_names
 		include_sensitive_columns = dataset.include_sensitive_columns
-		include_intercept_term = dataset.include_intercept_term
 		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
