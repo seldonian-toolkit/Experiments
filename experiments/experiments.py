@@ -201,38 +201,30 @@ class BaselineExperiment(Experiment):
 		""" Setup for running baseline algorithm """
 		##############################################
 
-		sensitive_column_names = dataset.sensitive_column_names
-		include_sensitive_columns = dataset.include_sensitive_columns
-		label_column = dataset.label_column
-
 		if datagen_method == 'resample':
 			resampled_filename = os.path.join(self.results_dir,
 				'resampled_dataframes',f'trial_{trial_i}.pkl')
-			n_points = int(round(data_frac*len(dataset.df))) 
-
-			resampled_df = load_pickle(resampled_filename).iloc[:n_points]
+			resampled_dataset = load_pickle(resampled_filename)
+			num_datapoints_tot = resampled_dataset.num_datapoints
+			n_points = int(round(data_frac*num_datapoints_tot)) 
 
 			if verbose:
 				print(f"Using resampled dataset {resampled_filename} "
-					  f"with {len(resampled_df)} datapoints")
+					  f"with {num_datapoints_tot} datapoints")
 		else:
 			raise NotImplementedError(
 				f"datagen_method: {datagen_method} "
 				f"not supported for regime: {regime}")
 		
 		# Prepare features and labels
-
-		features = resampled_df.loc[:,
-		    resampled_df.columns != label_column]
-		if spec.sub_regime == 'regression':
-			labels = resampled_df[label_column]
+		features = resampled_dataset.features
+		labels = resampled_dataset.labels
+		# Only use first n_points for this trial
+		if type(features) == list:
+			features = [x[:n_points] for x in features]
 		else:
-			labels = resampled_df[label_column].astype('int')
-
-		# Drop sensitive features from training set
-		if not include_sensitive_columns:
-		    features = features.drop(
-		        columns=dataset.sensitive_column_names)	
+			features = features[:n_points]
+		labels = labels[:n_points]
 
 		
 		####################################################
@@ -287,7 +279,7 @@ class BaselineExperiment(Experiment):
 
 			# Determine whether this solution
 			# violates any of the constraints 
-			# on the test dataset
+			# on the test dataset, which is the dataset from spec
 			for parse_tree in parse_trees:
 				parse_tree.reset_base_node_dict(reset_data=True)
 				parse_tree.evaluate_constraint(theta=solution,
@@ -420,41 +412,37 @@ class FairlearnExperiment(Experiment):
 		""" Setup for running Fairlearn algorithm """
 		##############################################
 
-		sensitive_column_names = dataset.sensitive_column_names
-		include_sensitive_columns = dataset.include_sensitive_columns
-		label_column = dataset.label_column
 
 		if datagen_method == 'resample':
 			resampled_filename = os.path.join(self.results_dir,
 				'resampled_dataframes',f'trial_{trial_i}.pkl')
-			n_points = int(round(data_frac*len(dataset.df))) 
-
-			with open(resampled_filename,'rb') as infile:
-				resampled_df = pickle.load(infile).iloc[:n_points]
+			resampled_dataset = load_pickle(resampled_filename)
+			num_datapoints_tot = resampled_dataset.num_datapoints
+			n_points = int(round(data_frac*num_datapoints_tot)) 
 
 			if verbose:
 				print(f"Using resampled dataset {resampled_filename} "
-					  f"with {len(resampled_df)} datapoints")
+					  f"with {num_datapoints_tot} datapoints")
 		else:
 			raise NotImplementedError(
 				f"datagen_method: {datagen_method} "
 				f"not supported for regime: {regime}")
 		
-
 		# Prepare features and labels
-
-		features = resampled_df.loc[:,
-		    resampled_df.columns != label_column]
-		labels = resampled_df[label_column].astype('int')
-
-		# Drop sensitive features from training set
-		if not include_sensitive_columns:
-		    features = features.drop(
-		        columns=dataset.sensitive_column_names)	
-
-		# Get fairlearn sensitive features
-		fairlearn_sensitive_features = resampled_df.loc[:,
-			fairlearn_sensitive_feature_names]
+		features = resampled_dataset.features
+		labels = resampled_dataset.labels
+		# Only use first n_points for this trial
+		if type(features) == list:
+			features = [x[:n_points] for x in features]
+		else:
+			features = features[:n_points]
+		labels = labels[:n_points]
+		
+		sensitive_col_indices = [resampled_dataset.sensitive_col_names.index(
+            col) for col in fairlearn_sensitive_feature_names]
+		
+		fairlearn_sensitive_features = np.squeeze(resampled_dataset.sensitive_attrs[:,
+			sensitive_col_indices])[:n_points]
 
 		##############################################
 		"""" Run Fairlearn algorithm on trial data """
@@ -559,17 +547,18 @@ class FairlearnExperiment(Experiment):
 	def get_fairlearn_predictions(self,mitigator,X_test_fairlearn):
 		"""
 		Get the predicted labels from the fairlearn mitigator.
-		The mitigator consists of potentially more than one predictor
-		and as many weights as predictors. For each predictor with non-zero
-		weight, predict the proportion of points given by the weight
-		of each predictor. 
+		The mitigator consists of potentially more than one predictor.
+		For each predictor with non-zero weight, we figure out 
+		how many points to predict based on the weight of that predictor.
+		Weights are normalized to 1 across all predictors.
 
 		:param mitigator: The Fairlearn mitigator
 
 		:param X_test_fairlearn: The test features from which 
 			to predict the labels
 		"""
-		y_pred = np.zeros(len(X_test_fairlearn))
+		n_points_test = len(X_test_fairlearn)
+		y_pred = np.zeros(n_points_test)
 		assert len(mitigator.predictors_) == len(mitigator.weights_)
 		start_index = 0
 		for ii in range(len(mitigator.predictors_)):
@@ -577,12 +566,17 @@ class FairlearnExperiment(Experiment):
 			if weight == 0:
 				continue
 			predictor = mitigator.predictors_[ii]
-			n_points_this_predictor = int(round(weight*len(X_test_fairlearn)))
+			n_points_this_predictor = int(round(weight*n_points_test))
 			end_index = start_index + n_points_this_predictor
-			X_test_this_predictor = X_test_fairlearn.iloc[start_index:end_index]
+			X_test_this_predictor = X_test_fairlearn[start_index:end_index]
 
 			probs = predictor.predict_proba(X_test_this_predictor)
-			predictions = predictor.predict_proba(X_test_this_predictor)[:,1]
+			
+			if probs.shape[1] == 1: 
+				# if only one class predicted it must be the positive class
+				predictions = probs[:,0]
+			else:
+				predictions = probs[:,1]
 			y_pred[start_index:end_index] = predictions
 			start_index = end_index
 		return y_pred
@@ -819,35 +813,45 @@ class SeldonianExperiment(Experiment):
 
 		if regime == 'supervised_learning':
 
-			sensitive_column_names = dataset.sensitive_column_names
-			include_sensitive_columns = dataset.include_sensitive_columns
-			label_column = dataset.label_column
-
 			if datagen_method == 'resample':
 				resampled_filename = os.path.join(self.results_dir,
 					'resampled_dataframes',f'trial_{trial_i}.pkl')
-				n_points = int(round(data_frac*len(dataset.df))) 
-				if n_points < 1:
-					raise ValueError(
-						f"This data_frac={data_frac} "
-						f"results in {n_points} data points. "
-						 "Must have at least 1 data point to run a trial.")
-				with open(resampled_filename,'rb') as infile:
-					resampled_df = pickle.load(infile).iloc[:n_points]
+				resampled_dataset = load_pickle(resampled_filename)
+				num_datapoints_tot = resampled_dataset.num_datapoints
+				n_points = int(round(data_frac*num_datapoints_tot)) 
 
 				if verbose:
 					print(f"Using resampled dataset {resampled_filename} "
-						  f"with {len(resampled_df)} datapoints")
+						  f"with {num_datapoints_tot} datapoints")
+					if n_points < 1:
+						raise ValueError(
+							f"This data_frac={data_frac} "
+							f"results in {n_points} data points. "
+							 "Must have at least 1 data point to run a trial.")
+				
+				features = resampled_dataset.features
+				labels = resampled_dataset.labels
+				sensitive_attrs = resampled_dataset.sensitive_attrs
+				# Only use first n_points for this trial
+				if type(features) == list:
+					features = [x[:n_points] for x in features]
+				else:
+					features = features[:n_points]
+				labels = labels[:n_points]
+				sensitive_attrs = sensitive_attrs[:n_points]
+
 			else:
 				raise NotImplementedError(
 					f"Eval method {datagen_method} "
 					f"not supported for regime={regime}")
+
 			dataset_for_experiment = SupervisedDataSet(
-				df=resampled_df,
-				meta_information=resampled_df.columns,
-				label_column=label_column,
-				sensitive_column_names=sensitive_column_names,
-				include_sensitive_columns=include_sensitive_columns)
+				features=features,
+				labels=labels,
+				sensitive_attrs=sensitive_attrs,
+				num_datapoints=n_points,
+				meta_information=resampled_dataset.meta_information,
+				)
 
 			# Make a new spec object where the 
 			# only thing that is different is the dataset

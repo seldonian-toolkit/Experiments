@@ -10,8 +10,9 @@ from seldonian.RL.Env_Description.Env_Description import Env_Description
 from seldonian.RL.Env_Description.Spaces import Discrete_Space
 from seldonian.models import objectives
 from seldonian.utils.io_utils import (load_json,
-	load_pickle,load_supervised_metadata)
-from seldonian.dataset import DataSetLoader,RLDataSet
+	load_pickle)
+from seldonian.dataset import (DataSetLoader,RLDataSet,
+	load_supervised_metadata)
 from seldonian.parse_tree.parse_tree import (ParseTree,
 	make_parse_trees_from_constraints)
 from seldonian.spec import createSupervisedSpec,createRLSpec
@@ -25,10 +26,10 @@ def gpa_regression_spec():
 		data_pth = 'static/datasets/supervised/GPA/gpa_regression_dataset.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_regression.json'
 
-		(regime, sub_regime, columns,
-	        sensitive_columns) = load_supervised_metadata(metadata_pth)
+		(regime, sub_regime, all_col_names, feature_col_names,
+			label_col_names, sensitive_col_names) = load_supervised_metadata(
+				metadata_pth)
 					
-		include_sensitive_columns = False
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -37,7 +38,6 @@ def gpa_regression_spec():
 		dataset = loader.load_supervised_dataset(
 			filename=data_pth,
 			metadata_filename=metadata_pth,
-			include_sensitive_columns=include_sensitive_columns,
 			file_type='csv')
 
 		spec = createSupervisedSpec(
@@ -55,6 +55,7 @@ def gpa_regression_spec():
 				'beta_velocity' : 0.9,
 				'beta_rmsprop'  : 0.95,
 				'num_iters'     : 50,
+				'use_batches'   : False,
 				'gradient_library': "autograd",
 				'hyper_search'  : None,
 				'verbose'       : True,
@@ -74,10 +75,9 @@ def gpa_classification_spec():
 		data_pth = 'static/datasets/supervised/GPA/gpa_classification_dataset.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_classification.json'
 
-		(regime, sub_regime, columns,
-	        sensitive_columns) = load_supervised_metadata(metadata_pth)
-					
-		include_sensitive_columns = False
+		(regime, sub_regime, all_col_names, feature_col_names,
+			label_col_names, sensitive_col_names) = load_supervised_metadata(
+				metadata_pth)
 
 		# Load dataset from file
 		loader = DataSetLoader(
@@ -86,7 +86,6 @@ def gpa_classification_spec():
 		dataset = loader.load_supervised_dataset(
 			filename=data_pth,
 			metadata_filename=metadata_pth,
-			include_sensitive_columns=include_sensitive_columns,
 			file_type='csv')
 
 		spec = createSupervisedSpec(
@@ -104,6 +103,7 @@ def gpa_classification_spec():
 				'beta_velocity' : 0.9,
 				'beta_rmsprop'  : 0.95,
 				'num_iters'     : 50,
+				'use_batches'   : False,
 				'gradient_library': "autograd",
 				'hyper_search'  : None,
 				'verbose'       : True,

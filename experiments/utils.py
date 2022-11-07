@@ -7,16 +7,17 @@ import numpy as np
 from seldonian.RL.RL_runner import (create_env,
 	create_agent,run_trial_given_agent_and_env)
 from seldonian.utils.stats_utils import weighted_sum_gamma
+from seldonian.dataset import SupervisedDataSet
 
 
-def generate_resampled_datasets(df,n_trials,save_dir,file_format='csv'):
+def generate_resampled_datasets(dataset,n_trials,save_dir):
 	"""Utility function for supervised learning to generate the
 	resampled datasets to use in each trial. Resamples (with replacement)
-	pandas dataframes to create n_trials resampled dataframes of the same
-	shape as the input dataframe, df
+	features, labels and sensitive attributes to create n_trials versions of these
+	of the same shape as the inputs
 
-	:param df: The original df from which to resample 
-	:type df: pandas DataFrame
+	:param dataset: The original dataset from which to resample 
+	:type dataset: pandas DataFrame
 
 	:param n_trials: The number of trials, i.e. the number of 
 		resampled datasets to make
@@ -34,22 +35,38 @@ def generate_resampled_datasets(df,n_trials,save_dir,file_format='csv'):
 	save_subdir = os.path.join(save_dir,
 			'resampled_dataframes')
 	os.makedirs(save_subdir,exist_ok=True)
+	num_datapoints = dataset.num_datapoints
 
 	for trial_i in range(n_trials):
 
 		savename = os.path.join(save_subdir,
-			f'trial_{trial_i}.{file_format}')
+			f'trial_{trial_i}.pkl')
 
 		if not os.path.exists(savename):
-			resampled_df = df.sample(
-				n=len(df),replace=True).reset_index(drop=True)
+			ix_resamp = np.random.choice(range(num_datapoints),
+				num_datapoints,replace=True)
+			# features can be list of arrays or a single array
+			if type(dataset.features) == list:
+				resamp_features = [x[ix_resamp] for x in flist]
+			else:
+				resamp_features = dataset.features[ix_resamp]
+			
+			# labels and sensitive attributes must be arrays
+			resamp_labels = dataset.labels[ix_resamp]
+			if isinstance(dataset.sensitive_attrs,np.ndarray):
+				resamp_sensitive_attrs = dataset.sensitive_attrs[ix_resamp]
+			else:
+				resamp_sensitive_attrs = []
 
-			if file_format == 'csv':
-				resampled_df.to_csv(savename,index=False)
+			resampled_dataset = SupervisedDataSet(
+				features=resamp_features,
+				labels=resamp_labels,
+				sensitive_attrs=resamp_sensitive_attrs,
+				num_datapoints=num_datapoints,
+				meta_information=dataset.meta_information)
 
-			elif file_format == 'pkl':
-				with open(savename,'wb') as outfile:
-					pickle.dump(resampled_df,outfile)
+			with open(savename,'wb') as outfile:
+				pickle.dump(resampled_dataset,outfile)
 			print(f"Saved {savename}")	
 
 def generate_episodes_and_calc_J(**kwargs):

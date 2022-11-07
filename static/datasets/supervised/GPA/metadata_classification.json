@@ -1,10 +1,10 @@
 {
 	"regime":"supervised_learning",
 	"sub_regime":"classification",
-	"columns":["M", "F", "SAT_Physics", "SAT_Biology", 
-		"SAT_History", "SAT_Second_Language", "SAT_Geography", 
-		"SAT_Literature", "SAT_Portuguese_and_Essay", 
-		"SAT_Math", "SAT_Chemistry", "GPA_class"],
-	"label_column":"GPA_class",
-	"sensitive_columns":["M","F"]
+	"all_col_names":["M", "F", "Physics", "Biology", 
+		"History", "Second_Language", "Geography", 
+		"Literature", "Portuguese_and_Essay", 
+		"Math", "Chemistry", "GPA_class"],
+	"label_col_names":["GPA_class"],
+	"sensitive_col_names":["M","F"]
 }

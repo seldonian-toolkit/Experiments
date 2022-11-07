@@ -120,13 +120,8 @@ class PlotGenerator():
 		:type savename: str, defaults to None
 		"""
 		regime = self.spec.dataset.regime
+		tot_data_size = self.spec.dataset.num_datapoints
 		
-		if regime == 'supervised_learning':
-			tot_data_size = len(self.spec.dataset.df)
-		elif regime == 'reinforcement_learning':
-			tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
-		else:
-			raise NotImplementedError(f"regime={regime} not supported.")
 		# Read in constraints
 		parse_trees = self.spec.parse_trees
 
@@ -224,14 +219,19 @@ class PlotGenerator():
 
 			# Plot labels
 			ax_performance.set_ylabel(performance_label,fontsize=fontsize)
-			ax_sr.set_ylabel('Solution rate',fontsize=fontsize)
-			ax_fr.set_ylabel('Failure Rate',fontsize=fontsize)
+			# ax_sr.set_ylabel('Solution rate',fontsize=fontsize)
+			ax_sr.set_ylabel('Probability of solution',fontsize=fontsize)
+			# ax_fr.set_ylabel('Failure Rate',fontsize=fontsize)
+			ax_fr.set_ylabel('Probability constraint was violated',fontsize=fontsize)
 
 			# Only put horizontal axis labels on last row of plots 
 			if ii == len(constraints)-1:
-				ax_performance.set_xlabel('Training samples',fontsize=fontsize)
-				ax_sr.set_xlabel('Training samples',fontsize=fontsize)
-				ax_fr.set_xlabel('Training samples',fontsize=fontsize)
+				# ax_performance.set_xlabel('Training samples',fontsize=fontsize)
+				# ax_sr.set_xlabel('Training samples',fontsize=fontsize)
+				# ax_fr.set_xlabel('Training samples',fontsize=fontsize)
+				ax_performance.set_xlabel('Size of training set',fontsize=fontsize)
+				ax_sr.set_xlabel('Size of training set',fontsize=fontsize)
+				ax_fr.set_xlabel('Size of training set',fontsize=fontsize)
 
 			# axis scaling
 			ax_performance.set_xscale('log')
@@ -288,6 +288,7 @@ class PlotGenerator():
 					linestyle='--',label='QSA')
 				legend_handles.append(pl)
 				legend_labels.append(seldonian_model)
+				# legend_labels.append('Linear regression with constraint')
 				ax_performance.scatter(X_passed_seldonian,mean_performance,color=seldonian_color,
 					s=marker_size,marker='o')
 				ax_performance.fill_between(X_passed_seldonian,
@@ -486,19 +487,14 @@ class SupervisedPlotGenerator(PlotGenerator):
 		"""
 
 		dataset = self.spec.dataset
-
-		label_column = dataset.label_column
-		sensitive_column_names = dataset.sensitive_column_names
-		include_sensitive_columns = dataset.include_sensitive_columns
 		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
 			# These will be cropped to data_frac fractional size
 			print("generating resampled datasets")
-			generate_resampled_datasets(dataset.df,
+			generate_resampled_datasets(dataset,
 				self.n_trials,
-				self.results_dir,
-				file_format='pkl')
+				self.results_dir)
 			print("Done generating resampled datasets")
 			print()
 
@@ -536,19 +532,14 @@ class SupervisedPlotGenerator(PlotGenerator):
 		"""
 
 		dataset = self.spec.dataset
-
-		label_column = dataset.label_column
-		sensitive_column_names = dataset.sensitive_column_names
-		include_sensitive_columns = dataset.include_sensitive_columns
 		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
 			# These will be cropped to data_frac fractional size
 			print("checking for resampled datasets")
-			generate_resampled_datasets(dataset.df,
+			generate_resampled_datasets(dataset,
 				self.n_trials,
-				self.results_dir,
-				file_format='pkl')
+				self.results_dir)
 			print("Done checking for resampled datasets")
 			print()
 
@@ -589,18 +580,13 @@ class SupervisedPlotGenerator(PlotGenerator):
 
 		dataset = self.spec.dataset
 
-		label_column = dataset.label_column
-		sensitive_column_names = dataset.sensitive_column_names
-		include_sensitive_columns = dataset.include_sensitive_columns
-		
 		if self.datagen_method == 'resample':
 			# Generate n_trials resampled datasets of full length
 			# These will be cropped to data_frac fractional size
 			print("Checking for resampled datasets")
-			generate_resampled_datasets(dataset.df,
+			generate_resampled_datasets(dataset,
 				self.n_trials,
-				self.results_dir,
-				file_format='pkl')
+				self.results_dir,)
 			print("Done generating resampled datasets")
 			print()
 

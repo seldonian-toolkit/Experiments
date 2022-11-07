@@ -23,35 +23,29 @@ def main():
 	fairlearn_constraint_name = constraint_name
 	fairlearn_epsilon_eval = 0.8 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_eval_method = 'two-groups' # the epsilon used to evaluate g, needs to be same as epsilon in our definition
-	fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
+	# fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
+	fairlearn_epsilons_constraint = [0.01] # the epsilons used in the fitting constraint
 	performance_metric = 'accuracy'
-	n_trials = 50
+	n_trials = 25
 	data_fracs = np.logspace(-4,0,15)
 	# data_fracs = [0.25]
 	n_workers = 7
-	results_dir = f'results/gpa_{constraint_name}_{performance_metric}_2022Oct18_debug'
+	results_dir = f'results/gpa_{constraint_name}_{performance_metric}_2022Nov7_debug'
 	plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
 
 	verbose=True
 
 	# Load spec
-	specfile = f'../interface_outputs/gpa_{constraint_name}/spec.pkl'
+	# specfile = f'../interface_outputs/gpa_{constraint_name}/spec.pkl'
+	specfile = f'../engine-repo-dev/examples/GPA_tutorial/gpa_{constraint_name}/spec.pkl'
 	spec = load_pickle(specfile)
 
 	os.makedirs(results_dir,exist_ok=True)
 
 	# Use entire original dataset as ground truth for test set
 	dataset = spec.dataset
-	label_column = dataset.label_column
-	include_sensitive_columns = dataset.include_sensitive_columns
-
-	test_features = dataset.df.loc[:,
-		dataset.df.columns != label_column]
-	test_labels = dataset.df[label_column]
-
-	if not include_sensitive_columns:
-		test_features = test_features.drop(
-			columns=dataset.sensitive_column_names) 
+	test_features = dataset.features
+	test_labels = dataset.labels
 
 	# Setup performance evaluation function and kwargs 
 
@@ -89,19 +83,18 @@ def main():
 	# Fairlearn experiment 
 	######################
 
-	fairlearn_sensitive_feature_names=['M']
-	
-	# Make dict of test set features, labels and sensitive feature vectors
-	
+	fairlearn_sensitive_feature_names = ['M']
+	fairlearn_sensitive_col_indices = [dataset.sensitive_col_names.index(
+	    col) for col in fairlearn_sensitive_feature_names]
+	fairlearn_sensitive_features = dataset.sensitive_attrs[:,fairlearn_sensitive_col_indices]
+	# Setup ground truth test dataset for Fairlearn
+	test_features_fairlearn = test_features
 	fairlearn_eval_kwargs = {
-
-		'X':test_features,
+		'X':test_features_fairlearn,
 		'y':test_labels,
-		'sensitive_features':dataset.df.loc[:,
-			fairlearn_sensitive_feature_names],
+		'sensitive_features':fairlearn_sensitive_features,
 		'eval_method':fairlearn_eval_method,
-		'performance_metric':performance_metric
-
+		'performance_metric':performance_metric,
 		}
 
 	if run_experiments:
