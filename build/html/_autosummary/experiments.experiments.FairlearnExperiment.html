@@ -102,10 +102,10 @@ sensitive in the Fairlearn dataset</p></li>
 <dt class="sig sig-object py" id="experiments.experiments.FairlearnExperiment.get_fairlearn_predictions">
 <span class="sig-name descname"><span class="pre">get_fairlearn_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mitigator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test_fairlearn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.get_fairlearn_predictions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the predicted labels from the fairlearn mitigator.
-The mitigator consists of potentially more than one predictor
-and as many weights as predictors. For each predictor with non-zero
-weight, predict the proportion of points given by the weight
-of each predictor.</p>
+The mitigator consists of potentially more than one predictor.
+For each predictor with non-zero weight, we figure out 
+how many points to predict based on the weight of that predictor.
+Weights are normalized to 1 across all predictors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

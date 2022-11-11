@@ -38,15 +38,15 @@
 <h1>experiments.utils.generate_resampled_datasets<a class="headerlink" href="#experiments-utils-generate-resampled-datasets" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.utils.generate_resampled_datasets">
-<span class="sig-name descname"><span class="pre">generate_resampled_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'csv'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.utils.generate_resampled_datasets" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_resampled_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.utils.generate_resampled_datasets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility function for supervised learning to generate the
 resampled datasets to use in each trial. Resamples (with replacement)
-pandas dataframes to create n_trials resampled dataframes of the same
-shape as the input dataframe, df</p>
+features, labels and sensitive attributes to create n_trials versions of these
+of the same shape as the inputs</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pandas DataFrame</em>) – The original df from which to resample</p></li>
+<li><p><strong>dataset</strong> (<em>pandas DataFrame</em>) – The original dataset from which to resample</p></li>
 <li><p><strong>n_trials</strong> (<em>int</em>) – The number of trials, i.e. the number of 
 resampled datasets to make</p></li>
 <li><p><strong>save_dir</strong> (<em>str</em>) – The parent directory in which to save the 
