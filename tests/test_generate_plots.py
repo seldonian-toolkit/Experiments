@@ -11,6 +11,8 @@ from experiments.generate_plots import (
 
 from experiments.utils import MSE,generate_episodes_and_calc_J
 
+from seldonian.RL.environments.gridworld import Gridworld
+
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_regression_plot_generator(gpa_regression_spec,experiment):
 	np.random.seed(42)
@@ -375,7 +377,7 @@ def test_too_few_episodes(gridworld_spec,experiment):
 	perf_eval_kwargs = {'n_episodes_for_eval':n_episodes_for_eval}
 	
 	hyperparameter_and_setting_dict = {}
-	hyperparameter_and_setting_dict["env"] = "gridworld"
+	hyperparameter_and_setting_dict["env"] = Gridworld()
 	hyperparameter_and_setting_dict["agent"] = "Parameterized_non_learning_softmax_agent"
 	hyperparameter_and_setting_dict["num_episodes"] = 1000
 	hyperparameter_and_setting_dict["num_trials"] = 1
@@ -431,7 +433,7 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	}
 	
 	hyperparameter_and_setting_dict = {}
-	hyperparameter_and_setting_dict["env"] = "gridworld"
+	hyperparameter_and_setting_dict["env"] = Gridworld()
 	hyperparameter_and_setting_dict["agent"] = "Parameterized_non_learning_softmax_agent"
 	hyperparameter_and_setting_dict["num_episodes"] = 1000
 	hyperparameter_and_setting_dict["num_trials"] = 1

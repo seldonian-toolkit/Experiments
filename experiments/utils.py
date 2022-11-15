@@ -4,8 +4,8 @@ import os
 import pickle
 import numpy as np
 
-from seldonian.RL.RL_runner import (create_env,
-	create_agent,run_trial_given_agent_and_env)
+from seldonian.RL.RL_runner import (create_agent,
+	run_trial_given_agent_and_env)
 from seldonian.utils.stats_utils import weighted_sum_gamma
 from seldonian.dataset import SupervisedDataSet
 
@@ -85,7 +85,7 @@ def generate_episodes_and_calc_J(**kwargs):
     # create env and agent
     hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
     agent = create_agent(hyperparameter_and_setting_dict)
-    env = create_env(hyperparameter_and_setting_dict)
+    env = hyperparameter_and_setting_dict["env"]
    
     # set agent's weights to the trained model weights
     agent.set_new_params(new_params)
