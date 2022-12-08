@@ -21,13 +21,17 @@ from seldonian.spec import RLSpec
 from seldonian.models.models import (LinearRegressionModel,
 	BinaryLogisticRegressionModel,
 	DummyClassifierModel,RandomClassifierModel)
-
-from fairlearn.reductions import ExponentiatedGradient
-from fairlearn.metrics import (MetricFrame,selection_rate,
-	false_positive_rate,true_positive_rate,false_negative_rate)
-from fairlearn.reductions import (
-	DemographicParity,FalsePositiveRateParity,
-	EqualizedOdds)
+try: 
+	from fairlearn.reductions import ExponentiatedGradient
+	from fairlearn.metrics import (MetricFrame,selection_rate,
+		false_positive_rate,true_positive_rate,false_negative_rate)
+	from fairlearn.reductions import (
+		DemographicParity,FalsePositiveRateParity,
+		EqualizedOdds)
+except ImportError:
+	print("\nWARNING: The module 'fairlearn' was not imported. "
+        "If you want to use the fairlearn baselines, then do:\n"
+        "pip install fairlearn==0.7.0\n")
 
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning) 
