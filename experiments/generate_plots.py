@@ -98,6 +98,7 @@ class PlotGenerator():
 
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',
+		performance_yscale='linear',
 		marker_size=20,
 		include_legend=True,
 		savename=None):
@@ -235,6 +236,8 @@ class PlotGenerator():
 
 			# axis scaling
 			ax_performance.set_xscale('log')
+			if performance_yscale.lower() == 'log':
+				ax_performance.set_yscale('log')
 			ax_sr.set_xscale('log')
 			ax_fr.set_xscale('log')
 
