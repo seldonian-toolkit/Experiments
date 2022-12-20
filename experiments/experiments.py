@@ -1,6 +1,7 @@
 """ Module for running Seldonian Experiments """
 
 import os
+import math
 import pickle
 import autograd.numpy as np   # Thinly-wrapped version of Numpy
 import pandas as pd
@@ -745,7 +746,7 @@ class SeldonianExperiment(Experiment):
 
 		# Pass partial_kwargs onto self.QSA()
 		helper = partial(
-			self.QSA,
+			self.run_QSA_trial,
 			**partial_kwargs
 		)
 
@@ -773,7 +774,7 @@ class SeldonianExperiment(Experiment):
 
 		self.aggregate_results(**kwargs)
 	
-	def QSA(self,data_frac,trial_i,**kwargs):
+	def run_QSA_trial(self,data_frac,trial_i,**kwargs):
 		""" Run a trial of the quasi-Seldonian algorithm  
 		
 		:param data_frac: Fraction of overall dataset size to use
@@ -789,6 +790,7 @@ class SeldonianExperiment(Experiment):
 		perf_eval_kwargs = kwargs['perf_eval_kwargs']
 		constraint_eval_fns = kwargs['constraint_eval_fns']
 		constraint_eval_kwargs = kwargs['constraint_eval_kwargs']
+		batch_epoch_dict = kwargs['batch_epoch_dict']
 
 		regime=spec.dataset.regime
 
@@ -857,8 +859,8 @@ class SeldonianExperiment(Experiment):
 				meta_information=resampled_dataset.meta_information,
 				)
 
-			# Make a new spec object where the 
-			# only thing that is different is the dataset
+			# Make a new spec object 
+			# and update the dataset
 
 			spec_for_experiment = copy.deepcopy(spec)
 			spec_for_experiment.dataset = dataset_for_experiment
@@ -906,7 +908,18 @@ class SeldonianExperiment(Experiment):
 				raise NotImplementedError(
 					f"Eval method {datagen_method} "
 					"not supported for regime={regime}")
-		
+		# If optimizing using gradient descent, 
+		# and using mini-batches,
+		# update the batch_size and n_epochs
+		# using batch_epoch_dict
+		if spec_for_experiment.optimization_technique == 'gradient_descent':
+			if spec_for_experiment.optimization_hyperparams[
+				'use_batches'] == True:
+					batch_size,n_epochs = batch_epoch_dict[data_frac]
+					spec_for_experiment.optimization_hyperparams[
+						'batch_size'] = batch_size
+					spec_for_experiment.optimization_hyperparams[
+						'n_epochs'] = n_epochs
 		################################
 		"""" Run Seldonian algorithm """
 		################################
@@ -914,7 +927,8 @@ class SeldonianExperiment(Experiment):
 		try:
 			SA = SeldonianAlgorithm(
 				spec_for_experiment)
-			passed_safety,solution = SA.run(write_cs_logfile=True)
+			passed_safety,solution = SA.run(write_cs_logfile=True,
+				debug=verbose)
 			
 		except (ValueError,ZeroDivisionError):
 			passed_safety=False
@@ -948,10 +962,34 @@ class SeldonianExperiment(Experiment):
 				#############################
 				if regime == 'supervised_learning':
 					X_test = perf_eval_kwargs['X']
-					model = copy.deepcopy(spec_for_experiment.model)
-					y_pred = model.predict(solution,X_test)
+					model = SA.model
+					# model = copy.deepcopy(SA.model)
+					# Batch the prediction if specified
+					if 'eval_batch_size' in perf_eval_kwargs:
+						eval_batch_size = perf_eval_kwargs['eval_batch_size']
+						if type(X_test) == list:
+							N_eval = len(X_test[0])
+						else:
+							N_eval = len(X_test)
+						y_pred = np.zeros(N_eval)
+						num_batches = math.ceil(N_eval / eval_batch_size)
+						batch_start = 0 
+						for i in range(num_batches):
+							batch_end = batch_start + eval_batch_size
+							
+							if type(X_test) == list:
+								X_test_batch = [x[batch_start:batch_end] for x in X_test]
+							else:
+								X_test_batch = X_test[batch_start:batch_end]
+							y_pred[batch_start:batch_end] = model.predict(
+								solution,X_test_batch)
+							batch_start=batch_end
+					else:
+						y_pred = model.predict(solution,X_test)
+					
 					performance = perf_eval_fn(
 						y_pred,
+						model=model,
 						**perf_eval_kwargs)
 				
 				if regime == 'reinforcement_learning':
@@ -1048,11 +1086,15 @@ class SeldonianExperiment(Experiment):
 			spec_orig = constraint_eval_kwargs['spec_orig']
 			spec_for_experiment = constraint_eval_kwargs['spec_for_experiment']
 			regime = constraint_eval_kwargs['regime']
+			if 'eval_batch_size' in constraint_eval_kwargs:
+				constraint_eval_kwargs[
+					'batch_size_safety'] = constraint_eval_kwargs[
+						'eval_batch_size']
 			if regime == 'supervised_learning':
 				# Use the original dataset as ground truth
 				constraint_eval_kwargs['dataset']=spec_orig.dataset 
 
-			if regime == 'reinforcement_learning':
+			elif regime == 'reinforcement_learning':
 				episodes_for_eval = constraint_eval_kwargs['episodes_for_eval']
 
 				dataset_for_eval = RLDataSet(
@@ -1063,6 +1105,7 @@ class SeldonianExperiment(Experiment):
 				constraint_eval_kwargs['dataset'] = dataset_for_eval
 	
 			for parse_tree in spec_for_experiment.parse_trees:
+				parse_tree.reset_base_node_dict(reset_data=True)
 				parse_tree.evaluate_constraint(
 					**constraint_eval_kwargs)
 				
@@ -1077,3 +1120,4 @@ class SeldonianExperiment(Experiment):
 				if g > 0 or np.isnan(g):
 					failed = True
 		return failed
+

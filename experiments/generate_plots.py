@@ -32,6 +32,7 @@ class PlotGenerator():
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
+		batch_epoch_dict=[]
 		):
 		""" Class for running Seldonian experiments 
 		and generating the three plots:
@@ -84,6 +85,10 @@ class PlotGenerator():
 		:param constraint_eval_kwargs: Extra keyword arguments to pass to
 			the constraint_eval_fns
 		:type constraint_eval_kwargs: dict
+
+		:param batch_epoch_dict: Instruct batch sizes and n_epochs
+			for each data frac
+		:type batch_epoch_dict: dict
 		"""
 		self.spec = spec
 		self.n_trials = n_trials
@@ -95,6 +100,7 @@ class PlotGenerator():
 		self.constraint_eval_fns = constraint_eval_fns
 		self.perf_eval_kwargs = perf_eval_kwargs
 		self.constraint_eval_kwargs = constraint_eval_kwargs
+		self.batch_epoch_dict = batch_epoch_dict
 
 	def make_plots(self,fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',
@@ -404,7 +410,6 @@ class PlotGenerator():
 		else:
 			plt.show()
 
-
 class SupervisedPlotGenerator(PlotGenerator):
 	def __init__(self,
 		spec,
@@ -417,6 +422,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
+		batch_epoch_dict=[],
 		):
 		"""Class for running supervised Seldonian experiments 
 			and generating the three plots
@@ -465,6 +471,10 @@ class SupervisedPlotGenerator(PlotGenerator):
 		:param constraint_eval_kwargs: Extra keyword arguments to pass to
 			the constraint_eval_fns
 		:type constraint_eval_kwargs: dict
+
+		:param batch_epoch_dict: Instruct batch sizes and n_epochs
+			for each data frac
+		:type batch_epoch_dict: dict
 		"""
 
 		super().__init__(spec=spec,
@@ -477,6 +487,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			constraint_eval_fns=constraint_eval_fns,
 			perf_eval_kwargs=perf_eval_kwargs,
 			constraint_eval_kwargs=constraint_eval_kwargs,
+			batch_epoch_dict=batch_epoch_dict,
 			)
 		self.regime = 'supervised_learning'
 
@@ -511,6 +522,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			perf_eval_kwargs=self.perf_eval_kwargs,
 			constraint_eval_fns=self.constraint_eval_fns,
 			constraint_eval_kwargs=self.constraint_eval_kwargs,
+			batch_epoch_dict=self.batch_epoch_dict,
 			verbose=verbose,
 			)
 
@@ -634,6 +646,7 @@ class RLPlotGenerator(PlotGenerator):
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
+		batch_epoch_dict=[],
 		):
 		"""Class for running RL Seldonian experiments 
 			and generating the three plots
@@ -682,6 +695,10 @@ class RLPlotGenerator(PlotGenerator):
 		:param constraint_eval_kwargs: Extra keyword arguments to pass to
 			the constraint_eval_fns
 		:type constraint_eval_kwargs: dict
+
+		:param batch_epoch_dict: Instruct batch sizes and n_epochs
+			for each data frac
+		:type batch_epoch_dict: dict
 		"""
 
 		super().__init__(spec=spec,
@@ -694,6 +711,7 @@ class RLPlotGenerator(PlotGenerator):
 			constraint_eval_fns=constraint_eval_fns,
 			perf_eval_kwargs=perf_eval_kwargs,
 			constraint_eval_kwargs=constraint_eval_kwargs,
+			batch_epoch_dict=batch_epoch_dict,
 			)
 		
 		self.regime = 'reinforcement_learning'
@@ -740,6 +758,7 @@ class RLPlotGenerator(PlotGenerator):
 			constraint_eval_kwargs=self.constraint_eval_kwargs,
 			perf_eval_fn=self.perf_eval_fn,
 			perf_eval_kwargs=self.perf_eval_kwargs,
+			batch_epoch_dict=self.batch_epoch_dict,
 			verbose=verbose,
 			)
 
