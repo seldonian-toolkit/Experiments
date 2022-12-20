@@ -13,20 +13,16 @@ if __name__ == "__main__":
 	save_plot = False
 	include_legend = True
 	performance_metric = 'accuracy'
-	n_trials = 1
+	n_trials = 5
 	# data_fracs = np.logspace(-4,0,15)
-	# data_fracs = [0.001,0.01,0.1,0.33,0.66] 
-	# batch_epoch_dict = {
-	# 	0.001:[12,1000],
-	# 	0.01:[118,1000],
-	# 	0.1:[237,200],
-	# 	0.33:[230,50],
-	# 	0.66:[237,30],
-	# }
-	data_fracs = [0.1]
+	data_fracs = [0.001,0.01,0.1,0.33,0.66] 
 	batch_epoch_dict = {
-		0.1:[237,5],
-	} 
+		0.001:[12,1000],
+		0.01:[118,1000],
+		0.1:[237,200],
+		0.33:[230,50],
+		0.66:[237,30],
+	}
 	n_workers = 1
 	results_dir = f'results/facial_recog_2022Dec20_debug'
 	plot_savename = os.path.join(results_dir,f'facial_recog_{performance_metric}.png')

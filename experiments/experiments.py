@@ -35,6 +35,7 @@ except ImportError:
         "pip install fairlearn==0.7.0\n")
 
 import warnings
+from seldonian.warnings.custom_warnings import *
 warnings.filterwarnings("ignore", category=FutureWarning) 
 
 class Experiment():
@@ -791,7 +792,14 @@ class SeldonianExperiment(Experiment):
 		constraint_eval_fns = kwargs['constraint_eval_fns']
 		constraint_eval_kwargs = kwargs['constraint_eval_kwargs']
 		batch_epoch_dict = kwargs['batch_epoch_dict']
-
+		if batch_epoch_dict == {} and spec.optimization_technique == 'gradient_descent':
+			warning_msg = (
+				"WARNING: No batch_epoch_dict was provided. "
+				"Each data_frac will use the same values "
+				"for batch_size and n_epochs. "
+				"This can have adverse effects, "
+				"especially for small values of data_frac.")
+			warnings.warn(warning_msg)
 		regime=spec.dataset.regime
 
 		trial_dir = os.path.join(

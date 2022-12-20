@@ -32,7 +32,7 @@ class PlotGenerator():
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
-		batch_epoch_dict=[]
+		batch_epoch_dict={}
 		):
 		""" Class for running Seldonian experiments 
 		and generating the three plots:
@@ -422,7 +422,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
-		batch_epoch_dict=[],
+		batch_epoch_dict={},
 		):
 		"""Class for running supervised Seldonian experiments 
 			and generating the three plots
@@ -646,7 +646,7 @@ class RLPlotGenerator(PlotGenerator):
 		constraint_eval_fns=[],
 		perf_eval_kwargs={},
 		constraint_eval_kwargs={},
-		batch_epoch_dict=[],
+		batch_epoch_dict={},
 		):
 		"""Class for running RL Seldonian experiments 
 			and generating the three plots
