@@ -69,20 +69,6 @@ experimental results</p></li>
 </tbody>
 </table>
 <dl class="py method">
-<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.QSA">
-<span class="sig-name descname"><span class="pre">QSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.QSA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a trial of the quasi-Seldonian algorithm</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_frac</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
-<li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.aggregate_results">
 <span class="sig-name descname"><span class="pre">aggregate_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.aggregate_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Group together the data in each 
@@ -107,6 +93,20 @@ tree to evaluate the constraints</p></li>
 <li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – keyword arguments
 to pass to each constraint function 
 in constraint_eval_fns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.run_QSA_trial">
+<span class="sig-name descname"><span class="pre">run_QSA_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.run_QSA_trial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a trial of the quasi-Seldonian algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_frac</strong> (<em>float</em>) – Fraction of overall dataset size to use</p></li>
+<li><p><strong>trial_i</strong> (<em>int</em>) – The index of the trial</p></li>
 </ul>
 </dd>
 </dl>
@@ -169,9 +169,9 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l5"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.__init__"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.__init__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.__repr__"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.__repr__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.QSA"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.QSA()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.aggregate_results"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.aggregate_results()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.evaluate_constraint_functions"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.evaluate_constraint_functions()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.run_QSA_trial"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.run_QSA_trial()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.run_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.SeldonianExperiment.write_trial_result"><code class="docutils literal notranslate"><span class="pre">SeldonianExperiment.write_trial_result()</span></code></a></li>
 </ul>
