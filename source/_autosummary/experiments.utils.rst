@@ -1,4 +1,4 @@
-﻿experiments.utils
+experiments.utils
 =================
 
 .. automodule:: experiments.utils 
@@ -15,6 +15,7 @@
       :toctree:                                         
    
       MSE
+      batch_predictions
       generate_episodes_and_calc_J
       generate_resampled_datasets
    

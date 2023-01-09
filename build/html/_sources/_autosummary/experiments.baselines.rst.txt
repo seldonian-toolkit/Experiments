@@ -1,7 +1,7 @@
-﻿experiments
-===========
+experiments.baselines
+=====================
 
-.. automodule:: experiments 
+.. automodule:: experiments.baselines 
   
    
    
@@ -29,8 +29,5 @@
    :recursive:
 
 
-   experiments.baselines
-   experiments.experiments
-   experiments.generate_plots
-   experiments.utils
+   experiments.baselines.facial_recog_cnn
 
