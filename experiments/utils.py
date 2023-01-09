@@ -3,6 +3,7 @@
 import os
 import pickle
 import numpy as np
+import math
 
 from seldonian.RL.RL_runner import (create_agent,
 	run_trial_given_agent_and_env)
@@ -100,7 +101,33 @@ def generate_episodes_and_calc_J(**kwargs):
     J = np.mean(returns)
     return episodes,J
 	
+def batch_predictions(model,solution,X_test,**kwargs):
+	batch_size = kwargs['eval_batch_size']
+	if type(X_test) == list:
+		N_eval = len(X_test[0])
+	else:
+		N_eval = len(X_test)
+	if 'N_output_classes' in kwargs:
+		N_output_classes = kwargs['N_output_classes']
+		y_pred = np.zeros((N_eval,N_output_classes))
+	else:
+		y_pred = np.zeros(N_eval)
+	num_batches = math.ceil(N_eval / batch_size)
+	batch_start = 0 
+	for i in range(num_batches):
+		batch_end = batch_start + batch_size
+		
+		if type(X_test) == list:
+			X_test_batch = [x[batch_start:batch_end] for x in X_test]
+		else:
+			X_test_batch = X_test[batch_start:batch_end]
+		y_pred[batch_start:batch_end] = model.predict(
+			solution,X_test_batch)
+		batch_start=batch_end
+	return y_pred
 
+
+	
 
 def MSE(y_pred,y,**kwargs):
 	""" Calculate sample mean squared error 

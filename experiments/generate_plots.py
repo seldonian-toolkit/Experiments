@@ -226,9 +226,7 @@ class PlotGenerator():
 
 			# Plot labels
 			ax_performance.set_ylabel(performance_label,fontsize=fontsize)
-			# ax_sr.set_ylabel('Solution rate',fontsize=fontsize)
 			ax_sr.set_ylabel('Probability of solution',fontsize=fontsize)
-			# ax_fr.set_ylabel('Failure Rate',fontsize=fontsize)
 			ax_fr.set_ylabel('Probability constraint was violated',fontsize=fontsize)
 
 			# Only put horizontal axis labels on last row of plots 
@@ -236,9 +234,9 @@ class PlotGenerator():
 				# ax_performance.set_xlabel('Training samples',fontsize=fontsize)
 				# ax_sr.set_xlabel('Training samples',fontsize=fontsize)
 				# ax_fr.set_xlabel('Training samples',fontsize=fontsize)
-				ax_performance.set_xlabel('Size of training set',fontsize=fontsize)
-				ax_sr.set_xlabel('Size of training set',fontsize=fontsize)
-				ax_fr.set_xlabel('Size of training set',fontsize=fontsize)
+				ax_performance.set_xlabel('Amount of data',fontsize=fontsize)
+				ax_sr.set_xlabel('Amount of data',fontsize=fontsize)
+				ax_fr.set_xlabel('Amount of data',fontsize=fontsize)
 
 			# axis scaling
 			ax_performance.set_xscale('log')
@@ -294,10 +292,9 @@ class PlotGenerator():
 				ste_performance = std_performance/np.sqrt(n_passed)
 				X_passed_seldonian = this_seldonian_dict['X_passed']
 				pl, = ax_performance.plot(X_passed_seldonian,mean_performance,color=seldonian_color,
-					linestyle='--',label='QSA')
+					linestyle='--')
 				legend_handles.append(pl)
 				legend_labels.append(seldonian_model)
-				# legend_labels.append('Linear regression with constraint')
 				ax_performance.scatter(X_passed_seldonian,mean_performance,color=seldonian_color,
 					s=marker_size,marker='o')
 				ax_performance.fill_between(X_passed_seldonian,
@@ -568,6 +565,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 			perf_eval_kwargs=self.perf_eval_kwargs,
 			constraint_eval_fns=self.constraint_eval_fns,
 			constraint_eval_kwargs=self.constraint_eval_kwargs,
+			batch_epoch_dict=self.batch_epoch_dict,
 			verbose=verbose,
 			)
 

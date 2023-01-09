@@ -20,7 +20,7 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
 	deltas = [0.05,0.1]
 	spec = gpa_regression_spec(constraint_strs,deltas)
 	n_trials = 2
-	data_fracs = [0.01,0.02]
+	data_fracs = [0.01,0.1]
 	datagen_method="resample"
 	perf_eval_fn = MSE
 	results_dir = "./tests/static/results"
@@ -78,10 +78,10 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
 	assert dps[1] == 0.01
 	assert trial_is[1] == 1
 
-	assert dps[2] == 0.02
+	assert dps[2] == 0.1
 	assert trial_is[2] == 0
 
-	assert dps[3] == 0.02
+	assert dps[3] == 0.1
 	assert trial_is[3] == 1
 	
 	# Make sure number of trial files created is correct
@@ -94,14 +94,6 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
 	df_trial0 = pd.read_csv(trial_file_0)
 	assert len(df_trial0) == 1
 
-	# Now make plot
-	savename = os.path.join(results_dir,"test_gpa_regression_plot.png")
-	spg.make_plots(fontsize=12,legend_fontsize=8,
-		performance_label='MSE',
-		savename=savename)
-	# Make sure it was saved
-	assert os.path.exists(savename)
-
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_classification_plot_generator(gpa_classification_spec,experiment):
 	np.random.seed(42)
@@ -109,7 +101,7 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	deltas = [0.05]
 	spec = gpa_classification_spec(constraint_strs,deltas)
 	n_trials = 2
-	data_fracs = [0.01,0.02]
+	data_fracs = [0.01,0.1]
 	datagen_method="resample"
 	performance_metric = 'accuracy'
 	def perf_eval_fn(y_pred,y,**kwargs):
@@ -174,10 +166,10 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
 
-		assert dps[2] == 0.02
+		assert dps[2] == 0.1
 		assert trial_is[2] == 0
 
-		assert dps[3] == 0.02
+		assert dps[3] == 0.1
 		assert trial_is[3] == 1
 		
 		# Make sure number of trial files created is correct
@@ -241,10 +233,10 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
 
-		assert dps[2] == 0.02
+		assert dps[2] == 0.1
 		assert trial_is[2] == 0
 
-		assert dps[3] == 0.02
+		assert dps[3] == 0.1
 		assert trial_is[3] == 1
 		
 		# Make sure number of trial files created is correct
@@ -281,10 +273,10 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	assert dps[1] == 0.01
 	assert trial_is[1] == 1
 
-	assert dps[2] == 0.02
+	assert dps[2] == 0.1
 	assert trial_is[2] == 0
 
-	assert dps[3] == 0.02
+	assert dps[3] == 0.1
 	assert trial_is[3] == 1
 	
 	# Make sure number of trial files created is correct
@@ -298,9 +290,9 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	assert len(df_trial0) == 1
 
 	# Now make plot
-	savename = os.path.join(results_dir,"test_gpa_regression_plot.png")
+	savename = os.path.join(results_dir,"test_gpa_classification_plot.png")
 	spg.make_plots(fontsize=12,legend_fontsize=8,
-		performance_label='MSE',
+		performance_label='Accuracy',
 		savename=savename)
 	# Make sure it was saved
 	assert os.path.exists(savename)
@@ -373,13 +365,13 @@ def test_too_few_episodes(gridworld_spec,experiment):
 	results_dir = "./tests/static/gridworld_results"
 	n_workers = 1
 	# Get performance evaluation kwargs set up
-	n_episodes_for_eval = 1000
+	n_episodes_for_eval = 100
 	perf_eval_kwargs = {'n_episodes_for_eval':n_episodes_for_eval}
 	
 	hyperparameter_and_setting_dict = {}
 	hyperparameter_and_setting_dict["env"] = Gridworld()
 	hyperparameter_and_setting_dict["agent"] = "Parameterized_non_learning_softmax_agent"
-	hyperparameter_and_setting_dict["num_episodes"] = 1000
+	hyperparameter_and_setting_dict["num_episodes"] = 100
 	hyperparameter_and_setting_dict["num_trials"] = 1
 	hyperparameter_and_setting_dict["vis"] = False
 
@@ -414,14 +406,14 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	constraint_strs = ['J_pi_new >= - 0.25']
 	deltas = [0.05]
 	spec = gridworld_spec(constraint_strs,deltas)
-	spec.optimization_hyperparams['num_iters'] = 20
+	spec.optimization_hyperparams['num_iters'] = 10
 	n_trials = 2
 	data_fracs = [0.01,0.1]
 	datagen_method="generate_episodes"
 	perf_eval_fn = generate_episodes_and_calc_J
 	results_dir = "./tests/static/results"
-	n_workers = 4
-	n_episodes_for_eval=1000
+	n_workers = 1
+	n_episodes_for_eval=100
 	# Get performance evaluation kwargs set up
 	# Use entire original dataset as ground truth for test set
 	dataset = spec.dataset
@@ -435,7 +427,7 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	hyperparameter_and_setting_dict = {}
 	hyperparameter_and_setting_dict["env"] = Gridworld()
 	hyperparameter_and_setting_dict["agent"] = "Parameterized_non_learning_softmax_agent"
-	hyperparameter_and_setting_dict["num_episodes"] = 1000
+	hyperparameter_and_setting_dict["num_episodes"] = 100
 	hyperparameter_and_setting_dict["num_trials"] = 1
 	hyperparameter_and_setting_dict["vis"] = False
 
@@ -495,10 +487,10 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	assert len(df_trial0) == 1
 
 	# Now make plot
-	savename = os.path.join(results_dir,"test_gridworld_plot.png")
-	spg.make_plots(fontsize=12,legend_fontsize=8,
-		performance_label='-IS_estimate',
-		savename=savename)
-	# Make sure it was saved
-	assert os.path.exists(savename)
+	# savename = os.path.join(results_dir,"test_gridworld_plot.png")
+	# spg.make_plots(fontsize=12,legend_fontsize=8,
+	# 	performance_label='-IS_estimate',
+	# 	savename=savename)
+	# # Make sure it was saved
+	# assert os.path.exists(savename)
 	

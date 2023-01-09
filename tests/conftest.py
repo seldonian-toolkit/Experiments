@@ -23,7 +23,7 @@ def gpa_regression_spec():
 	
 	def spec_maker(constraint_strs,deltas):
 
-		data_pth = 'static/datasets/supervised/GPA/gpa_regression_dataset.csv'
+		data_pth = 'static/datasets/supervised/GPA/gpa_regression_dataset_1000points.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_regression.json'
 
 		(regime, sub_regime, all_col_names, feature_col_names,
@@ -72,7 +72,7 @@ def gpa_classification_spec():
 	
 	def spec_maker(constraint_strs,deltas):
 
-		data_pth = 'static/datasets/supervised/GPA/gpa_classification_dataset.csv'
+		data_pth = 'static/datasets/supervised/GPA/gpa_classification_dataset_1000points.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_classification.json'
 
 		(regime, sub_regime, all_col_names, feature_col_names,
@@ -120,7 +120,7 @@ def gridworld_spec():
 	
 	def spec_maker(constraint_strs,deltas):
 
-		episodes_file = 'static/datasets/RL/gridworld/gridworld_1000episodes.pkl'
+		episodes_file = 'static/datasets/RL/gridworld/gridworld_100episodes.pkl'
 		episodes = load_pickle(episodes_file)
 		dataset = RLDataSet(episodes=episodes)
 
