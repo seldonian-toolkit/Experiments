@@ -8,9 +8,9 @@ from sklearn.metrics import log_loss,accuracy_score
 
 if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = True
+	run_experiments = False
 	make_plots = True
-	save_plot = False
+	save_plot = True
 	constraint_name = 'disparate_impact'
 	fairlearn_constraint_name = constraint_name
 	fairlearn_epsilon_eval = 0.9 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
@@ -19,17 +19,18 @@ if __name__ == "__main__":
 	performance_metric = 'log_loss'
 	n_trials = 50
 	data_fracs = np.logspace(-3,0,15)
+	# data_fracs = 
 	n_workers = 8
 	verbose=True
-	results_dir = f'results/loan_{constraint_name}_seldodef_log_loss_debug_2022Nov6'
+	# results_dir = f'results/loan_{constraint_name}_seldodef_log_loss_debug_2022Dec20'
+	results_dir = f'results/loan_{constraint_name}_seldo_log_loss'
+	os.makedirs(results_dir,exist_ok=True)
+
 	plot_savename = os.path.join(results_dir,f'{constraint_name}_{performance_metric}.png')
 
 	# Load spec
-	# specfile = f'../interface_outputs/loan_{constraint_name}_seldodef/spec.pkl'
 	specfile = f'../engine-repo-dev/examples/loan_tutorial/spec.pkl'
 	spec = load_pickle(specfile)
-
-	os.makedirs(results_dir,exist_ok=True)
 
 	# Use entire original dataset as ground truth for test set
 	dataset = spec.dataset
@@ -65,15 +66,14 @@ if __name__ == "__main__":
 
 	if run_experiments:
 		# Baseline models
-		plot_generator.run_baseline_experiment(
-			model_name='random_classifier',verbose=True)
+		# plot_generator.run_baseline_experiment(
+		# 	model_name='random_classifier',verbose=verbose)
 
-		plot_generator.run_baseline_experiment(
-			model_name='logistic_regression',verbose=True)
+		# plot_generator.run_baseline_experiment(
+		# 	model_name='logistic_regression',verbose=verbose)
 
 		# Seldonian experiment
 		plot_generator.run_seldonian_experiment(verbose=verbose)
-
 
 	######################
 	# Fairlearn experiment 
@@ -91,22 +91,24 @@ if __name__ == "__main__":
 		'eval_method':fairlearn_eval_method,
 		}
 
-	if run_experiments:
-		for fairlearn_epsilon_constraint in fairlearn_epsilons_constraint:
-			plot_generator.run_fairlearn_experiment(
-				verbose=verbose,
-				fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
-				fairlearn_constraint_name=fairlearn_constraint_name,
-				fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
-				fairlearn_epsilon_eval=fairlearn_epsilon_eval,
-				fairlearn_eval_kwargs=fairlearn_eval_kwargs,
-				)
+	# if run_experiments:
+	# 	for fairlearn_epsilon_constraint in fairlearn_epsilons_constraint:
+	# 		plot_generator.run_fairlearn_experiment(
+	# 			verbose=verbose,
+	# 			fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
+	# 			fairlearn_constraint_name=fairlearn_constraint_name,
+	# 			fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
+	# 			fairlearn_epsilon_eval=fairlearn_epsilon_eval,
+	# 			fairlearn_eval_kwargs=fairlearn_eval_kwargs,
+	# 			)
 
 	if make_plots:
 		if save_plot:
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
 				performance_label=performance_metric,
+				performance_yscale='log',
 				savename=plot_savename)
 		else:
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
-				performance_label=performance_metric)
+				performance_label=performance_metric,
+				performance_yscale='log')

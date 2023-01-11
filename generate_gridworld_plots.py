@@ -5,8 +5,9 @@ from experiments.generate_plots import RLPlotGenerator
 
 from seldonian.utils.io_utils import load_pickle
 from seldonian.utils.stats_utils import weighted_sum_gamma
-from seldonian.RL.RL_runner import (create_env,
-	create_agent,run_trial_given_agent_and_env)
+from seldonian.RL.RL_runner import (create_agent,
+	run_trial_given_agent_and_env)
+from seldonian.RL.environments.gridworld import Gridworld
 
 def generate_episodes_and_calc_J(**kwargs):
     """ Calculate the expected discounted return 
@@ -23,8 +24,9 @@ def generate_episodes_and_calc_J(**kwargs):
    
     # create env and agent
     hyperparameter_and_setting_dict = kwargs['hyperparameter_and_setting_dict']
+    env = hyperparameter_and_setting_dict['env']
     agent = create_agent(hyperparameter_and_setting_dict)
-    env = create_env(hyperparameter_and_setting_dict)
+    # env = create_env(hyperparameter_and_setting_dict)
    
     # set agent's weights to the trained model weights
     agent.set_new_params(new_params)
@@ -45,13 +47,13 @@ if __name__ == "__main__":
 	make_plots = True
 	save_plot = False
 	performance_metric = 'J(pi_new)'
-	n_trials = 20
+	n_trials = 11
 	# n_trials = 1
 	data_fracs = np.logspace(-2.3,0,10)
 	# data_fracs = [0.05]
-	n_workers = 8
+	n_workers = 1
 	verbose=True
-	results_dir = f'results/gridworld_2022Nov7_debug'
+	results_dir = f'results/gridworld_2022Dec20_debug'
 	os.makedirs(results_dir,exist_ok=True)
 	plot_savename = os.path.join(results_dir,f'gridworld_{n_trials}trials.png')
 	n_episodes_for_eval = 1000
@@ -70,7 +72,7 @@ if __name__ == "__main__":
 	}
 
 	hyperparameter_and_setting_dict = {}
-	hyperparameter_and_setting_dict["env"] = "gridworld"
+	hyperparameter_and_setting_dict["env"] = Gridworld()
 	hyperparameter_and_setting_dict["agent"] = "Parameterized_non_learning_softmax_agent"
 	hyperparameter_and_setting_dict["num_episodes"] = 1000
 	hyperparameter_and_setting_dict["num_trials"] = 1
