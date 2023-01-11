@@ -6,36 +6,47 @@ from experiments.generate_plots import SupervisedPlotGenerator
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
+import torch
+
 if __name__ == "__main__":
 	# Parameter setup
-	# 35,000 in candidate data
 	run_experiments = False
 	make_plots = True
 	save_plot = True
-	include_legend = False
+	include_legend = True
 	performance_metric = 'Accuracy'
+	# n_trials = 10
 	n_trials = 10
 	# data_fracs = np.logspace(-4,0,15)
 	# data_fracs = [0.001,0.005,0.01,0.1,0.33,0.66,1.0] 
-	data_fracs = [0.001,0.01,0.05,0.1,0.33,0.66] 
+	data_fracs = [0.001,0.005,0.01,0.1,0.33,0.66,1.0]
+	# batch_epoch_dict = {
+	# 	0.001:[12,1000],
+	# 	0.005:[60,1000],
+	# 	0.01:[118,1000],
+	# 	0.1:[237,200],
+	# 	0.33:[230,50],
+	# 	0.66:[237,30],
+	# 	1.0: [237,20]
+	# }
 	batch_epoch_dict = {
-		0.001:[35,1000],
-		0.005:[175,1000],
-		0.01:[175,500],
-		0.05:[175,100],
-		0.1:[175,50],
-		0.33:[175,30],
-		0.66:[175,15],
-		1.0: [175,5]
+		0.001:[24,50],
+		0.005:[119,50],
+		0.01:[237,75],
+		0.1:[237,30],
+		0.33:[237,20],
+		0.66:[237,10],
+		1.0: [237,10]
 	}
+	
 	n_workers = 1
-	results_dir = f'results/mnist_2022Dec29'
-	plot_savename = os.path.join(results_dir,f'mnist_{performance_metric}.png')
+	results_dir = f'../../results/facial_recog_2022Dec19'
+	plot_savename = os.path.join(results_dir,f'facial_recog_{performance_metric}.png')
 
 	verbose=True
 
 	# Load spec
-	specfile = f'../engine-repo-dev/examples/pytorch_mnist_batch/spec.pkl'
+	specfile = f'../../../engine-repo-dev/examples/facial_recog_pytorch/spec.pkl'
 	spec = load_pickle(specfile)
 
 	os.makedirs(results_dir,exist_ok=True)
@@ -49,21 +60,24 @@ if __name__ == "__main__":
 	# of the performance evaluation function
 
 	def perf_eval_fn(y_pred,y,**kwargs):
-		if performance_metric == 'Accuracy':
-			n = len(y)
-			return np.sum(y_pred[np.arange(n),y])/n
-
+		print("y_pred:")
+		print(y_pred)
+		if performance_metric == 'log_loss':
+			return log_loss(y,y_pred)
+		elif performance_metric == 'Accuracy':
+			return accuracy_score(y,y_pred > 0.5)
+	device = spec.model.device
+	
 	perf_eval_kwargs = {
 		'X':test_features,
 		'y':test_labels,
-		'eval_batch_size':2000,
-		'N_output_classes':10
+		'device':device,
+		'eval_batch_size':2000
 		}
 
 	constraint_eval_kwargs = {
 		'eval_batch_size':2000
 		}
-
 
 	plot_generator = SupervisedPlotGenerator(
 		spec=spec,
@@ -84,9 +98,11 @@ if __name__ == "__main__":
 		# plot_generator.run_baseline_experiment(
 		# 	model_name='random_classifier',verbose=True)
 
-		# Seldonian experiment
-		plot_generator.run_seldonian_experiment(verbose=verbose)
+		plot_generator.run_baseline_experiment(
+			model_name='facial_recog_cnn',verbose=True)
 
+		# Seldonian experiment
+		# plot_generator.run_seldonian_experiment(verbose=verbose)
 
 
 	if make_plots:

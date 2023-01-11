@@ -1,43 +1,33 @@
+# generate_gpa_plots.py
 import os
 import numpy as np 
-import tracemalloc,linecache
 
 from experiments.generate_plots import SupervisedPlotGenerator
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
-def perf_eval_fn(y_pred,y,**kwargs):
-	performance_metric = kwargs['performance_metric']
-	if performance_metric == 'log_loss':
-		return log_loss(y,y_pred)
-	elif performance_metric == 'accuracy':
-		return accuracy_score(y,y_pred > 0.5)
-
-def main():
+if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = True
+	run_experiments = False
 	make_plots = True
-	save_plot = False
+	save_plot = True
 	include_legend = True
-	constraint_name = 'disparate_impact'
+	constraint_name = 'predictive_equality'
 	fairlearn_constraint_name = constraint_name
-	fairlearn_epsilon_eval = 0.8 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
+	fairlearn_epsilon_eval = 0.2 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_eval_method = 'two-groups' # the epsilon used to evaluate g, needs to be same as epsilon in our definition
-	# fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
-	fairlearn_epsilons_constraint = [0.01] # the epsilons used in the fitting constraint
+	fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
 	performance_metric = 'accuracy'
-	n_trials = 25
+	n_trials = 50
 	data_fracs = np.logspace(-4,0,15)
-	# data_fracs = [0.25]
-	n_workers = 7
-	results_dir = f'results/gpa_{constraint_name}_{performance_metric}_2022Nov7_debug'
+	n_workers = 8
+	results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}_2022Nov15'
 	plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
 
 	verbose=True
 
 	# Load spec
-	# specfile = f'../interface_outputs/gpa_{constraint_name}/spec.pkl'
-	specfile = f'../engine-repo-dev/examples/GPA_tutorial/gpa_{constraint_name}/spec.pkl'
+	specfile = f'../../../interface_outputs/gpa_{constraint_name}/spec.pkl'
 	spec = load_pickle(specfile)
 
 	os.makedirs(results_dir,exist_ok=True)
@@ -48,11 +38,17 @@ def main():
 	test_labels = dataset.labels
 
 	# Setup performance evaluation function and kwargs 
+	# of the performance evaluation function
+
+	def perf_eval_fn(y_pred,y,**kwargs):
+		if performance_metric == 'log_loss':
+			return log_loss(y,y_pred)
+		elif performance_metric == 'accuracy':
+			return accuracy_score(y,y_pred > 0.5)
 
 	perf_eval_kwargs = {
 		'X':test_features,
 		'y':test_labels,
-		'performance_metric':performance_metric
 		}
 
 	plot_generator = SupervisedPlotGenerator(
@@ -83,9 +79,13 @@ def main():
 	# Fairlearn experiment 
 	######################
 
+	fairlearn_sensitive_feature_names=['M']
+	
+	# Make dict of test set features, labels and sensitive feature vectors
+	
 	fairlearn_sensitive_feature_names = ['M']
 	fairlearn_sensitive_col_indices = [dataset.sensitive_col_names.index(
-	    col) for col in fairlearn_sensitive_feature_names]
+		col) for col in fairlearn_sensitive_feature_names]
 	fairlearn_sensitive_features = dataset.sensitive_attrs[:,fairlearn_sensitive_col_indices]
 	# Setup ground truth test dataset for Fairlearn
 	test_features_fairlearn = test_features
@@ -118,9 +118,3 @@ def main():
 			plot_generator.make_plots(fontsize=12,legend_fontsize=8,
 				include_legend=include_legend,
 				performance_label=performance_metric)
-
-
-
-if __name__ == "__main__":
-
-	main()

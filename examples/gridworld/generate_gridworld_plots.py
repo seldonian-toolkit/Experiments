@@ -53,12 +53,12 @@ if __name__ == "__main__":
 	# data_fracs = [0.05]
 	n_workers = 1
 	verbose=True
-	results_dir = f'results/gridworld_2022Dec20_debug'
+	results_dir = f'../../results/gridworld_2022Dec20_debug'
 	os.makedirs(results_dir,exist_ok=True)
 	plot_savename = os.path.join(results_dir,f'gridworld_{n_trials}trials.png')
 	n_episodes_for_eval = 1000
 	# Load spec
-	specfile = f'../engine-repo-dev/examples/gridworld_tutorial/spec.pkl'
+	specfile = f'../../../engine-repo-dev/examples/gridworld_tutorial/spec.pkl'
 	spec = load_pickle(specfile)
 	spec.optimization_hyperparams['num_iters'] = 30
 	spec.optimization_hyperparams['alpha_theta'] = 0.01
