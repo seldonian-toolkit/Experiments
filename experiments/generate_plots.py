@@ -102,7 +102,9 @@ class PlotGenerator():
 		self.constraint_eval_kwargs = constraint_eval_kwargs
 		self.batch_epoch_dict = batch_epoch_dict
 
-	def make_plots(self,fontsize=12,legend_fontsize=8,
+	def make_plots(self,
+		model_label_dict={},
+		fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',
 		performance_yscale='linear',
 		marker_size=20,
@@ -111,6 +113,11 @@ class PlotGenerator():
 		""" Make the three plots from results files saved to
 		self.results_dir
 		
+		:param model_label_dict: An optional dictionary where keys
+			are model names and values are the names you want
+			shown in the legend.
+		:type model_label_dict: int
+
 		:param fontsize: The font size to use for the axis labels
 		:type fontsize: int
 
@@ -147,7 +154,6 @@ class PlotGenerator():
 		all_models = [x.split('_results')[0] for x in subfolders if x.endswith('_results')]
 		seldonian_models = list(set(all_models).intersection(seldonian_model_set))
 		baselines = sorted(list(set(all_models).difference(seldonian_model_set)))
-
 		if not (seldonian_models or baselines):
 			print("No results for Seldonian models or baselines found ")
 			return
@@ -273,7 +279,10 @@ class PlotGenerator():
 				pl, = ax_performance.plot(X_valid_baseline,baseline_mean_performance,
 					color=baseline_color,label=baseline)
 				legend_handles.append(pl)
-				legend_labels.append(baseline)
+				if baseline in model_label_dict:
+					legend_labels.append(model_label_dict[baseline])
+				else:
+					legend_labels.append(baseline)
 				ax_performance.scatter(X_valid_baseline,baseline_mean_performance,
 					color=baseline_color,s=marker_size,
 					marker=marker_list[baseline_i])
@@ -294,7 +303,11 @@ class PlotGenerator():
 				pl, = ax_performance.plot(X_passed_seldonian,mean_performance,color=seldonian_color,
 					linestyle='--')
 				legend_handles.append(pl)
-				legend_labels.append(seldonian_model)
+				if seldonian_model in model_label_dict:
+					legend_labels.append(model_label_dict[seldonian_model])
+				else:
+					legend_labels.append(seldonian_model)
+
 				ax_performance.scatter(X_passed_seldonian,mean_performance,color=seldonian_color,
 					s=marker_size,marker='o')
 				ax_performance.fill_between(X_passed_seldonian,

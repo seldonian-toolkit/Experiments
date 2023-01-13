@@ -150,7 +150,6 @@ class BaselineExperiment(Experiment):
 			for ii in range(len(data_fracs_vector)):
 				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_frac,trial_i)
 				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
@@ -390,7 +389,6 @@ class SeldonianExperiment(Experiment):
 			for ii in range(len(data_fracs_vector)):
 				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_frac,trial_i)
 				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
@@ -414,8 +412,6 @@ class SeldonianExperiment(Experiment):
 		:param trial_i: The index of the trial 
 		:type trial_i: int
 		"""
-		print("data_frac,trial_i:")
-		print(data_frac,trial_i)
 		spec = kwargs['spec']
 		verbose=kwargs['verbose']
 		datagen_method = kwargs['datagen_method']
@@ -574,9 +570,10 @@ class SeldonianExperiment(Experiment):
 			passed_safety=False
 			solution = "NSF"
 
-		print("Solution from running seldonian algorithm:")
-		print(solution)
-		print()
+		if verbose:
+			print("Solution from running seldonian algorithm:")
+			print(solution)
+			print()
 		
 		# Handle whether solution was found 
 		solution_found=True
@@ -604,15 +601,12 @@ class SeldonianExperiment(Experiment):
 					X_test = perf_eval_kwargs['X']
 					Y_test = perf_eval_kwargs['y']
 					model = SA.model
-					# model = copy.deepcopy(SA.model)
 					# Batch the prediction if specified
 					if 'eval_batch_size' in perf_eval_kwargs:
-						eval_batch_size = perf_eval_kwargs['eval_batch_size']
 						y_pred = batch_predictions(
-							model,
-							solution,
-							X_test,
-							eval_batch_size,
+							model=model,
+							solution=solution,
+							X_test=X_test,
 							**perf_eval_kwargs)
 					else:
 						y_pred = model.predict(solution,X_test)
@@ -666,7 +660,8 @@ class SeldonianExperiment(Experiment):
 					performance = np.nan
 		
 		else:
-			print("NSF")
+			if verbose:
+				print("NSF")
 			performance = np.nan
 		# Write out file for this data_frac,trial_i combo
 		data = [data_frac,
@@ -788,7 +783,6 @@ class FairlearnExperiment(Experiment):
 			for ii in range(len(data_fracs_vector)):
 				data_frac = data_fracs_vector[ii]
 				trial_i = trials_vector[ii]
-				print(data_frac,trial_i)
 				helper(data_frac,trial_i)
 		elif n_workers > 1:
 			with ProcessPoolExecutor(max_workers=n_workers,
