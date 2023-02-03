@@ -118,9 +118,7 @@ class PytorchFacialRecog(SupervisedPytorchBaseModel):
 		accuracy_list=[]
 		iter_list=[]
 		x_train_tensor=torch.from_numpy(X_train)
-		print("x_train tensor size:",x_train_tensor.size())
 		y_train_label=torch.from_numpy(Y_train)
-		print("y_train_label size:",y_train_label.size())
 		train=torch.utils.data.TensorDataset(x_train_tensor,y_train_label) 
 		trainloader=torch.utils.data.DataLoader(train,
 			batch_size=batch_size,shuffle=True) 

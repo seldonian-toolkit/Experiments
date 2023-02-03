@@ -563,7 +563,7 @@ class SeldonianExperiment(Experiment):
 		try:
 			SA = SeldonianAlgorithm(
 				spec_for_experiment)
-			passed_safety,solution = SA.run(write_cs_logfile=True,
+			passed_safety,solution = SA.run(write_cs_logfile=verbose,
 				debug=verbose)
 			
 		except (ValueError,ZeroDivisionError):
