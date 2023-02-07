@@ -30,4 +30,5 @@ experiments.baselines
 
 
    experiments.baselines.facial_recog_cnn
+   experiments.baselines.random_classifiers
 
