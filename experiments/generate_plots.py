@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
+from matplotlib import style
 
 from seldonian.utils.io_utils import save_pickle
 
@@ -107,7 +108,11 @@ class PlotGenerator():
 		fontsize=12,legend_fontsize=8,
 		performance_label='accuracy',
 		performance_yscale='linear',
+		performance_ylims=[],
 		marker_size=20,
+		save_format='pdf',
+		show_title=True,
+		custom_title=None,
 		include_legend=True,
 		savename=None):
 		""" Make the three plots from results files saved to
@@ -133,6 +138,8 @@ class PlotGenerator():
 			will be saved on disk. 
 		:type savename: str, defaults to None
 		"""
+		plt.style.use('bmh')
+		# plt.style.use('grayscale')
 		regime = self.spec.dataset.regime
 		tot_data_size = self.spec.dataset.num_datapoints
 		
@@ -227,8 +234,12 @@ class PlotGenerator():
 			plot_index+=1
 
 			# Plot title (put above middle plot)
-			title =  f'constraint: \ng={constraint_str}'
-			ax_sr.set_title(title,y=1.05,fontsize=10)
+			if show_title:
+				if custom_title:
+					title = custom_title
+				else:
+					title =  f'constraint: \ng={constraint_str}'
+				ax_sr.set_title(title,y=1.05,fontsize=10)
 
 			# Plot labels
 			ax_performance.set_ylabel(performance_label,fontsize=fontsize)
@@ -314,7 +325,8 @@ class PlotGenerator():
 					mean_performance-ste_performance,
 					mean_performance+ste_performance,
 					color=seldonian_color,alpha=0.5)
-
+			if performance_ylims:
+				ax_performance.set_ylim(*performance_ylims)
 			##########################
 			### SOLUTION RATE PLOT ###
 			##########################
@@ -411,11 +423,12 @@ class PlotGenerator():
 		if include_legend:
 			fig.subplots_adjust(bottom=0.25)
 			ncol = 4
-			fig.legend(legend_handles,legend_labels,
+			fig.legend(legend_handles[::-1],legend_labels[::-1],
 				bbox_to_anchor=(0.5,0.15),loc="upper center",ncol=ncol)
 		
 		if savename:
-			plt.savefig(savename,format='png',dpi=600)
+			# plt.savefig(savename,format=save_format,dpi=600)
+			plt.savefig(savename,format=save_format)
 			print(f"Saved {savename}")
 		else:
 			plt.show()
