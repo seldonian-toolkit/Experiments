@@ -273,6 +273,13 @@ class BaselineExperiment(Experiment):
 			solution = None
 			y_pred = baseline_model.predict(solution,X_test_baseline)
 
+		if self.model_name == 'weighted_random_classifier':
+			# Returns the positive class with p=num_pos_class/num_neg_class every time
+			from .baselines.random_classifiers import WeightedRandomClassifierModel
+			baseline_model = WeightedRandomClassifierModel(0.4772833)
+			solution = None
+			y_pred = baseline_model.predict(solution,X_test_baseline)
+
 		if self.model_name == 'facial_recog_cnn':
 			from .baselines.facial_recog_cnn import PytorchFacialRecog
 			device = perf_eval_kwargs['device']
