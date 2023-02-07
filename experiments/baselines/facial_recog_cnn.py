@@ -92,7 +92,7 @@ class PytorchFacialRecog(SupervisedPytorchBaseModel):
 		:param input_dim: Number of features
 		:param output_dim: Size of output layer (number of label columns)
 		"""
-		learning_rate = 0.01
+		learning_rate = 0.001
 		super().__init__(device)
 		self.criterion = nn.CrossEntropyLoss()
 		self.optimizer = torch.optim.Adam(self.pytorch_model.parameters(),
