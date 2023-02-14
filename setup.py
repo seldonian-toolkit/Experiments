@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="seldonian_experiments",
-    version="0.0.12",
+    version="0.0.13dev",
     author="Austin Hoag",
     author_email="austinthomashoag@gmail.com",
     description="Library for running experiments with Seldonian algorithms",
@@ -23,9 +23,6 @@ setuptools.setup(
     ],
     install_requires=[
         "seldonian-engine",
-        "matplotlib==3.5.1",
-        "scikit_learn==1.1.1",
-        "tqdm==4.64.0",
     ],
     packages=["experiments"],
     python_requires=">=3.8",
