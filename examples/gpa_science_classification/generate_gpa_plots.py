@@ -7,10 +7,11 @@ from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
 def perf_eval_fn(y_pred,y,**kwargs):
+	# Deterministic accuracy. Should really be using probabilistic accuracy, 
+	# but use deterministic it to match Thomas et al. (2019)
 	performance_metric = kwargs['performance_metric']
-	if performance_metric == 'Accuracy':
-		v = np.where(y!=1.0,1.0-y_pred,y_pred)
-		return sum(v)/len(v)
+	if performance_metric == 'accuracy':
+        return accuracy_score(y,y_pred > 0.5)
 		
 
 def main():
