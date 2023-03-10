@@ -45,7 +45,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<em>str</em>) – The string name of the Seldonian model, 
+<li><p><strong>model_name</strong> (<em>str</em>) – The string name of the Seldonian model,
 only option is currently: ‘qsa’ (quasi-Seldonian algorithm)</p></li>
 <li><p><strong>results_dir</strong> (<em>str</em>) – Parent directory for saving any
 experimental results</p></li>
@@ -68,7 +68,7 @@ experimental results</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.SeldonianExperiment.aggregate_results">
 <span class="sig-name descname"><span class="pre">aggregate_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.SeldonianExperiment.aggregate_results" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group together the data in each 
+<dd><p>Group together the data in each
 trial file into a single CSV file.</p>
 </dd></dl>
 
@@ -84,11 +84,11 @@ whether solution was safe on ground truth</p>
 <li><p><strong>solution</strong> (<em>numpy ndarray</em>) – The weights of the model found
 during candidate selection in a given trial</p></li>
 <li><p><strong>constraint_eval_fns</strong> (<em>List</em><em>(</em><em>function</em><em>)</em>) – List of functions
-to use to evaluate each constraint. 
+to use to evaluate each constraint.
 An empty list results in using the parse
 tree to evaluate the constraints</p></li>
 <li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – keyword arguments
-to pass to each constraint function 
+to pass to each constraint function
 in constraint_eval_fns</p></li>
 </ul>
 </dd>
@@ -124,7 +124,7 @@ to a file.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
-<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
+<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list.
 These will comprise the header of the saved file</p></li>
 <li><p><strong>trial_dir</strong> (<em>str</em>) – The directory in which to save the file</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em>) – if True, prints out saved filename</p></li>
@@ -158,6 +158,7 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>

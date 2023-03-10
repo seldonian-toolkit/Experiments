@@ -48,7 +48,7 @@
 <li><p><strong>results_dir</strong> (<em>str</em>) – Parent directory for saving any
 experimental results</p></li>
 <li><p><strong>fairlearn_epsilon_constraint</strong> (<em>float</em>) – The value of epsilon
-(the threshold) to use in the constraint 
+(the threshold) to use in the constraint
 to the Fairlearn model</p></li>
 </ul>
 </dd>
@@ -69,14 +69,14 @@ to the Fairlearn model</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.FairlearnExperiment.aggregate_results">
 <span class="sig-name descname"><span class="pre">aggregate_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.aggregate_results" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group together the data in each 
+<dd><p>Group together the data in each
 trial file into a single CSV file.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.FairlearnExperiment.evaluate_constraint_function">
 <span class="sig-name descname"><span class="pre">evaluate_constraint_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_constraint_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_eval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'native'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.evaluate_constraint_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate the constraint function using the 
+<dd><p>Evaluate the constraint function using the
 Fairlearn predictions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -84,9 +84,9 @@ Fairlearn predictions</p>
 <li><p><strong>y_pred</strong> (<em>1D array</em>) – Predicted labels, same shape as test_labels</p></li>
 <li><p><strong>test_labels</strong> (<em>1D array</em>) – True labels</p></li>
 <li><p><strong>fairlearn_constraint_name</strong> (<em>str</em>) – The name of the constraint</p></li>
-<li><p><strong>epsilon_eval</strong> (<em>float</em>) – The threshold in the constraint to use for 
+<li><p><strong>epsilon_eval</strong> (<em>float</em>) – The threshold in the constraint to use for
 evaluation</p></li>
-<li><p><strong>eval_method</strong> (<em>str</em><em>, </em><em>defaults to 'native'</em>) – The method for evaluating the constraint, 
+<li><p><strong>eval_method</strong> (<em>str</em><em>, </em><em>defaults to 'native'</em>) – The method for evaluating the constraint,
 two options: ‘native’ or ‘two-groups’</p></li>
 <li><p><strong>sensitive_features</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of column names that are considered
 sensitive in the Fairlearn dataset</p></li>
@@ -100,14 +100,14 @@ sensitive in the Fairlearn dataset</p></li>
 <span class="sig-name descname"><span class="pre">get_fairlearn_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mitigator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test_fairlearn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.FairlearnExperiment.get_fairlearn_predictions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the predicted labels from the fairlearn mitigator.
 The mitigator consists of potentially more than one predictor.
-For each predictor with non-zero weight, we figure out 
+For each predictor with non-zero weight, we figure out
 how many points to predict based on the weight of that predictor.
 Weights are normalized to 1 across all predictors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mitigator</strong> – The Fairlearn mitigator</p></li>
-<li><p><strong>X_test_fairlearn</strong> – The test features from which 
+<li><p><strong>X_test_fairlearn</strong> – The test features from which
 to predict the labels</p></li>
 </ul>
 </dd>
@@ -143,7 +143,7 @@ to a file.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>List</em>) – The information to save</p></li>
-<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list. 
+<li><p><strong>colnames</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – Names of the items in the list.
 These will comprise the header of the saved file</p></li>
 <li><p><strong>trial_dir</strong> (<em>str</em>) – The directory in which to save the file</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em>) – if True, prints out saved filename</p></li>
@@ -177,6 +177,7 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiments.BaselineExperiment.html">experiments.experiments.BaselineExperiment</a></li>

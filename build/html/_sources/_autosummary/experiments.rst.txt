@@ -29,6 +29,7 @@
    :recursive:
 
 
+   experiments.base_example
    experiments.baselines
    experiments.experiments
    experiments.generate_plots
