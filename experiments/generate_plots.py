@@ -635,7 +635,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             batch_epoch_dict=batch_epoch_dict,
         )
         self.regime = "supervised_learning"
-
+    
     def run_seldonian_experiment(self, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute
         assigned to the class in __init__().
@@ -654,16 +654,6 @@ class SupervisedPlotGenerator(PlotGenerator):
             generate_resampled_datasets(dataset, self.n_trials, self.results_dir)
             print("Done generating resampled datasets")
             print()
-
-        # elif self.datagen_method == 'headless_resample':
-        # 	# Generate n_trials resampled datasets of full length
-        # 	# These will be cropped to data_frac fractional size
-        # 	print("generating resampled datasets")
-        # 	generate_headless_datasets(dataset,
-        # 		self.n_trials,
-        # 		self.results_dir)
-        # 	print("Done generating resampled datasets")
-        # 	print()
 
         run_seldonian_kwargs = dict(
             spec=self.spec,
@@ -684,6 +674,61 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         sd_exp.run_experiment(**run_seldonian_kwargs)
         return
+
+
+    def run_headless_seldonian_experiment(
+        self, 
+        full_model, 
+        headless_model, 
+        head_layer_names,
+        candidate_batch_size_pretraining=100, 
+        safety_batch_size_pretraining=1000,
+        verbose=False):
+        """Run a headless supervised Seldonian experiment using the spec attribute
+        assigned to the class in __init__().
+
+        :param verbose: Whether to display results to stdout
+                while the Seldonian algorithms are running in each trial
+        :type verbose: bool, defaults to False
+        """
+
+        dataset = self.spec.dataset
+
+        if self.datagen_method == "resample":
+            # Generate n_trials resampled datasets of full length
+            # These will be cropped to data_frac fractional size
+            print("generating resampled datasets")
+            generate_resampled_datasets(dataset, self.n_trials, self.results_dir)
+            print("Done generating resampled datasets")
+            print()
+        else:
+            raise NotImplementedError(
+                f"datagen_method {datagen_method} not supported for headless experiments")
+
+        run_seldonian_kwargs = dict(
+            spec=self.spec,
+            full_model=
+            data_fracs=self.data_fracs,
+            n_trials=self.n_trials,
+            n_workers=self.n_workers,
+            datagen_method=self.datagen_method,
+            perf_eval_fn=self.perf_eval_fn,
+            perf_eval_kwargs=self.perf_eval_kwargs,
+            constraint_eval_fns=self.constraint_eval_fns,
+            constraint_eval_kwargs=self.constraint_eval_kwargs,
+            batch_epoch_dict=self.batch_epoch_dict,
+            verbose=verbose,
+        )
+        from .headless_experiments import HeadlessSeldonianExperiment
+        ## Run experiment
+        sd_exp = HeadlessSeldonianExperiment(
+            model_name="headless_qsa",
+            results_dir=self.results_dir)
+
+        sd_exp.run_experiment(**run_seldonian_kwargs)
+        return
+
+
 
     def run_baseline_experiment(self, model_name, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute

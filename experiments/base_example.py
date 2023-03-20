@@ -107,3 +107,81 @@ class BaseExample:
             performance_yscale=performance_yscale,
             savename=plot_savename,
         )
+
+class HeadlessExample(BaseExample):
+    def __init__(self, spec):
+        """Class for running headless experiments"""
+        super().__init__()
+        assert self.regime == "supervised_learning",
+            "Headless examples only supported for supervised_learning"
+
+    def run(
+        self,
+        full_model,
+        headless_model,
+        head_layer_names,
+        batch_epoch_dict_pretraining
+        n_trials,
+        data_fracs,
+        results_dir,
+        perf_eval_fn,
+        n_workers=1,
+        datagen_method="resample",
+        verbose=False,
+        baselines=[],
+        performance_label="performance",
+        performance_yscale="linear",
+        plot_savename=None,
+        plot_fontsize=12,
+        legend_fontsize=8,
+    ):
+        """Run the experiment for this example.
+        Runs any baseline models included in baselines
+        parameter first. Then produces the three plots.
+        """
+        assert baselines == [], "No baselines supported for headless examples yet"
+        os.makedirs(results_dir, exist_ok=True)
+
+        dataset = self.spec.dataset
+        test_features = dataset.features
+        test_labels = dataset.labels
+
+        perf_eval_kwargs = {
+            "X": test_features,
+            "y": test_labels,
+        }
+        
+        plot_generator = SupervisedPlotGenerator(
+            spec=self.spec,
+            n_trials=n_trials,
+            data_fracs=data_fracs,
+            n_workers=n_workers,
+            datagen_method=datagen_method,
+            perf_eval_fn=perf_eval_fn,
+            constraint_eval_fns=[],
+            results_dir=results_dir,
+            perf_eval_kwargs=perf_eval_kwargs,
+        )
+
+        # # Baselines first
+        # for baseline_model in baselines:
+        #     plot_generator.run_baseline_experiment(
+        #         model_name=baseline_model, verbose=verbose
+        #     )
+        
+        # Run Seldonian headless experiment
+        plot_generator.run_headless_seldonian_experiment(
+            full_model=full_model, 
+            headless_model=headless_model, 
+            head_layer_names=head_layer_names,
+            batch_epoch_dict_pretraining=batch_epoch_dict_pretraining, 
+            safety_batch_size_pretraining=1000,
+            verbose=False)
+
+        plot_generator.make_plots(
+            fontsize=plot_fontsize,
+            legend_fontsize=legend_fontsize,
+            performance_label=performance_label,
+            performance_yscale=performance_yscale,
+            savename=plot_savename,
+        )
