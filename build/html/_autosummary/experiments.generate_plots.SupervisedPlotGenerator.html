@@ -14,7 +14,7 @@
     <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.utils" href="experiments.utils.html" />
+    <link rel="next" title="experiments.headless_example" href="experiments.headless_example.html" />
     <link rel="prev" title="experiments.generate_plots.RLPlotGenerator" href="experiments.generate_plots.RLPlotGenerator.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -144,6 +144,19 @@ while the fairlearn algorithms are running in each trial</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.run_headless_seldonian_experiment">
+<span class="sig-name descname"><span class="pre">run_headless_seldonian_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headless_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_layer_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_feature_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretraining_device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict_pretraining</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_batch_size_pretraining</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.run_headless_seldonian_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a headless supervised Seldonian experiment using the spec attribute
+assigned to the class in __init__().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
+while the Seldonian algorithms are running in each trial</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.run_seldonian_experiment">
 <span class="sig-name descname"><span class="pre">run_seldonian_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.run_seldonian_experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a supervised Seldonian experiment using the spec attribute
@@ -194,6 +207,7 @@ while the Seldonian algorithms are running in each trial</p>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.SupervisedPlotGenerator.make_plots"><code class="docutils literal notranslate"><span class="pre">SupervisedPlotGenerator.make_plots()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.SupervisedPlotGenerator.run_baseline_experiment"><code class="docutils literal notranslate"><span class="pre">SupervisedPlotGenerator.run_baseline_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.SupervisedPlotGenerator.run_fairlearn_experiment"><code class="docutils literal notranslate"><span class="pre">SupervisedPlotGenerator.run_fairlearn_experiment()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.SupervisedPlotGenerator.run_headless_seldonian_experiment"><code class="docutils literal notranslate"><span class="pre">SupervisedPlotGenerator.run_headless_seldonian_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.SupervisedPlotGenerator.run_seldonian_experiment"><code class="docutils literal notranslate"><span class="pre">SupervisedPlotGenerator.run_seldonian_experiment()</span></code></a></li>
 </ul>
 </li>
@@ -201,6 +215,7 @@ while the Seldonian algorithms are running in each trial</p>
 </li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.utils.html">experiments.utils</a></li>
 </ul>
 </li>
@@ -216,7 +231,7 @@ while the Seldonian algorithms are running in each trial</p>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.generate_plots.html">experiments.generate_plots</a><ul>
       <li>Previous: <a href="experiments.generate_plots.RLPlotGenerator.html" title="previous chapter">experiments.generate_plots.RLPlotGenerator</a></li>
-      <li>Next: <a href="experiments.utils.html" title="next chapter">experiments.utils</a></li>
+      <li>Next: <a href="experiments.headless_example.html" title="next chapter">experiments.headless_example</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

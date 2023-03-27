@@ -14,7 +14,7 @@
     <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="experiments.utils.generate_resampled_datasets" href="experiments.utils.generate_resampled_datasets.html" />
+    <link rel="prev" title="experiments.utils.multiclass_logistic_loss" href="experiments.utils.multiclass_logistic_loss.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -36,13 +36,14 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.utils.probabilistic_accuracy">
 <span class="sig-name descname"><span class="pre">probabilistic_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.utils.probabilistic_accuracy" title="Permalink to this definition">¶</a></dt>
-<dd><p>1 - error rate. Best to use when output of 
+<dd><p>For binary classification only.
+1 - error rate. Use when output of 
 model y_pred is a probability</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>y_pred</strong> – Array of predicted labels</p></li>
-<li><p><strong>y</strong> – Array of true labels</p></li>
+<li><p><strong>y_pred</strong> – Array of predicted probabilities of each label</p></li>
+<li><p><strong>y</strong> – Array of true labels, 1-dimensional</p></li>
 </ul>
 </dd>
 </dl>
@@ -75,12 +76,18 @@ model y_pred is a probability</p>
 <li class="toctree-l3"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.utils.html">experiments.utils</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.MSE.html">experiments.utils.MSE</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.batch_predictions.html">experiments.utils.batch_predictions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.binary_logistic_loss.html">experiments.utils.binary_logistic_loss</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.deterministic_accuracy.html">experiments.utils.deterministic_accuracy</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_episodes_and_calc_J.html">experiments.utils.generate_episodes_and_calc_J</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_resampled_datasets.html">experiments.utils.generate_resampled_datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.make_batch_epoch_dict_fixedniter.html">experiments.utils.make_batch_epoch_dict_fixedniter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.make_batch_epoch_dict_min_sample_repeat.html">experiments.utils.make_batch_epoch_dict_min_sample_repeat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.multiclass_accuracy.html">experiments.utils.multiclass_accuracy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.utils.multiclass_logistic_loss.html">experiments.utils.multiclass_logistic_loss</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.utils.probabilistic_accuracy</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#experiments.utils.probabilistic_accuracy"><code class="docutils literal notranslate"><span class="pre">probabilistic_accuracy()</span></code></a></li>
 </ul>
@@ -100,7 +107,7 @@ model y_pred is a probability</p>
   <li><a href="../api.html">API</a><ul>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.utils.html">experiments.utils</a><ul>
-      <li>Previous: <a href="experiments.utils.generate_resampled_datasets.html" title="previous chapter">experiments.utils.generate_resampled_datasets</a></li>
+      <li>Previous: <a href="experiments.utils.multiclass_logistic_loss.html" title="previous chapter">experiments.utils.multiclass_logistic_loss</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

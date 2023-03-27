@@ -33,5 +33,8 @@
    experiments.baselines
    experiments.experiments
    experiments.generate_plots
+   experiments.headless_example
+   experiments.headless_experiments
+   experiments.headless_utils
    experiments.utils
 
