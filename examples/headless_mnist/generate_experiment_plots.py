@@ -28,6 +28,7 @@ def headless_mnist_example(
     baselines = [],
     performance_metric="accuracy",
     n_workers=1,
+    pretraining_device=torch.device('mps'),
     verbose=False,
 ):  
     full_pretraining_model = CNN()
@@ -114,7 +115,7 @@ def headless_mnist_example(
             latent_feature_shape=(1568,),
             loss_func_pretraining=nn.CrossEntropyLoss(),
             learning_rate_pretraining=0.001,
-            pretraining_device=torch.device("mps"),
+            pretraining_device=pretraining_device,
             batch_epoch_dict_pretraining=batch_epoch_dict_pretraining,
             safety_batch_size_pretraining=1000,
             n_trials=n_trials,

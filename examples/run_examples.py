@@ -1,7 +1,5 @@
 ## This script runs one or more of the examples with a single command line call
 
-# Comment out examples you don't want to run
-
 import os
 import numpy as np
 from examples.lie_detection.generate_experiment_plots import lie_detection_example
@@ -9,6 +7,8 @@ from examples.loans.generate_experiment_plots import loans_example
 from examples.gpa_science_classification.generate_experiment_plots import gpa_example
 from examples.headless_mnist.generate_experiment_plots import headless_mnist_example
 from examples.headless_facial_gender.generate_experiment_plots import headless_facial_gender_example
+
+import torch
 
 ### MODIFY HOW TO RUN THE EXAMPLES ###
 
@@ -46,13 +46,15 @@ example_setup_dict = {
 	},
 	'headless_mnist':{
 		'spec_rootdir':'headless_mnist/data/spec',
-		'n_trials':10, # Number of trials per data fraction
+		'n_trials':1, # Number of trials per data fraction
 		'n_workers':1, # Number of CPUs to use. 
+		'pretraining_device':torch.device("mps")
 	},
 	'headless_facial_gender':{
 		'spec_rootdir':'headless_facial_gender/data/spec',
-		'n_trials':10, # Number of trials per data fraction
+		'n_trials':1, # Number of trials per data fraction
 		'n_workers':1, # Number of CPUs to use 
+		'pretraining_device':torch.device("mps")
 	},
 
 
@@ -130,6 +132,7 @@ if __name__ == "__main__":
 			    baselines=[],
 			    performance_metric="accuracy",
 			    n_workers=example_setup_dict[example]['n_workers'],
+			    pretraining_device=example_setup_dict[example]['pretraining_device']
 			)
 
 		if example == 'headless_facial_gender':
@@ -142,4 +145,5 @@ if __name__ == "__main__":
 			    baselines=[],
 			    performance_metric="accuracy",
 			    n_workers=example_setup_dict[example]['n_workers'],
+			    pretraining_device=example_setup_dict[example]['pretraining_device']
 			)
