@@ -15,7 +15,7 @@ from seldonian.utils.io_utils import save_pickle
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .utils import generate_resampled_datasets
 
-seldonian_model_set = set(["qsa", "sa"])
+seldonian_model_set = set(["qsa","headless_qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")
 marker_list = ["s", "p", "d", "*", "x", "h", "+"]
 
@@ -383,6 +383,7 @@ class PlotGenerator:
                 )
             if performance_ylims:
                 ax_performance.set_ylim(*performance_ylims)
+            
             ##########################
             ### SOLUTION RATE PLOT ###
             ##########################
@@ -460,6 +461,7 @@ class PlotGenerator:
             ##########################
 
             # Baseline failure rate
+            
             for baseline_i, baseline in enumerate(baselines):
                 baseline_color = plot_colormap(baseline_i + len(seldonian_models))
                 # Baseline performance
@@ -506,6 +508,7 @@ class PlotGenerator:
                 ste_fr = std_fr / np.sqrt(n_trials)
 
                 X_all_seldonian = this_seldonian_dict["X_all"]
+                
                 ax_fr.plot(
                     X_all_seldonian,
                     mean_fr,
@@ -678,10 +681,15 @@ class SupervisedPlotGenerator(PlotGenerator):
 
     def run_headless_seldonian_experiment(
         self, 
-        full_model, 
-        headless_model, 
+        full_pretraining_model,
+        initial_state_dict, 
+        headless_pretraining_model, 
         head_layer_names,
-        candidate_batch_size_pretraining=100, 
+        latent_feature_shape,
+        loss_func_pretraining,
+        learning_rate_pretraining,
+        pretraining_device,
+        batch_epoch_dict_pretraining={},
         safety_batch_size_pretraining=1000,
         verbose=False):
         """Run a headless supervised Seldonian experiment using the spec attribute
@@ -705,11 +713,20 @@ class SupervisedPlotGenerator(PlotGenerator):
             raise NotImplementedError(
                 f"datagen_method {datagen_method} not supported for headless experiments")
 
-        run_seldonian_kwargs = dict(
+        run_kwargs = dict(
             spec=self.spec,
-            full_model=
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
+            full_pretraining_model=full_pretraining_model,
+            initial_state_dict=initial_state_dict,
+            headless_pretraining_model=headless_pretraining_model,
+            head_layer_names=head_layer_names,
+            latent_feature_shape=latent_feature_shape,
+            batch_epoch_dict_pretraining=batch_epoch_dict_pretraining,
+            safety_batch_size_pretraining=safety_batch_size_pretraining,
+            loss_func_pretraining=loss_func_pretraining,
+            learning_rate_pretraining=learning_rate_pretraining,
+            pretraining_device=pretraining_device,
             n_workers=self.n_workers,
             datagen_method=self.datagen_method,
             perf_eval_fn=self.perf_eval_fn,
@@ -725,7 +742,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             model_name="headless_qsa",
             results_dir=self.results_dir)
 
-        sd_exp.run_experiment(**run_seldonian_kwargs)
+        sd_exp.run_experiment(**run_kwargs)
         return
 
 

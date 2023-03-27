@@ -4,17 +4,21 @@
 
 import os
 import numpy as np
-from lie_detection.generate_experiment_plots import lie_detection_example
-from loans.generate_experiment_plots import loans_example
-from gpa_science_classification.generate_experiment_plots import gpa_example
+from examples.lie_detection.generate_experiment_plots import lie_detection_example
+from examples.loans.generate_experiment_plots import loans_example
+from examples.gpa_science_classification.generate_experiment_plots import gpa_example
+from examples.headless_mnist.generate_experiment_plots import headless_mnist_example
+from examples.headless_facial_gender.generate_experiment_plots import headless_facial_gender_example
 
 ### MODIFY HOW TO RUN THE EXAMPLES ###
 
 ## Comment out any examples you don't want to run
 examples_to_run = [
 	# "loans",
-	"gpa_science_classification",
+	# "gpa_science_classification",
 	# "lie_detection",
+	# "headless_mnist",
+	"headless_facial_gender",
 ]
 
 ## The path on your machine that will serve as the 
@@ -40,6 +44,17 @@ example_setup_dict = {
 		'n_trials':50, # Number of trials per data fraction
 		'n_workers':8, # Number of CPUs to use 
 	},
+	'headless_mnist':{
+		'spec_rootdir':'headless_mnist/data/spec',
+		'n_trials':10, # Number of trials per data fraction
+		'n_workers':1, # Number of CPUs to use. 
+	},
+	'headless_facial_gender':{
+		'spec_rootdir':'headless_facial_gender/data/spec',
+		'n_trials':10, # Number of trials per data fraction
+		'n_workers':1, # Number of CPUs to use 
+	},
+
 
 }
 
@@ -66,7 +81,7 @@ if __name__ == "__main__":
 			    baselines = ["random_classifier","logistic_regression"],
 			    epsilons=[0.2,0.1,0.05], # the actual values are 1-this in the constraints
 			    performance_metric="accuracy",
-			    n_workers=example_setup_dict[example]['n_trials'],
+			    n_workers=example_setup_dict[example]['n_workers'],
 			)
 
 		if example == 'loans':
@@ -83,7 +98,7 @@ if __name__ == "__main__":
 			    baselines=["random_classifier", "logistic_regression"],
 			    include_fairlearn_models=True,
 			    performance_metric="log_loss",
-			    n_workers=example_setup_dict[example]['n_trials'],
+			    n_workers=example_setup_dict[example]['n_workers'],
 			)
 
 		if example == 'gpa_science_classification':
@@ -102,5 +117,29 @@ if __name__ == "__main__":
 			    baselines=["random_classifier", "logistic_regression"],
 			    include_fairlearn_models=True,
 			    performance_metric="accuracy",
-			    n_workers=example_setup_dict[example]['n_trials'],
+			    n_workers=example_setup_dict[example]['n_workers'],
+			)
+
+		if example == 'headless_mnist':
+			headless_mnist_example(
+			    spec_rootdir=spec_rootdir,
+			    results_base_dir=results_example_basedir,
+			    accuracy_thresholds=[0.95],
+			    n_trials=example_setup_dict[example]['n_trials'],
+			    data_fracs=np.logspace(-3,0,8),
+			    baselines=[],
+			    performance_metric="accuracy",
+			    n_workers=example_setup_dict[example]['n_workers'],
+			)
+
+		if example == 'headless_facial_gender':
+			headless_facial_gender_example(
+			    spec_rootdir=spec_rootdir,
+			    results_base_dir=results_example_basedir,
+			    epsilons=[0.8],
+			    n_trials=example_setup_dict[example]['n_trials'],
+			    data_fracs=np.logspace(-3,0,8),
+			    baselines=[],
+			    performance_metric="accuracy",
+			    n_workers=example_setup_dict[example]['n_workers'],
 			)

@@ -9,8 +9,6 @@ from seldonian.RL.RL_runner import create_agent, run_trial_given_agent_and_env
 from seldonian.utils.stats_utils import weighted_sum_gamma
 from seldonian.dataset import SupervisedDataSet
 
-
-
 def generate_resampled_datasets(dataset, n_trials, save_dir):
     """Utility function for supervised learning to generate the
     resampled datasets to use in each trial. Resamples (with replacement)
@@ -69,7 +67,6 @@ def generate_resampled_datasets(dataset, n_trials, save_dir):
                 pickle.dump(resampled_dataset, outfile)
             print(f"Saved {savename}")
 
-
 def generate_episodes_and_calc_J(**kwargs):
     """Calculate the expected discounted return
     by generating episodes
@@ -102,7 +99,6 @@ def generate_episodes_and_calc_J(**kwargs):
     J = np.mean(returns)
     return episodes, J
 
-
 def batch_predictions(model, solution, X_test, **kwargs):
     batch_size = kwargs["eval_batch_size"]
     if type(X_test) == list:
@@ -127,8 +123,73 @@ def batch_predictions(model, solution, X_test, **kwargs):
         batch_start = batch_end
     return y_pred
 
+def make_batch_epoch_dict_fixedniter(niter,data_fracs,N_max,batch_size):
+    """
+    Convenience function for figuring out the number of epochs necessary
+    to ensure that at each data fraction, the total 
+    number of iterations (and batch size) will be fixed. 
+
+    :param niter: The total number of iterations you want run at every data_frac
+    :type niter: int
+    :param data_fracs: 1-D array of data fractions
+    :type data_fracs: np.ndarray 
+    :param N_max: The maximum number of data points in the optimization process
+    :type N_max: int
+    :param batch_size: The fixed batch size 
+    :type batch_size: int
+    :return batch_epoch_dict: A dictionary where keys are data fractions 
+        and values are [batch_size,num_epochs]
+    """
+    data_sizes=data_fracs*N_max # number of points used in candidate selection in each data frac
+    n_batches=data_sizes/batch_size # number of batches in each data frac
+    n_batches=np.array([math.ceil(x) for x in n_batches])
+    n_epochs_arr=niter/n_batches # number of epochs needed to get to niter iterations in each data frac
+    n_epochs_arr = np.array([math.ceil(x) for x in n_epochs_arr])
+    batch_epoch_dict = {
+        data_fracs[ii]:[batch_size,n_epochs_arr[ii]] for ii in range(len(data_fracs))}
+    return batch_epoch_dict
+
+def make_batch_epoch_dict_min_sample_repeat(
+    niter_min,
+    data_fracs,
+    N_max,
+    batch_size,
+    num_repeats):
+    """
+    Convenience function for figuring out the number of epochs necessary
+    to ensure that the number of iterations for each data frac is:
+    max(niter_min,# of iterations s.t. each sample is seen num_repeat times)
+
+    :param niter_min: The minimum total number of iterations you want run at every data_frac
+    :type niter_min: int
+    :param data_fracs: 1-D array of data fractions
+    :type data_fracs: np.ndarray 
+    :param N_max: The maximum number of data points in the optimization process
+    :type N_max: int
+    :param batch_size: The fixed batch size
+    :type batch_size: int
+    :param num_repeats: The minimum number of times each sample must be seen in the optimization process
+    :type num_repeats: int
+    :return batch_epoch_dict: A dictionary where keys are data fractions 
+        and values are [batch_size,num_epochs]
+    """
+    batch_epoch_dict = {}
+    n_epochs_arr = np.zeros_like(data_fracs)
+    for data_frac in data_fracs:
+        niter2 = num_repeats*N_max*data_frac/batch_size
+        if niter2 > niter_min:
+            num_epochs = num_repeats
+        else:
+            n_batches = max(1,N_max*data_frac/batch_size)
+            num_epochs = math.ceil(niter_min/n_batches)
+        batch_epoch_dict[data_frac] = [batch_size,num_epochs]
+    
+    return batch_epoch_dict
 
 ##### performance evaluation functions #####
+
+def binary_logistic_loss(y_pred,y,**kwargs):    
+    return log_loss(y,y_pred)
 
 def multiclass_logistic_loss(y_pred, y, **kwargs):
     """Calculate average logistic loss

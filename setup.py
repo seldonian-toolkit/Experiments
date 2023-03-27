@@ -24,6 +24,6 @@ setuptools.setup(
     install_requires=[
         "seldonian-engine",
     ],
-    packages=["experiments"],
+    packages=["experiments","examples"],
     python_requires=">=3.8",
 )

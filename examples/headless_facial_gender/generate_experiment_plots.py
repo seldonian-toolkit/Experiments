@@ -9,20 +9,21 @@ import math
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.headless_example import HeadlessExample
-from experiments.utils import (multiclass_accuracy,
-    multiclass_logistic_loss, make_batch_epoch_dict_min_sample_repeat)
+from experiments.utils import (
+    probabilistic_accuracy, binary_logistic_loss,
+    make_batch_epoch_dict_min_sample_repeat)
 from experiments.headless_utils import make_data_loaders
 from seldonian.utils.io_utils import load_pickle
-from examples.headless_mnist.full_model import CNN
-from examples.headless_mnist.headless_model import CNN_headless
+from examples.headless_facial_gender.full_model import CNN
+from examples.headless_facial_gender.headless_model import CNN_headless
 
 import torch
 import torch.nn as nn
 
-def headless_mnist_example(
+def headless_facial_gender_example(
     spec_rootdir,
     results_base_dir,
-    accuracy_thresholds=[0.95],
+    epsilons=[0.8],
     n_trials=50,
     data_fracs=np.logspace(-3,0,15),
     baselines = [],
@@ -32,57 +33,48 @@ def headless_mnist_example(
 ):  
     full_pretraining_model = CNN()
     headless_pretraining_model = CNN_headless()
-    head_layer_names = ['out.weight','out.bias']
+    head_layer_names = ['fc3.weight','fc3.bias']
     
     data_fracs = np.array(data_fracs)
     # Ensure that number of iterations in pretraining
-    # is max(niter_min_pretraining,# of iterations 
-    # s.t. each sample is seen num_repeats times)
-    niter_min_pretraining=25 # min iterations we want in each run. 
-    num_repeats=5
-    batch_size_pretraining=150
-    N_candidate_max=35000
+    # is max(niter_min_pretraining,# of iterations s.t. each sample is seen num_repeats times)
+    niter_min_pretraining=25
+    num_repeats=4
+    batch_size_pretraining=100
+    N_candidate_max=11850
     batch_epoch_dict_pretraining = make_batch_epoch_dict_min_sample_repeat(
         niter_min_pretraining,
         data_fracs,
         N_candidate_max,
         batch_size_pretraining,
         num_repeats)
-    # Ensure that the number of iterations in candidate selection
-    # does not change with data_frac
-    niter_min=1000 # how many iterations we want in each run. 
-    num_repeats=5
-    batch_size=150
-    batch_epoch_dict = make_batch_epoch_dict_min_sample_repeat(
-        niter_min,
-        data_fracs,
-        N_candidate_max,
-        batch_size,
-        num_repeats)
+
+    # We're not batching in candidate selection because the head-only 
+    # optimization problem is small enough.
+    
+    batch_epoch_dict = {}
+    
     # The function that will calculate performance
     if performance_metric == "accuracy":
-        perf_eval_fn = multiclass_accuracy
+        perf_eval_fn = probabilistic_accuracy
         performance_yscale='linear'
     elif performance_metric == 'log_loss':
-        perf_eval_fn = multiclass_logistic_loss
+        perf_eval_fn = binary_logistic_loss
         performance_yscale='log'
     else:
         raise NotImplementedError(
             f"Performance metric {performance_metric} not supported for this example")
 
-    for accuracy_threshold in accuracy_thresholds:
+    for epsilon in epsilons:
         specfile = os.path.join(
             spec_rootdir,
-            f"headless_mnist_accuracy_{accuracy_threshold}.pkl"
+            f"headless_facial_gender_overall_accuracy_equality_{epsilon}.pkl"
         )
-        try: 
-            spec = load_pickle(specfile)
-        except ModuleNotFoundError:
-            os.chdir()
+        spec = load_pickle(specfile)
         results_dir = os.path.join(results_base_dir,
-            f"headless_mnist_accuracy_{accuracy_threshold}_perf_{performance_metric}")
+            f"headless_facial_gender_overall_accuracy_equality_{epsilon}_perf_{performance_metric}")
         plot_savename = os.path.join(
-            results_dir, f"accuracy_{accuracy_threshold}_perf_{performance_metric}.pdf"
+            results_dir, f"headless_facial_gender_overall_accuracy_equality_{epsilon}_perf_{performance_metric}.pdf"
         )
         # Set up kwargs that will be passed into the perf_eval_fn function
         dataset = spec.dataset
@@ -90,8 +82,9 @@ def headless_mnist_example(
         test_labels = dataset.labels
 
         # Make data loaders out of features and labels
-        # Batch sizes are only used for single forward pass,
-        # so for memory concerns only, not for training purposes
+        # The batch sizes here are only used when passing 
+        # the data through the network a single time to create the latent features, 
+        # Batching is only done for memory concerns, not for training purposes
         test_data_loaders = make_data_loaders(
             test_features, 
             test_labels, 
@@ -102,8 +95,7 @@ def headless_mnist_example(
         perf_eval_kwargs = {
             "test_data_loaders": test_data_loaders,
             "y": test_labels,
-            "eval_batch_size": 2000, # how many latent features are passed through perf_eval_fn at a time. Lower if running into memory issues
-            "N_output_classes": 10
+            "eval_batch_size": 2000, # how many latent features are passed through perf_eval_fn at a time. Lower this if running into memory issues
         }
         ex = HeadlessExample(spec=spec)
 
@@ -111,7 +103,7 @@ def headless_mnist_example(
             full_pretraining_model=full_pretraining_model,
             headless_pretraining_model=headless_pretraining_model,
             head_layer_names=head_layer_names,
-            latent_feature_shape=(1568,),
+            latent_feature_shape=(256,),
             loss_func_pretraining=nn.CrossEntropyLoss(),
             learning_rate_pretraining=0.001,
             pretraining_device=torch.device("mps"),
@@ -136,38 +128,41 @@ def headless_mnist_example(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Description of your program')
-    parser.add_argument('--accuracy_threshold', help='Accuracy >= accuracy_threshold', required=True)
-    parser.add_argument('--n_trials', help='Number of trials to run', required=True)
-    parser.add_argument('--n_workers', help='Number of workers to use', required=True)
-    parser.add_argument('--verbose', help='verbose', action="store_true")
+    # parser = argparse.ArgumentParser(description='Description of your program')
+    # parser.add_argument('--accuracy_threshold', help='Accuracy >= accuracy_threshold', required=True)
+    # parser.add_argument('--n_trials', help='Number of trials to run', required=True)
+    # parser.add_argument('--n_workers', help='Number of workers to use', required=True)
+    # parser.add_argument('--include_baselines', help='verbose', action="store_true")
+    # parser.add_argument('--verbose', help='verbose', action="store_true")
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    accuracy_threshold = float(args.accuracy_threshold)
-    n_trials = int(args.n_trials)
-    n_workers = int(args.n_workers)
-    verbose = args.verbose
+    # accuracy_threshold = float(args.accuracy_threshold)
+    # n_trials = int(args.n_trials)
+    # n_workers = int(args.n_workers)
+    # include_baselines = args.include_baselines
+    # verbose = args.verbose
 
-    # Baselines are not yet supported for headless experiments. 
     # if include_baselines:
     #     baselines = ["random_classifier","logistic_regression"]
     # else:
     #     baselines = []
+    epsilon = 0.8
     performance_metric="accuracy"
 
     results_base_dir = f"./results"
 
-    headless_mnist_example(
+    headless_facial_gender_example(
         spec_rootdir="data/spec/",
         results_base_dir=results_base_dir,
-        accuracy_thresholds=[accuracy_threshold],
+        epsilons=[epsilon],
         n_trials=5,
-        data_fracs=np.logspace(-3,0,8),
+        data_fracs=np.array([0.0005,0.005,0.05,0.075,0.1,0.25,0.5,0.75,1.0]),
+        # data_fracs=np.array([0.2]),
         baselines = [],
         performance_metric=performance_metric,
         n_workers=1,
-        verbose=verbose,
+        verbose=False,
     )
 
     
