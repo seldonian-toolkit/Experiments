@@ -97,6 +97,81 @@ def gpa_example(
         )
 
 
+# Run the gpa example with different fractions of data in safety
+def ds_gpa_example(
+    spec_rootdir,
+    results_base_dir,
+    constraints=[
+        "disparate_impact",
+        "demographic_parity",
+        "equalized_odds",
+        "equal_opportunity",
+        "predictive_equality"
+    ],
+    n_trials=50,
+    data_fracs=np.logspace(-4,0,15),
+    baselines=["random_classifier", "logistic_regression"],
+    include_fairlearn_models=True,
+    performance_metric="accuracy",
+    n_workers=1,
+    all_frac_data_in_safety=[0.6],
+    make_plot=False
+):
+    if performance_metric == "accuracy":
+        perf_eval_fn = deterministic_accuracy
+    else:
+        raise NotImplementedError(
+            "Performance metric must be 'accuracy' for this example")
+
+    for frac_data_in_safety in all_frac_data_in_safety:
+        for constraint in constraints:
+            if constraint == "disparate_impact":
+                epsilon = 0.8
+            elif constraint in ["demographic_parity","equal_opportunity","predictive_equality"]:
+                epsilon = 0.2
+            elif constraint == "equalized_odds":
+                epsilon = 0.35
+
+            fairlearn_eval_method = "two-groups" # e.g., PR | [M] vs. PR | [F]
+            fairlearn_constraint_name = constraint
+
+            specfile = os.path.join(spec_rootdir, 
+                f"gpa_science_classification_{constraint}_{epsilon}_spec.pkl")
+            spec = load_pickle(specfile)
+
+            # Modify the fraction of safety data.
+            spec.frac_data_in_safety = frac_data_in_safety
+
+            # Change results dir to include safety data.
+            results_dir = os.path.join(results_base_dir,
+                    f"gpa_science_classification_{constraint}_{epsilon}_{performance_metric}/safety%d" % (frac_data_in_safety * 100))
+            plot_savename = os.path.join(
+                results_dir, f"{constraint}_{epsilon}_{performance_metric}.pdf"
+            )
+
+            ex = BaseExample(spec=spec)
+
+            ex.run(
+                n_trials=n_trials,
+                data_fracs=data_fracs,
+                results_dir=results_dir,
+                perf_eval_fn=perf_eval_fn,
+                n_workers=n_workers,
+                datagen_method="resample",
+                verbose=False,
+                baselines=baselines,
+                include_fairlearn_models=include_fairlearn_models,
+                fairlearn_kwargs=fairlearn_kwargs,
+                performance_label=performance_metric,
+                performance_yscale="log",
+                make_plot=make_plot,
+                plot_savename=plot_savename,
+                plot_fontsize=12,
+                legend_fontsize=8,
+            )
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Description of your program")
     parser.add_argument("--constraint", help="Constraint to run", required=True)

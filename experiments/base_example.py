@@ -23,6 +23,7 @@ class BaseExample:
         fairlearn_kwargs={},
         performance_label="performance",
         performance_yscale="linear",
+        make_plot=True,
         plot_savename=None,
         plot_fontsize=12,
         legend_fontsize=8,
@@ -100,10 +101,12 @@ class BaseExample:
         # Run Seldonian experiment
         plot_generator.run_seldonian_experiment(verbose=verbose)
 
-        plot_generator.make_plots(
-            fontsize=plot_fontsize,
-            legend_fontsize=legend_fontsize,
-            performance_label=performance_label,
-            performance_yscale=performance_yscale,
-            savename=plot_savename,
-        )
+
+        if make_plot:
+            plot_generator.make_plots(
+                fontsize=plot_fontsize,
+                legend_fontsize=legend_fontsize,
+                performance_label=performance_label,
+                performance_yscale=performance_yscale,
+                savename=plot_savename,
+            )

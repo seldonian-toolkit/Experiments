@@ -81,6 +81,7 @@ def loans_example(
             fairlearn_kwargs = {}
         print(constraint)
         print(fairlearn_kwargs)
+
         ex = BaseExample(spec=spec)
 
         ex.run(
@@ -100,6 +101,79 @@ def loans_example(
             plot_fontsize=12,
             legend_fontsize=8,
         )
+
+
+# Run the loans example with different fractions of data in safety
+def ds_loans_example(
+    spec_rootdir,
+    results_base_dir,
+    constraints=[
+        "disparate_impact",
+        "disparate_impact_fairlearndef",
+        "equalized_odds",
+    ],
+    n_trials=50,
+    data_fracs=np.logspace(-3, 0, 15),
+    baselines=["random_classifier", "logistic_regression"],
+    include_fairlearn_models=True,
+    performance_metric="log_loss",
+    n_workers=1,
+    all_frac_data_in_safety=[0.6],
+    make_plot=False
+):
+    if performance_metric != "log_loss":
+        raise NotImplementedError(
+            "Performance metric must be 'log_loss' for this example"
+        )
+
+    for frac_data_in_safety in all_frac_data_in_safety:
+        print(frac_data_in_safety)
+        for constraint in constraints:
+            print(constraint)
+            if constraint in ["disparate_impact", "disparate_impact_fairlearndef"]:
+                epsilon = 0.9
+            elif constraint in ["equalized_odds"]:
+                epsilon = 0.8
+
+            if constraint == "disparate_impact_fairlearndef":
+                fairlearn_eval_method = "native"
+                fairlearn_constraint_name = "disparate_impact"
+            else:
+                fairlearn_eval_method = "two-groups"
+                fairlearn_constraint_name = constraint
+            
+
+            specfile = os.path.join(spec_rootdir, f"loans_{constraint}_{epsilon}_spec.pkl")
+            spec = load_pickle(specfile)
+
+            # Modify the fraction of safety data.
+            spec.frac_data_in_safety = frac_data_in_safety
+
+            # Change results dir to include the safety data
+            results_dir = os.path.join(results_base_dir,
+                f"loans_{constraint}_{epsilon}_{performance_metric}/safety%d" % (frac_data_in_safety * 100))
+
+            plot_savename = os.path.join(
+                results_dir, f"{constraint}_{epsilon}_{performance_metric}.pdf"
+            )
+
+            ex = BaseExample(spec=spec)
+            ex.run(
+                n_trials=n_trials,
+                data_fracs=data_fracs,
+                results_dir=results_dir,
+                perf_eval_fn=perf_eval_fn,
+                n_workers=n_workers,
+                datagen_method="resample",
+                verbose=False,
+                baselines=baselines,
+                performance_label=performance_metric,
+                performance_yscale="log",
+                make_plot=make_plot,
+                plot_savename=plot_savename,
+                plot_fontsize=12,
+                legend_fontsize=8,
+            )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Description of your program")

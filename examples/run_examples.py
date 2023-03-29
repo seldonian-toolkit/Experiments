@@ -12,8 +12,8 @@ from gpa_science_classification.generate_experiment_plots import gpa_example
 
 ## Comment out any examples you don't want to run
 examples_to_run = [
-	# "loans",
-	"gpa_science_classification",
+	"loans",
+	# "gpa_science_classification",
 	# "lie_detection",
 ]
 

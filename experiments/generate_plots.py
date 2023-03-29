@@ -546,11 +546,343 @@ class PlotGenerator:
             )
 
         if savename:
-            # plt.savefig(savename,format=save_format,dpi=600)
-            plt.savefig(savename, format=save_format)
+            plt.savefig(savename,format=save_format,dpi=600)
+            # plt.savefig(savename, format=save_format)
             print(f"Saved {savename}")
         else:
             plt.show()
+
+    def make_safetyfrac_plots(
+        self,
+        model_label_dict={},
+        fontsize=12,
+        legend_fontsize=8,
+        performance_label="accuracy",
+        performance_xscale="linear",
+        performance_yscale="linear",
+        performance_xlims=[],
+        performance_ylims=[],
+        marker_size=20,
+        save_format="pdf",
+        show_title=True,
+        custom_title=None,
+        include_legend=True,
+        savename=None,
+    ):
+        """Make the three plots from results files saved to
+        self.results_dir
+
+        :param model_label_dict: An optional dictionary where keys
+                are model names and values are the names you want
+                shown in the legend.
+        :type model_label_dict: int
+
+        :param fontsize: The font size to use for the axis labels
+        :type fontsize: int
+
+        :param legend_fontsize: The font size to use for text
+                in the legend
+        :type legend_fontsize: int
+
+        :param performance_label: The y axis label on the performance
+                plot you want to use.
+        :type performance_label: str, defaults to "accuracy"
+
+        :param savename: If not None, the filename path to which the plot
+                will be saved on disk.
+        :type savename: str, defaults to None
+        """
+        plt.style.use("bmh")
+        # plt.style.use('grayscale')
+        regime = self.spec.dataset.regime
+        tot_data_size = self.spec.dataset.num_datapoints
+
+        # Read in constraints
+        parse_trees = self.spec.parse_trees
+
+        constraint_dict = {}
+        for pt_ii, pt in enumerate(parse_trees):
+            delta = pt.delta
+            constraint_str = pt.constraint_str
+            constraint_dict[f"constraint_{pt_ii}"] = {
+                "delta": delta,
+                "constraint_str": constraint_str,
+            }
+
+        constraints = list(constraint_dict.keys())
+
+        # Figure out what experiments we have from subfolders in results_dir
+        subfolders = [os.path.basename(f) for f in os.scandir(self.results_dir) if f.is_dir()]
+        safety_folders = [x for x in subfolders if x.startswith("safety")]
+        print(self.results_dir)
+        print(subfolders)
+        print(safety_folders)
+        print(os.path.join(self.results_dir, safety_folders[0]))
+        safety_subfolders = [os.path.basename(f) for f in os.scandir(os.path.join(self.results_dir, safety_folders[0])) if f.is_dir()]
+        all_models = [x.split("_results")[0] for x in safety_subfolders if x.endswith("_results")]
+        all_safetyfrac = sorted([float("." + x.split("safety")[1]) for x in safety_folders])
+        seldonian_models = list(set(all_models).intersection(seldonian_model_set))
+        baselines = sorted(list(set(all_models).difference(seldonian_model_set)))
+        if not (seldonian_models or baselines):
+            print("No results for Seldonian models or baselines found ")
+            return
+
+
+        # SELDONIAN RESULTS SETUP
+        safetyfrac_dict = {}
+        for safetyfrac in all_safetyfrac:
+            safetyfrac_str = '{0:.2f}'.format(safetyfrac).split(".")[1]
+            safetyfrac_dict[safetyfrac] = {}
+            for seldonian_model in seldonian_models: 
+                safetyfrac_dict[safetyfrac][seldonian_model] = {}
+                savename_safetyfrac = os.path.join(
+                    self.results_dir,
+                    f"safety{safetyfrac_str}",
+                    f"{seldonian_model}_results",
+                    f"{seldonian_model}_results.csv",
+                )
+
+                df_safetyfrac = pd.read_csv(savename_safetyfrac)
+                passed_mask = df_safetyfrac["passed_safety"] == True
+                df_safetyfrac_passed = df_safetyfrac[passed_mask]
+                # Get the list of all data_fracs
+                X_all = df_safetyfrac.groupby("data_frac").mean().index * tot_data_size
+                # Get the list of data_fracs for which there is at least one trial that passed the safety test
+                X_passed = (
+                    df_safetyfrac_passed.groupby("data_frac").mean().index * tot_data_size
+                )
+                safetyfrac_dict[safetyfrac][seldonian_model]["df_safetyfrac"] = df_safetyfrac.copy()
+                safetyfrac_dict[safetyfrac][seldonian_model][
+                    "df_safetyfrac_passed"
+                ] = df_safetyfrac_passed.copy()
+                safetyfrac_dict[safetyfrac][seldonian_model]["X_all"] = X_all
+                safetyfrac_dict[safetyfrac][seldonian_model]["X_passed"] = X_passed
+
+
+        ## PLOTTING SETUP
+        if include_legend:
+            figsize = (9, 4.5)
+        else:
+            figsize = (9, 4)
+        fig = plt.figure(figsize=figsize)
+        plot_index = 1
+        n_rows = len(constraints)
+        n_cols = 3
+        fontsize = fontsize
+        legend_fontsize = legend_fontsize
+        legend_handles = []
+        legend_labels = []
+        ## Loop over constraints and make three plots for each constraint
+        for ii, constraint in enumerate(constraints):
+            constraint_str = constraint_dict[constraint]["constraint_str"]
+            delta = constraint_dict[constraint]["delta"]
+
+            # SETUP FOR PLOTTING
+            ax_performance = fig.add_subplot(n_rows, n_cols, plot_index)
+            plot_index += 1
+            ax_sr = fig.add_subplot(n_rows, n_cols, plot_index, sharex=ax_performance)
+            plot_index += 1
+            ax_fr = fig.add_subplot(n_rows, n_cols, plot_index, sharex=ax_performance)
+            plot_index += 1
+
+            # Plot title (put above middle plot)
+            if show_title:
+                if custom_title:
+                    title = custom_title
+                else:
+                    title = f"constraint: \ng={constraint_str}"
+                ax_sr.set_title(title, y=1.05, fontsize=10)
+
+            # Plot labels
+            ax_performance.set_ylabel(performance_label, fontsize=fontsize)
+            ax_sr.set_ylabel("Probability of solution", fontsize=fontsize)
+            ax_fr.set_ylabel("Probability constraint was violated", fontsize=fontsize)
+
+            # Only put horizontal axis labels on last row of plots
+            if ii == len(constraints) - 1:
+                # ax_performance.set_xlabel('Training samples',fontsize=fontsize)
+                # ax_sr.set_xlabel('Training samples',fontsize=fontsize)
+                # ax_fr.set_xlabel('Training samples',fontsize=fontsize)
+                ax_performance.set_xlabel("Amount of data", fontsize=fontsize)
+                ax_sr.set_xlabel("Amount of data", fontsize=fontsize)
+                ax_fr.set_xlabel("Amount of data", fontsize=fontsize)
+
+            # axis scaling
+            if performance_yscale.lower() == "log":
+                ax_performance.set_yscale("log")
+
+            if performance_xscale.lower() == "log":
+                ax_performance.set_xscale("log")
+                ax_sr.set_xscale("log")
+                ax_fr.set_xscale("log")
+
+            locmaj = matplotlib.ticker.LogLocator(base=10, numticks=12)
+            locmin = matplotlib.ticker.LogLocator(
+                base=10.0,
+                subs=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+                numticks=12,
+            )
+            for ax in [ax_performance, ax_sr, ax_fr]:
+                ax.minorticks_on()
+                ax.xaxis.set_major_locator(locmaj)
+                ax.xaxis.set_minor_locator(locmin)
+                ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+
+            ########################
+            ### PERFORMANCE PLOT ###
+            ########################
+
+            for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
+                for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac][seldonian_model]
+                    safetyfrac_color = plot_colormap(safetyfrac_i)
+                    df_safetyfrac_passed = this_safetyfrac_dict["df_safetyfrac_passed"]
+                    mean_performance = df_safetyfrac_passed.groupby("data_frac").mean()[
+                        "performance"
+                    ]
+                    std_performance = df_safetyfrac_passed.groupby("data_frac").std()[
+                        "performance"
+                    ]
+                    n_passed = df_safetyfrac_passed.groupby("data_frac").count()[
+                        "performance"
+                    ]
+                    ste_performance = std_performance / np.sqrt(n_passed)
+                    X_passed_safetyfrac = this_safetyfrac_dict["X_passed"]
+                    (pl,) = ax_performance.plot(
+                        X_passed_safetyfrac,
+                        mean_performance,
+                        color=safetyfrac_color,
+                        linestyle="--",
+                    )
+                    legend_handles.append(pl)
+                    if seldonian_model in model_label_dict: 
+                        # TODO: What do with this and safety?
+                        legend_labels.append(model_label_dict[seldonian_model])
+                    else:
+                        legend_labels.append(safetyfrac)
+
+                    ax_performance.scatter(
+                        X_passed_safetyfrac,
+                        mean_performance,
+                        color=safetyfrac_color,
+                        s=marker_size,
+                        marker="o",
+                    )
+                    ax_performance.fill_between(
+                        X_passed_safetyfrac,
+                        mean_performance - ste_performance,
+                        mean_performance + ste_performance,
+                        color=safetyfrac_color,
+                        alpha=0.5,
+                    )
+                if performance_xlims:
+                    ax_performance.set_xlim(*performance_xlims)
+                if performance_ylims:
+                    ax_performance.set_ylim(*performance_ylims)
+
+            ##########################
+            ### SOLUTION RATE PLOT ###
+            ##########################
+
+            for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
+                for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac][seldonian_model]
+                    safetyfrac_color = plot_colormap(safetyfrac_i)
+                    df_safetyfrac = this_safetyfrac_dict["df_safetyfrac"]
+                    n_trials = df_safetyfrac["trial_i"].max() + 1
+                    mean_sr = df_safetyfrac.groupby("data_frac").mean()["passed_safety"]
+                    std_sr = df_safetyfrac.groupby("data_frac").std()["passed_safety"]
+                    ste_sr = std_sr / np.sqrt(n_trials)
+
+                    X_all_safetyfrac = this_safetyfrac_dict["X_all"]
+
+                    ax_sr.plot(
+                        X_all_safetyfrac,
+                        mean_sr,
+                        color=safetyfrac_color,
+                        linestyle="--",
+                        label="QSA",
+                    )
+                    ax_sr.scatter(
+                        X_all_safetyfrac,
+                        mean_sr,
+                        color=safetyfrac_color,
+                        s=marker_size,
+                        marker="o",
+                    )
+                    ax_sr.fill_between(
+                        X_all_safetyfrac,
+                        mean_sr - ste_sr,
+                        mean_sr + ste_sr,
+                        color=safetyfrac_color,
+                        alpha=0.5,
+                    )
+
+            ax_sr.set_ylim(-0.05, 1.05)
+
+
+            ##########################
+            ### FAILURE RATE PLOT ###
+            ##########################
+
+
+            for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
+                for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac][seldonian_model]
+                    safetyfrac_color = plot_colormap(safetyfrac_i)
+                    df_safetyfrac = this_safetyfrac_dict["df_safetyfrac"]
+                    n_trials = df_safetyfrac["trial_i"].max() + 1
+                    mean_fr = df_safetyfrac.groupby("data_frac").mean()["failed"]
+                    std_fr = df_safetyfrac.groupby("data_frac").std()["failed"]
+                    ste_fr = std_fr / np.sqrt(n_trials)
+
+                    X_all_safetyfrac = this_safetyfrac_dict["X_all"]
+                    ax_fr.plot(
+                        X_all_safetyfrac,
+                        mean_fr,
+                        color=safetyfrac_color,
+                        linestyle="--",
+                        label="QSA",
+                    )
+                    ax_fr.fill_between(
+                        X_all_safetyfrac,
+                        mean_fr - ste_fr,
+                        mean_fr + ste_fr,
+                        color=safetyfrac_color,
+                        alpha=0.5,
+                    )
+                    ax_fr.scatter(
+                        X_all_safetyfrac,
+                        mean_fr,
+                        color=safetyfrac_color,
+                        s=marker_size,
+                        marker="o",
+                    )
+                    ax_fr.axhline(
+                        y=delta, color="k", linestyle="--", label=f"delta={delta}"
+                    )
+                ax_fr.set_ylim(-0.05, 1.05)
+
+        plt.tight_layout()
+
+        if include_legend:
+            fig.subplots_adjust(bottom=0.25)
+            ncol = 4
+            fig.legend(
+                legend_handles[::-1],
+                legend_labels[::-1],
+                bbox_to_anchor=(0.5, 0.15),
+                loc="upper center",
+                ncol=ncol,
+            )
+
+        if savename:
+            plt.savefig(savename,format=save_format,dpi=600)
+            # plt.savefig(savename, format=save_format)
+            print(f"Saved {savename}")
+        else:
+            plt.show()
+
 
 
 class SupervisedPlotGenerator(PlotGenerator):
