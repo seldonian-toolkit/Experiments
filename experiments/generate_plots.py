@@ -144,7 +144,10 @@ class PlotGenerator:
         plt.style.use("bmh")
         # plt.style.use('grayscale')
         regime = self.spec.dataset.regime
-        tot_data_size = self.spec.dataset.num_datapoints
+        if regime == "supervised_learning":
+            tot_data_size = self.spec.dataset.num_datapoints
+        else:
+            tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
 
         # Read in constraints
         parse_trees = self.spec.parse_trees
@@ -550,7 +553,7 @@ class PlotGenerator:
 
         if savename:
             # plt.savefig(savename,format=save_format,dpi=600)
-            plt.savefig(savename, format=save_format)
+            plt.savefig(savename, format=save_format,bbox_inches="tight")
             print(f"Saved {savename}")
         else:
             plt.show()
