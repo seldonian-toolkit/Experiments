@@ -293,6 +293,7 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	savename = os.path.join(results_dir,"test_gpa_classification_plot.png")
 	spg.make_plots(fontsize=12,legend_fontsize=8,
 		performance_label='Accuracy',
+		save_format="png",
 		savename=savename)
 	# Make sure it was saved
 	assert os.path.exists(savename)
@@ -487,10 +488,11 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	assert len(df_trial0) == 1
 
 	# Now make plot
-	# savename = os.path.join(results_dir,"test_gridworld_plot.png")
-	# spg.make_plots(fontsize=12,legend_fontsize=8,
-	# 	performance_label='-IS_estimate',
-	# 	savename=savename)
-	# # Make sure it was saved
-	# assert os.path.exists(savename)
+	savename = os.path.join(results_dir,"test_gridworld_plot.png")
+	spg.make_plots(fontsize=12,legend_fontsize=8,
+		performance_label='-IS_estimate',
+		save_format="png",
+		savename=savename)
+	# Make sure it was saved
+	assert os.path.exists(savename)
 	
