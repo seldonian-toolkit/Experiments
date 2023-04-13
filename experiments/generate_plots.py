@@ -318,8 +318,8 @@ class PlotGenerator:
                 baseline_ste_performance = baseline_std_performance / np.sqrt(n_trials)
                 X_valid_baseline = this_baseline_dict["X_valid"]
                 (pl,) = ax_performance.plot(
-                    X_valid_baseline,
-                    baseline_mean_performance,
+                    X_valid_baseline.to_numpy(),
+                    baseline_mean_performance.to_numpy(),
                     color=baseline_color,
                     label=baseline,
                 )
@@ -343,21 +343,22 @@ class PlotGenerator:
                     alpha=0.5,
                 )
 
+            # Seldonian performance
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian_passed = this_seldonian_dict["df_seldonian_passed"]
                 mean_performance = df_seldonian_passed.groupby("data_frac").mean()[
                     "performance"
-                ]
+                ].to_numpy()
                 std_performance = df_seldonian_passed.groupby("data_frac").std()[
                     "performance"
-                ]
+                ].to_numpy()
                 n_passed = df_seldonian_passed.groupby("data_frac").count()[
                     "performance"
-                ]
+                ].to_numpy()
                 ste_performance = std_performance / np.sqrt(n_passed)
-                X_passed_seldonian = this_seldonian_dict["X_passed"]
+                X_passed_seldonian = this_seldonian_dict["X_passed"].to_numpy()
                 (pl,) = ax_performance.plot(
                     X_passed_seldonian,
                     mean_performance,
@@ -396,15 +397,14 @@ class PlotGenerator:
             # to run model.fit() )
             for baseline_i, baseline in enumerate(baselines):
                 this_baseline_dict = baseline_dict[baseline]
-                X_all_baseline = this_baseline_dict["X_all"]
                 baseline_color = plot_colormap(baseline_i + len(seldonian_models))
                 df_baseline = this_baseline_dict["df_baseline"]
                 n_trials = df_baseline["trial_i"].max() + 1
-                mean_sr = df_baseline.groupby("data_frac").mean()["solution_returned"]
-                std_sr = df_baseline.groupby("data_frac").std()["solution_returned"]
+                mean_sr = df_baseline.groupby("data_frac").mean()["solution_returned"].to_numpy()
+                std_sr = df_baseline.groupby("data_frac").std()["solution_returned"].to_numpy()
                 ste_sr = std_sr / np.sqrt(n_trials)
 
-                X_all_baseline = this_baseline_dict["X_all"]
+                X_all_baseline = this_baseline_dict["X_all"].to_numpy()
 
                 ax_sr.plot(
                     X_all_baseline, mean_sr, color=baseline_color, label=baseline
@@ -424,16 +424,17 @@ class PlotGenerator:
                     alpha=0.5,
                 )
 
+            # Seldonian solution rate
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
-                mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"]
-                std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"]
+                mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
+                std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
                 ste_sr = std_sr / np.sqrt(n_trials)
 
-                X_all_seldonian = this_seldonian_dict["X_all"]
+                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
 
                 ax_sr.plot(
                     X_all_seldonian,
@@ -464,7 +465,6 @@ class PlotGenerator:
             ##########################
 
             # Baseline failure rate
-            
             for baseline_i, baseline in enumerate(baselines):
                 baseline_color = plot_colormap(baseline_i + len(seldonian_models))
                 # Baseline performance
@@ -474,11 +474,11 @@ class PlotGenerator:
 
                 baseline_mean_fr = df_baseline_valid.groupby("data_frac").mean()[
                     "failed"
-                ]
-                baseline_std_fr = df_baseline_valid.groupby("data_frac").std()["failed"]
+                ].to_numpy()
+                baseline_std_fr = df_baseline_valid.groupby("data_frac").std()["failed"].to_numpy()
                 baseline_ste_fr = baseline_std_fr / np.sqrt(n_trials)
 
-                X_valid_baseline = this_baseline_dict["X_valid"]
+                X_valid_baseline = this_baseline_dict["X_valid"].to_numpy()
 
                 ax_fr.plot(
                     X_valid_baseline,
@@ -501,16 +501,17 @@ class PlotGenerator:
                     alpha=0.5,
                 )
 
+            # Seldonian failure rate
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
-                mean_fr = df_seldonian.groupby("data_frac").mean()["failed"]
-                std_fr = df_seldonian.groupby("data_frac").std()["failed"]
+                mean_fr = df_seldonian.groupby("data_frac").mean()["failed"].to_numpy()
+                std_fr = df_seldonian.groupby("data_frac").std()["failed"].to_numpy()
                 ste_fr = std_fr / np.sqrt(n_trials)
 
-                X_all_seldonian = this_seldonian_dict["X_all"]
+                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
                 
                 ax_fr.plot(
                     X_all_seldonian,
