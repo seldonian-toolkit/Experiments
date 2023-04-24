@@ -553,7 +553,6 @@ class PlotGenerator:
             )
 
         if savename:
-            # plt.savefig(savename,format=save_format,dpi=600)
             plt.savefig(savename, format=save_format,bbox_inches="tight")
             print(f"Saved {savename}")
         else:

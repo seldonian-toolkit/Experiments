@@ -8,7 +8,6 @@ class HeadlessExample(BaseExample):
     def __init__(self, spec):
         """Class for running headless experiments"""
         super().__init__(spec=spec)
-        print(self.regime)
         assert self.regime == "supervised_learning","Headless examples are only supported for supervised learning"
 
     def run(
