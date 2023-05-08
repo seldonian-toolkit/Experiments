@@ -36,5 +36,6 @@
    experiments.headless_example
    experiments.headless_experiments
    experiments.headless_utils
+   experiments.perf_eval_funcs
    experiments.utils
 

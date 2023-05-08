@@ -1,4 +1,4 @@
-experiments.experiments.BaselineExperiment
+﻿experiments.experiments.BaselineExperiment
 ==========================================
 
 .. currentmodule:: experiments.experiments
@@ -21,6 +21,8 @@ experiments.experiments.BaselineExperiment
    ..    ~BaselineExperiment.__init__
    ..
    ..    ~BaselineExperiment.aggregate_results
+   ..
+   ..    ~BaselineExperiment.evaluate_constraint_functions
    ..
    ..    ~BaselineExperiment.run_baseline_trial
    ..

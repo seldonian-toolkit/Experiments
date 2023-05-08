@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -14,7 +13,7 @@
     <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.utils" href="experiments.utils.html" />
+    <link rel="next" title="experiments.perf_eval_funcs" href="experiments.perf_eval_funcs.html" />
     <link rel="prev" title="experiments.headless_example" href="experiments.headless_example.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -57,7 +56,7 @@
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.headless_example.HeadlessExample.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headless_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_layer_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_feature_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretraining_device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_batch_size_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'performance'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.headless_example.HeadlessExample.run" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headless_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_layer_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_feature_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretraining_device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_batch_size_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perf_eval_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resample'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'performance'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.headless_example.HeadlessExample.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the experiment for this example.
 Runs any baseline models included in baselines
 parameter first. Then produces the three plots.</p>
@@ -104,6 +103,7 @@ parameter first. Then produces the three plots.</p>
 </li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.utils.html">experiments.utils</a></li>
 </ul>
 </li>
@@ -119,7 +119,7 @@ parameter first. Then produces the three plots.</p>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.headless_example.html">experiments.headless_example</a><ul>
       <li>Previous: <a href="experiments.headless_example.html" title="previous chapter">experiments.headless_example</a></li>
-      <li>Next: <a href="experiments.utils.html" title="next chapter">experiments.utils</a></li>
+      <li>Next: <a href="experiments.perf_eval_funcs.html" title="next chapter">experiments.perf_eval_funcs</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -152,7 +152,7 @@ parameter first. Then produces the three plots.</p>
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

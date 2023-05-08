@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -74,6 +73,35 @@ trial file into a single CSV file.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.evaluate_constraint_functions">
+<span class="sig-name descname"><span class="pre">evaluate_constraint_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_fns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.evaluate_constraint_functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function to evaluate
+the constraint functions to determine
+whether baseline solution was safe on ground truth</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solution</strong> (<em>numpy ndarray</em>) – The weights of the model found
+during model training in a given trial</p></li>
+<li><p><strong>constraint_eval_fns</strong> (<em>List</em><em>(</em><em>function</em><em>)</em>) – List of functions
+to use to evaluate each constraint.
+An empty list (default) results in using the parse
+tree to evaluate the constraints</p></li>
+<li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – keyword arguments
+to pass to each constraint function
+in constraint_eval_fns</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a vector of g values for the constraints</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="experiments.experiments.BaselineExperiment.run_baseline_trial">
 <span class="sig-name descname"><span class="pre">run_baseline_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiments.BaselineExperiment.run_baseline_trial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a trial of the baseline model. Currently only
@@ -145,6 +173,7 @@ These will comprise the header of the saved file</p></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.__init__"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.__init__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.__repr__"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.aggregate_results"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.aggregate_results()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.evaluate_constraint_functions"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.evaluate_constraint_functions()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.run_baseline_trial"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.run_baseline_trial()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.run_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.experiments.BaselineExperiment.write_trial_result"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.write_trial_result()</span></code></a></li>
@@ -159,6 +188,7 @@ These will comprise the header of the saved file</p></li>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.utils.html">experiments.utils</a></li>
 </ul>
 </li>
@@ -207,7 +237,7 @@ These will comprise the header of the saved file</p></li>
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

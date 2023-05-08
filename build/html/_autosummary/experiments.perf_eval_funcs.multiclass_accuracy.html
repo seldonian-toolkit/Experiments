@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -6,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>experiments.utils.MSE &#8212; Seldonian Experiments pre-release documentation</title>
+    <title>experiments.perf_eval_funcs.multiclass_accuracy &#8212; Seldonian Experiments pre-release documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -14,8 +13,8 @@
     <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.utils.batch_predictions" href="experiments.utils.batch_predictions.html" />
-    <link rel="prev" title="experiments.utils" href="experiments.utils.html" />
+    <link rel="next" title="experiments.perf_eval_funcs.multiclass_logistic_loss" href="experiments.perf_eval_funcs.multiclass_logistic_loss.html" />
+    <link rel="prev" title="experiments.perf_eval_funcs.deterministic_accuracy" href="experiments.perf_eval_funcs.deterministic_accuracy.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,17 +31,19 @@
 
           <div class="body" role="main">
             
-  <section id="experiments-utils-mse">
-<h1>experiments.utils.MSE<a class="headerlink" href="#experiments-utils-mse" title="Permalink to this heading">¶</a></h1>
+  <section id="experiments-perf-eval-funcs-multiclass-accuracy">
+<h1>experiments.perf_eval_funcs.multiclass_accuracy<a class="headerlink" href="#experiments-perf-eval-funcs-multiclass-accuracy" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="experiments.utils.MSE">
-<span class="sig-name descname"><span class="pre">MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.utils.MSE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate sample mean squared error</p>
+<dt class="sig sig-object py" id="experiments.perf_eval_funcs.multiclass_accuracy">
+<span class="sig-name descname"><span class="pre">multiclass_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.perf_eval_funcs.multiclass_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>For multi-class classification.
+1 - error rate. Use when output of 
+model y_pred is a probability</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>y_pred</strong> – Array of predicted labels</p></li>
-<li><p><strong>y</strong> – Array of true labels</p></li>
+<li><p><strong>y_pred</strong> – Array of predicted probabilities of each label</p></li>
+<li><p><strong>y</strong> – Array of true labels, 1-dimensional</p></li>
 </ul>
 </dd>
 </dl>
@@ -76,23 +77,19 @@
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="experiments.utils.html">experiments.utils</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.utils.MSE</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#experiments.utils.MSE"><code class="docutils literal notranslate"><span class="pre">MSE()</span></code></a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.perf_eval_funcs.MSE.html">experiments.perf_eval_funcs.MSE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.perf_eval_funcs.binary_logistic_loss.html">experiments.perf_eval_funcs.binary_logistic_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.perf_eval_funcs.deterministic_accuracy.html">experiments.perf_eval_funcs.deterministic_accuracy</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.perf_eval_funcs.multiclass_accuracy</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#experiments.perf_eval_funcs.multiclass_accuracy"><code class="docutils literal notranslate"><span class="pre">multiclass_accuracy()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.batch_predictions.html">experiments.utils.batch_predictions</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.binary_logistic_loss.html">experiments.utils.binary_logistic_loss</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.deterministic_accuracy.html">experiments.utils.deterministic_accuracy</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_episodes_and_calc_J.html">experiments.utils.generate_episodes_and_calc_J</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.generate_resampled_datasets.html">experiments.utils.generate_resampled_datasets</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.make_batch_epoch_dict_fixedniter.html">experiments.utils.make_batch_epoch_dict_fixedniter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.make_batch_epoch_dict_min_sample_repeat.html">experiments.utils.make_batch_epoch_dict_min_sample_repeat</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.multiclass_accuracy.html">experiments.utils.multiclass_accuracy</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.multiclass_logistic_loss.html">experiments.utils.multiclass_logistic_loss</a></li>
-<li class="toctree-l4"><a class="reference internal" href="experiments.utils.probabilistic_accuracy.html">experiments.utils.probabilistic_accuracy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.perf_eval_funcs.multiclass_logistic_loss.html">experiments.perf_eval_funcs.multiclass_logistic_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.perf_eval_funcs.probabilistic_accuracy.html">experiments.perf_eval_funcs.probabilistic_accuracy</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.utils.html">experiments.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -105,9 +102,9 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API</a><ul>
   <li><a href="experiments.html">experiments</a><ul>
-  <li><a href="experiments.utils.html">experiments.utils</a><ul>
-      <li>Previous: <a href="experiments.utils.html" title="previous chapter">experiments.utils</a></li>
-      <li>Next: <a href="experiments.utils.batch_predictions.html" title="next chapter">experiments.utils.batch_predictions</a></li>
+  <li><a href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a><ul>
+      <li>Previous: <a href="experiments.perf_eval_funcs.deterministic_accuracy.html" title="previous chapter">experiments.perf_eval_funcs.deterministic_accuracy</a></li>
+      <li>Next: <a href="experiments.perf_eval_funcs.multiclass_logistic_loss.html" title="next chapter">experiments.perf_eval_funcs.multiclass_logistic_loss</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -140,11 +137,11 @@
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
-      <a href="../_sources/_autosummary/experiments.utils.MSE.rst.txt"
+      <a href="../_sources/_autosummary/experiments.perf_eval_funcs.multiclass_accuracy.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

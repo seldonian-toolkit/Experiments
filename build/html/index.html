@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -95,6 +94,7 @@
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.__init__"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.__init__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.__repr__"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.aggregate_results"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.aggregate_results()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.evaluate_constraint_functions"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.evaluate_constraint_functions()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.run_baseline_trial"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.run_baseline_trial()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.run_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.write_trial_result"><code class="docutils literal notranslate"><span class="pre">BaselineExperiment.write_trial_result()</span></code></a></li>
@@ -188,21 +188,36 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/experiments.utils.html">experiments.utils</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.MSE.html">experiments.utils.MSE</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.MSE.html#experiments.utils.MSE"><code class="docutils literal notranslate"><span class="pre">MSE()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.MSE.html">experiments.perf_eval_funcs.MSE</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.MSE.html#experiments.perf_eval_funcs.MSE"><code class="docutils literal notranslate"><span class="pre">MSE()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.binary_logistic_loss.html">experiments.perf_eval_funcs.binary_logistic_loss</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.binary_logistic_loss.html#experiments.perf_eval_funcs.binary_logistic_loss"><code class="docutils literal notranslate"><span class="pre">binary_logistic_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.deterministic_accuracy.html">experiments.perf_eval_funcs.deterministic_accuracy</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.deterministic_accuracy.html#experiments.perf_eval_funcs.deterministic_accuracy"><code class="docutils literal notranslate"><span class="pre">deterministic_accuracy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.multiclass_accuracy.html">experiments.perf_eval_funcs.multiclass_accuracy</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.multiclass_accuracy.html#experiments.perf_eval_funcs.multiclass_accuracy"><code class="docutils literal notranslate"><span class="pre">multiclass_accuracy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.multiclass_logistic_loss.html">experiments.perf_eval_funcs.multiclass_logistic_loss</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.multiclass_logistic_loss.html#experiments.perf_eval_funcs.multiclass_logistic_loss"><code class="docutils literal notranslate"><span class="pre">multiclass_logistic_loss()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.probabilistic_accuracy.html">experiments.perf_eval_funcs.probabilistic_accuracy</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.perf_eval_funcs.probabilistic_accuracy.html#experiments.perf_eval_funcs.probabilistic_accuracy"><code class="docutils literal notranslate"><span class="pre">probabilistic_accuracy()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/experiments.utils.html">experiments.utils</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.batch_predictions.html">experiments.utils.batch_predictions</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.batch_predictions.html#experiments.utils.batch_predictions"><code class="docutils literal notranslate"><span class="pre">batch_predictions()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.binary_logistic_loss.html">experiments.utils.binary_logistic_loss</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.binary_logistic_loss.html#experiments.utils.binary_logistic_loss"><code class="docutils literal notranslate"><span class="pre">binary_logistic_loss()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.deterministic_accuracy.html">experiments.utils.deterministic_accuracy</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.deterministic_accuracy.html#experiments.utils.deterministic_accuracy"><code class="docutils literal notranslate"><span class="pre">deterministic_accuracy()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.generate_episodes_and_calc_J.html">experiments.utils.generate_episodes_and_calc_J</a><ul>
@@ -213,24 +228,16 @@
 <li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.generate_resampled_datasets.html#experiments.utils.generate_resampled_datasets"><code class="docutils literal notranslate"><span class="pre">generate_resampled_datasets()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.has_failed.html">experiments.utils.has_failed</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.has_failed.html#experiments.utils.has_failed"><code class="docutils literal notranslate"><span class="pre">has_failed()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.make_batch_epoch_dict_fixedniter.html">experiments.utils.make_batch_epoch_dict_fixedniter</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.make_batch_epoch_dict_fixedniter.html#experiments.utils.make_batch_epoch_dict_fixedniter"><code class="docutils literal notranslate"><span class="pre">make_batch_epoch_dict_fixedniter()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.make_batch_epoch_dict_min_sample_repeat.html">experiments.utils.make_batch_epoch_dict_min_sample_repeat</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.make_batch_epoch_dict_min_sample_repeat.html#experiments.utils.make_batch_epoch_dict_min_sample_repeat"><code class="docutils literal notranslate"><span class="pre">make_batch_epoch_dict_min_sample_repeat()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.multiclass_accuracy.html">experiments.utils.multiclass_accuracy</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.multiclass_accuracy.html#experiments.utils.multiclass_accuracy"><code class="docutils literal notranslate"><span class="pre">multiclass_accuracy()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.multiclass_logistic_loss.html">experiments.utils.multiclass_logistic_loss</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.multiclass_logistic_loss.html#experiments.utils.multiclass_logistic_loss"><code class="docutils literal notranslate"><span class="pre">multiclass_logistic_loss()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/experiments.utils.probabilistic_accuracy.html">experiments.utils.probabilistic_accuracy</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="_autosummary/experiments.utils.probabilistic_accuracy.html#experiments.utils.probabilistic_accuracy"><code class="docutils literal notranslate"><span class="pre">probabilistic_accuracy()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -300,7 +307,7 @@
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
