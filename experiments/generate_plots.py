@@ -491,23 +491,23 @@ class PlotGenerator:
                     gstr_failed].to_numpy()
                 baseline_ste_fr = baseline_std_fr / np.sqrt(n_trials)
 
-                X_valid_baseline = this_baseline_dict["X_valid"].to_numpy()
+                X_all_baseline = this_baseline_dict["X_all"].to_numpy()
 
                 ax_fr.plot(
-                    X_valid_baseline,
+                    X_all_baseline,
                     baseline_mean_fr,
                     color=baseline_color,
                     label=baseline,
                 )
                 ax_fr.scatter(
-                    X_valid_baseline,
+                    X_all_baseline,
                     baseline_mean_fr,
                     color=baseline_color,
                     marker=marker_list[baseline_i],
                     s=marker_size,
                 )
                 ax_fr.fill_between(
-                    X_valid_baseline,
+                    X_all_baseline,
                     baseline_mean_fr - baseline_ste_fr,
                     baseline_mean_fr + baseline_ste_fr,
                     color=baseline_color,
