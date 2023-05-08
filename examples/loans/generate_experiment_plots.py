@@ -12,9 +12,8 @@ import numpy as np
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
-from experiments.utils import probabilistic_accuracy
 from seldonian.utils.io_utils import load_pickle
-from sklearn.metrics import log_loss
+from experiments.perf_eval_funcs import (probabilistic_accuracy, binary_logistic_loss)
 
 def perf_eval_fn(y_pred,y,**kwargs):    
     return log_loss(y,y_pred)
@@ -38,6 +37,7 @@ def loans_example(
         raise NotImplementedError(
             "Performance metric must be 'log_loss' for this example"
         )
+    perf_eval_fn = binary_logistic_loss
 
     for constraint in constraints:
         if constraint in ["disparate_impact", "disparate_impact_fairlearndef"]:

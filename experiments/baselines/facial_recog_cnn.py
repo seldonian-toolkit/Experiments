@@ -113,7 +113,6 @@ class PytorchFacialRecog(SupervisedPytorchBaseModel):
         return y_pred
 
     def train(self, X_train, Y_train, batch_size, num_epochs):
-        print("Training model...")
         loss_list = []
         accuracy_list = []
         iter_list = []
@@ -122,9 +121,6 @@ class PytorchFacialRecog(SupervisedPytorchBaseModel):
         train = torch.utils.data.TensorDataset(x_train_tensor, y_train_label)
         trainloader = torch.utils.data.DataLoader(
             train, batch_size=batch_size, shuffle=True
-        )
-        print(
-            f"Running gradient descent with batch_size: {batch_size}, num_epochs={num_epochs}"
         )
         itot = 0
         for epoch in range(num_epochs):

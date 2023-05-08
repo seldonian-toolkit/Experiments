@@ -10,8 +10,8 @@ import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.headless_example import HeadlessExample
 from experiments.utils import (
-    probabilistic_accuracy, binary_logistic_loss,
     make_batch_epoch_dict_min_sample_repeat)
+from experiments.perf_eval_funcs import (probabilistic_accuracy, binary_logistic_loss)
 from experiments.headless_utils import make_data_loaders
 from seldonian.utils.io_utils import load_pickle
 from examples.headless_facial_gender.full_model import CNN
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         spec_rootdir="data/spec/",
         results_base_dir=results_base_dir,
         epsilons=[epsilon],
-        n_trials=5,
+        n_trials=20,
         data_fracs=np.array([0.0005,0.005,0.05,0.075,0.1,0.25,0.5,0.75,1.0]),
         # data_fracs=np.array([0.2]),
         baselines = [],

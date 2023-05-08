@@ -192,7 +192,7 @@ class BaselineExperiment(Experiment):
         :type trial_i: int
         """
 
-        spec = kwargs["spec"]
+        spec = copy.deepcopy(kwargs["spec"])
         if isinstance(spec, RLSpec):
             raise NotImplementedError("Baselines are not yet implemented for RL")
         dataset = spec.dataset
@@ -202,6 +202,7 @@ class BaselineExperiment(Experiment):
         perf_eval_fn = kwargs["perf_eval_fn"]
         perf_eval_kwargs = kwargs["perf_eval_kwargs"]
         batch_epoch_dict = kwargs["batch_epoch_dict"]
+        constraint_eval_fns = kwargs["constraint_eval_fns"]
         constraint_eval_kwargs = kwargs["constraint_eval_kwargs"]
         if (
             batch_epoch_dict == {}
@@ -330,48 +331,92 @@ class BaselineExperiment(Experiment):
         #########################################################
         """" Calculate performance and safety on ground truth """
         #########################################################
-
-        failed = False  # flag for whether we were actually safe on test set
         if solution_found:
             performance = perf_eval_fn(y_pred, **perf_eval_kwargs)
 
             if verbose:
                 print(f"Performance = {performance}")
+            
+            # Determine whether this solution
+            # violates any of the constraints
+            # on the test dataset, which is the dataset from spec
+            if constraint_eval_fns == []:
+                constraint_eval_kwargs["baseline_model"] = baseline_model
+                constraint_eval_kwargs["dataset"] = dataset
+                constraint_eval_kwargs["parse_trees"] = parse_trees
+                constraint_eval_kwargs["verbose"] = verbose
+
+            gvec = self.evaluate_constraint_functions(
+                    solution=solution,
+                    constraint_eval_fns=constraint_eval_fns,
+                    constraint_eval_kwargs=constraint_eval_kwargs,
+                )
+        else:
+            print("NSF")
+            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            performance = np.nan
+
+        # Write out file for this data_frac,trial_i combo
+        # data = [data_frac, trial_i, performance, failed]
+        # colnames = ["data_frac", "trial_i", "performance", "failed"]
+        data = [data_frac, trial_i, performance, gvec]
+        colnames = ["data_frac", "trial_i", "performance", "gvec"]
+        self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
+        return
+   
+    def evaluate_constraint_functions(self,
+        solution, constraint_eval_fns, constraint_eval_kwargs):
+        """Helper function to evaluate
+        the constraint functions to determine
+        whether baseline solution was safe on ground truth
+
+        :param solution: The weights of the model found
+                during model training in a given trial
+        :type solution: numpy ndarray
+        :param constraint_eval_fns: List of functions
+                to use to evaluate each constraint.
+                An empty list (default) results in using the parse
+                tree to evaluate the constraints
+        :type constraint_eval_fns: List(function)
+        :param constraint_eval_kwargs: keyword arguments
+                to pass to each constraint function
+                in constraint_eval_fns
+        :type constraint_eval_kwargs: dict
+        :return: a vector of g values for the constraints
+        :rtype: np.ndarray
+        """
+        # Use safety test branch so the confidence bounds on
+        # leaf nodes are not inflated
+        gvals=[]
+        if constraint_eval_fns == []:
+            parse_trees = constraint_eval_kwargs["parse_trees"]
+            dataset = constraint_eval_kwargs["dataset"]
+            baseline_model = constraint_eval_kwargs["baseline_model"]
             if "eval_batch_size" in constraint_eval_kwargs:
                 batch_size_safety = constraint_eval_kwargs["eval_batch_size"]
             else:
                 batch_size_safety = None
-            # Determine whether this solution
-            # violates any of the constraints
-            # on the test dataset, which is the dataset from spec
+
             for parse_tree in parse_trees:
-                parse_tree.reset_base_node_dict(reset_data=True)
-                parse_tree.evaluate_constraint(
-                    theta=solution,
-                    dataset=dataset,
-                    model=baseline_model,
-                    regime="supervised_learning",
-                    branch="safety_test",
-                    batch_size_safety=batch_size_safety,
-                )
+                    parse_tree.reset_base_node_dict(reset_data=True)
+                    parse_tree.evaluate_constraint(
+                        theta=solution,
+                        dataset=dataset,
+                        model=baseline_model,
+                        regime=dataset.regime,
+                        branch="safety_test",
+                        batch_size_safety=batch_size_safety,
+                    )
+                    g = parse_tree.root.value
 
-                g = parse_tree.root.value
-
-                if g > 0 or np.isnan(g):
-                    failed = True
-                    if verbose:
-                        print("Failed on test set")
-                if verbose:
-                    print(f"g (baseline={self.model_name}) = {g}")
+                    gvals.append(g)
+                    parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
         else:
-            print("NSF")
-            performance = np.nan
-
-        # Write out file for this data_frac,trial_i combo
-        data = [data_frac, trial_i, performance, failed]
-        colnames = ["data_frac", "trial_i", "performance", "failed"]
-        self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
-        return
+            # User provided functions to evaluate constraints
+            for eval_fn in constraint_eval_fns:
+                g = eval_fn(solution,**constraint_eval_kwargs)
+                gvals.append(g)
+        return np.array(gvals)
 
 
 class SeldonianExperiment(Experiment):
@@ -476,9 +521,6 @@ class SeldonianExperiment(Experiment):
 
         os.makedirs(trial_dir, exist_ok=True)
 
-        parse_trees = spec.parse_trees
-        dataset = spec.dataset
-
         ##############################################
         """ Setup for running Seldonian algorithm """
         ##############################################
@@ -571,7 +613,7 @@ class SeldonianExperiment(Experiment):
 
                 dataset_for_experiment = RLDataSet(
                     episodes=episodes_for_exp,
-                    meta_information=dataset.meta_information,
+                    meta_information=spec.dataset.meta_information,
                     regime=regime,
                 )
 
@@ -618,8 +660,6 @@ class SeldonianExperiment(Experiment):
         #########################################################
         """" Calculate performance and safety on ground truth """
         #########################################################
-
-        failed = False  # flag for whether we were actually safe on test set
 
         if solution_found:
             solution = copy.deepcopy(solution)
@@ -680,30 +720,35 @@ class SeldonianExperiment(Experiment):
                 if regime == "reinforcement_learning":
                     constraint_eval_kwargs["episodes_for_eval"] = episodes_for_eval
 
-                failed = self.evaluate_constraint_functions(
+                gvec = self.evaluate_constraint_functions(
                     solution=solution,
                     constraint_eval_fns=constraint_eval_fns,
                     constraint_eval_kwargs=constraint_eval_kwargs,
                 )
 
                 if verbose:
-                    if failed:
-                        print("Solution was not actually safe on ground truth!")
-                    else:
-                        print("Solution was safe on ground truth")
+                    print(f"gvec: {gvec}")
                     print()
             else:
                 if verbose:
                     print("Failed safety test ")
                     performance = np.nan
 
-        else:
+        else: # solution_found=False
+            n_constraints = len(spec.parse_trees)
+            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
             if verbose:
                 print("NSF")
             performance = np.nan
+        
+        # Clear out any cached data in the parse trees for the next trial.
+        # This handles the case where solution_found=False.
+        for parse_tree in spec_for_experiment.parse_trees:
+            parse_tree.reset_base_node_dict(reset_data=True)
+            
         # Write out file for this data_frac,trial_i combo
-        data = [data_frac, trial_i, performance, passed_safety, failed]
-        colnames = ["data_frac", "trial_i", "performance", "passed_safety", "failed"]
+        data = [data_frac, trial_i, performance, passed_safety, gvec]
+        colnames = ["data_frac", "trial_i", "performance", "passed_safety", "gvec"]
         self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
         return
 
@@ -717,21 +762,21 @@ class SeldonianExperiment(Experiment):
         :param solution: The weights of the model found
                 during candidate selection in a given trial
         :type solution: numpy ndarray
-
         :param constraint_eval_fns: List of functions
                 to use to evaluate each constraint.
                 An empty list results in using the parse
                 tree to evaluate the constraints
         :type constraint_eval_fns: List(function)
-
         :param constraint_eval_kwargs: keyword arguments
                 to pass to each constraint function
                 in constraint_eval_fns
         :type constraint_eval_kwargs: dict
+        :return: a vector of g values for the constraints
+        :rtype: np.ndarray
         """
         # Use safety test branch so the confidence bounds on
         # leaf nodes are not inflated
-        failed = False
+        gvals = []
         if constraint_eval_fns == []:
             """User did not provide their own functions
             to evaluate the constraints. Use the default:
@@ -765,16 +810,16 @@ class SeldonianExperiment(Experiment):
                 parse_tree.evaluate_constraint(**constraint_eval_kwargs)
 
                 g = parse_tree.root.value
-                if g > 0 or np.isnan(g):
-                    failed = True
+                gvals.append(g)
+                parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
 
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:
-                g = eval_fn(solution)
-                if g > 0 or np.isnan(g):
-                    failed = True
-        return failed
+                g = eval_fn(solution,**constraint_eval_kwargs)
+                gvals.append(g)
+
+        return np.array(gvals)
 
 
 class FairlearnExperiment(Experiment):
@@ -877,9 +922,6 @@ class FairlearnExperiment(Experiment):
 
         os.makedirs(trial_dir, exist_ok=True)
 
-        parse_trees = spec.parse_trees
-        dataset = spec.dataset
-
         ##############################################
         """ Setup for running Fairlearn algorithm """
         ##############################################
@@ -978,28 +1020,17 @@ class FairlearnExperiment(Experiment):
         #########################################################
         """" Calculate performance and safety on ground truth """
         #########################################################
+
         if solution_found:
             fairlearn_eval_kwargs["model"] = mitigator
-
+            # predict the class label, not the probability
             performance = perf_eval_fn(y_pred, **fairlearn_eval_kwargs)
 
-        if verbose:
-            print(f"Performance = {performance}")
-
-        ########################################
-        """ Calculate safety on ground truth """
-        ########################################
-        if verbose:
-            print("Determining whether solution " "is actually safe on ground truth")
-
-        # predict the class label, not the probability
-        # Determine whether this solution
-        # violates any of the constraints
-        # on the test dataset
-        failed = False
-        if solution_found:
+            # Determine whether this solution
+            # violates any of the constraints
+            # on the test dataset
             fairlearn_eval_method = fairlearn_eval_kwargs["eval_method"]
-            failed = self.evaluate_constraint_function(
+            gvec = self.evaluate_constraint_function(
                 y_pred=y_pred,
                 test_labels=fairlearn_eval_kwargs["y"],
                 fairlearn_constraint_name=fairlearn_constraint_name,
@@ -1007,17 +1038,15 @@ class FairlearnExperiment(Experiment):
                 eval_method=fairlearn_eval_method,
                 sensitive_features=fairlearn_eval_kwargs["sensitive_features"],
             )
-        else:
-            failed = False
+        else: # solution_found=False
+            n_constraints = len(spec.parse_trees)
+            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            if verbose:
+                print("NSF")
 
-        if failed:
-            print("Fairlearn trial UNSAFE on ground truth")
-        else:
-            print("Fairlearn trial SAFE on ground truth")
         # Write out file for this data_frac,trial_i combo
-        data = [data_frac, trial_i, performance, failed]
-
-        colnames = ["data_frac", "trial_i", "performance", "failed"]
+        data = [data_frac, trial_i, performance, gvec]
+        colnames = ["data_frac", "trial_i", "performance", "gvec"]
         self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
         return
 
@@ -1093,7 +1122,6 @@ class FairlearnExperiment(Experiment):
         """
         print(f"Evaluating constraint for: {fairlearn_constraint_name}")
         failed = False
-
         if fairlearn_constraint_name == "demographic_parity":
             # g = abs((PR | ATR1) - (PR | ATR2)) - eps
             PR_frame = MetricFrame(
@@ -1207,9 +1235,4 @@ class FairlearnExperiment(Experiment):
                 f"{fairlearn_constraint.short_name} "
                 "is not supported."
             )
-
-        print(f"g (fairlearn) = {g}")
-        if g > 0 or np.isnan(g):
-            failed = True
-
-        return failed
+        return np.array([g])

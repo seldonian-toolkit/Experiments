@@ -8,20 +8,22 @@ from sklearn.metrics import log_loss,accuracy_score
 
 if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = False
+	run_experiments = True
 	make_plots = True
-	save_plot = True
+	save_plot = False
 	constraint_name = 'equalized_odds'
 	fairlearn_constraint_name = constraint_name
 	fairlearn_epsilon_eval = 0.2 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_eval_method = 'two-groups' 
-	fairlearn_epsilons_constraint = [0.01,0.1,0.2,1.0] # the epsilons used in the fitting constraint
+	# fairlearn_epsilons_constraint = [0.01,0.1,0.2,1.0] # the epsilons used in the fitting constraint
+	fairlearn_epsilons_constraint = [0.01] # the epsilons used in the fitting constraint
 	performance_metric = 'log_loss'
-	n_trials = 50
-	data_fracs = np.logspace(-3,0,15)
-	n_workers = 8
+	n_trials = 1
+	# data_fracs = np.logspace(-3,0,15)
+	data_fracs = [0.001]
+	n_workers = 1
 	verbose=True
-	results_dir = f'../../results/loan_{constraint_name}_eqodds_log_loss_2023Jan09'
+	results_dir = f'../../results/loan_{constraint_name}_eqodds_log_loss_2023April12'
 	os.makedirs(results_dir,exist_ok=True)
 
 	plot_savename = os.path.join(results_dir,f'{constraint_name}_{performance_metric}.png')
@@ -29,7 +31,7 @@ if __name__ == "__main__":
 	# Load spec
 	specfile = f'../../../engine-repo-dev/examples/loan_tutorial/spec_eqodds.pkl'
 	spec = load_pickle(specfile)
-
+	spec.verbose=verbose
 	# Use entire original dataset as ground truth for test set
 	dataset = spec.dataset
 	test_features = dataset.features

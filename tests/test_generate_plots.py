@@ -4,12 +4,13 @@ import pandas as pd
 
 import pytest
 
-from sklearn.metrics import log_loss,accuracy_score
-
 from experiments.generate_plots import (
 	SupervisedPlotGenerator,RLPlotGenerator)
 
-from experiments.utils import MSE,generate_episodes_and_calc_J
+from experiments.utils import (
+	generate_episodes_and_calc_J,has_failed)
+
+from experiments.perf_eval_funcs import (MSE,probabilistic_accuracy)
 
 from seldonian.RL.environments.gridworld import Gridworld
 
@@ -70,19 +71,27 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
 	trial_is = df.trial_i
 	perfs = df.performance
 	passed_safetys = df.passed_safety
-	faileds = df.failed
+	gvecs = df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
 	
 	assert dps[0] == 0.01
 	assert trial_is[0] == 0
+	assert passed_safetys[0] == False
+	assert gvecs.str[0][0] == -np.inf
 
 	assert dps[1] == 0.01
 	assert trial_is[1] == 1
+	assert passed_safetys[1] == False
+	assert gvecs.str[0][1] == -np.inf
 
 	assert dps[2] == 0.1
 	assert trial_is[2] == 0
+	assert passed_safetys[2] == False
+	assert gvecs.str[0][2] == -np.inf
 
 	assert dps[3] == 0.1
 	assert trial_is[3] == 1
+	assert passed_safetys[3] == False
+	assert gvecs.str[0][3] == -np.inf
 	
 	# Make sure number of trial files created is correct
 	trial_dir = os.path.join(results_dir,"qsa_results/trial_data")
@@ -104,13 +113,8 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	data_fracs = [0.01,0.1]
 	datagen_method="resample"
 	performance_metric = 'accuracy'
-	def perf_eval_fn(y_pred,y,**kwargs):
-		if performance_metric == 'log_loss':
-			return log_loss(y,y_pred)
-		elif performance_metric == 'accuracy':
-			return accuracy_score(y,y_pred > 0.5)
 
-	perf_eval_fn = perf_eval_fn
+	perf_eval_fn = probabilistic_accuracy
 	results_dir = "./tests/static/results"
 	n_workers = 1
 	# Get performance evaluation kwargs set up
@@ -158,19 +162,26 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 		dps = baseline_df.data_frac
 		trial_is = baseline_df.trial_i
 		perfs = baseline_df.performance
-		faileds = baseline_df.failed
-	
+		gvecs = baseline_df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
 		assert dps[0] == 0.01
 		assert trial_is[0] == 0
+		assert perfs[0] > 0
+		assert gvecs[0][0] < 0 
 
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
+		assert perfs[1] > 0
+		assert gvecs[1][0] < 0 
 
 		assert dps[2] == 0.1
 		assert trial_is[2] == 0
+		assert perfs[2] > 0
+		assert gvecs[2][0] < 0 
 
 		assert dps[3] == 0.1
 		assert trial_is[3] == 1
+		assert perfs[3] > 0
+		assert gvecs[3][0] < 0 
 		
 		# Make sure number of trial files created is correct
 		baseline_trial_dir = os.path.join(results_dir,
@@ -225,19 +236,27 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 		dps = baseline_df.data_frac
 		trial_is = baseline_df.trial_i
 		perfs = baseline_df.performance
-		faileds = baseline_df.failed
+		gvecs = baseline_df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
 	
 		assert dps[0] == 0.01
 		assert trial_is[0] == 0
+		assert perfs[0] > 0
+		assert gvecs[0][0] < 0 
 
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
+		assert perfs[1] > 0
+		assert gvecs[1][0] < 0 
 
 		assert dps[2] == 0.1
 		assert trial_is[2] == 0
+		assert perfs[2] > 0
+		assert gvecs[2][0] < 0 
 
 		assert dps[3] == 0.1
 		assert trial_is[3] == 1
+		assert perfs[3] > 0
+		assert gvecs[3][0] < 0 
 		
 		# Make sure number of trial files created is correct
 		baseline_trial_dir = os.path.join(results_dir,
@@ -252,7 +271,7 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 
 	# Seldonian experiment
 
-	spg.run_seldonian_experiment(verbose=True)
+	spg.run_seldonian_experiment(verbose=False)
 
 	## Make sure results file was created
 	results_file = os.path.join(results_dir,"qsa_results/qsa_results.csv")
@@ -260,24 +279,33 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 
 	# Make sure length of df is correct
 	df = pd.read_csv(results_file)
+
 	assert len(df) == 4
 	dps = df.data_frac
 	trial_is = df.trial_i
 	perfs = df.performance
 	passed_safetys = df.passed_safety
-	faileds = df.failed
+	gvecs = df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
 	
 	assert dps[0] == 0.01
 	assert trial_is[0] == 0
+	assert np.isnan(perfs[0])
+	assert gvecs[0][0] < 0
 
 	assert dps[1] == 0.01
 	assert trial_is[1] == 1
+	assert np.isnan(perfs[1])
+	assert gvecs[1][0] < 0
 
 	assert dps[2] == 0.1
 	assert trial_is[2] == 0
+	assert perfs[2] > 0
+	assert gvecs[2][0] < 0
 
 	assert dps[3] == 0.1
 	assert trial_is[3] == 1
+	assert perfs[3] > 0
+	assert gvecs[3][0] < 0
 	
 	# Make sure number of trial files created is correct
 	trial_dir = os.path.join(results_dir,"qsa_results/trial_data")
@@ -463,7 +491,8 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	trial_is = df.trial_i
 	perfs = df.performance
 	passed_safetys = df.passed_safety
-	faileds = df.failed
+	print("df:")
+	print(df)
 	
 	assert dps[0] == 0.01
 	assert trial_is[0] == 0

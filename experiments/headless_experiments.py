@@ -129,9 +129,6 @@ class HeadlessSeldonianExperiment(Experiment):
 
         os.makedirs(trial_dir, exist_ok=True)
 
-        parse_trees = spec.parse_trees
-        dataset = spec.dataset
-
         ##############################################
         """ Setup for running Seldonian algorithm """
         ##############################################
@@ -196,6 +193,7 @@ class HeadlessSeldonianExperiment(Experiment):
 
         # First re-initialize weights
         full_pretraining_model.load_state_dict(initial_state_dict)
+        
         latent_features = headless_utils.generate_latent_features(
             full_pretraining_model=full_pretraining_model,
             headless_pretraining_model=headless_pretraining_model,
@@ -231,6 +229,8 @@ class HeadlessSeldonianExperiment(Experiment):
         # using batch_epoch_dict
         if spec_for_experiment.optimization_technique == "gradient_descent":
             if spec_for_experiment.optimization_hyperparams["use_batches"] == True:
+                if verbose:
+                    print("Using batches in Seldonian trial")
                 batch_size, n_epochs = batch_epoch_dict[data_frac]
                 spec_for_experiment.optimization_hyperparams["batch_size"] = batch_size
                 spec_for_experiment.optimization_hyperparams["n_epochs"] = n_epochs
@@ -259,8 +259,6 @@ class HeadlessSeldonianExperiment(Experiment):
         #########################################################
         """" Calculate performance and safety on ground truth """
         #########################################################
-
-        failed = False  # flag for whether we were actually safe on test set
 
         if solution_found:
             solution = copy.deepcopy(solution)
@@ -321,17 +319,14 @@ class HeadlessSeldonianExperiment(Experiment):
                     constraint_eval_kwargs["branch"] = "safety_test"
                     constraint_eval_kwargs["verbose"] = verbose
 
-                failed = self.evaluate_constraint_functions(
+                gvec = self.evaluate_constraint_functions(
                     solution=solution,
                     constraint_eval_fns=constraint_eval_fns,
                     constraint_eval_kwargs=constraint_eval_kwargs,
                 )
 
                 if verbose:
-                    if failed:
-                        print("Solution was not actually safe on ground truth!")
-                    else:
-                        print("Solution was safe on ground truth")
+                    print(f"gvec: {gvec}")
                     print()
             else:
                 if verbose:
@@ -339,12 +334,20 @@ class HeadlessSeldonianExperiment(Experiment):
                     performance = np.nan
 
         else:
+            n_constraints = len(spec.parse_trees)
+            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
             if verbose:
                 print("NSF")
             performance = np.nan
+
+        # Clear out any cached data in the parse trees for the next trial.
+        # This handles the case where solution_found=False.
+        for parse_tree in spec_for_experiment.parse_trees:
+            parse_tree.reset_base_node_dict(reset_data=True)
+            
         # Write out file for this data_frac,trial_i combo
-        data = [data_frac, trial_i, performance, passed_safety, failed]
-        colnames = ["data_frac", "trial_i", "performance", "passed_safety", "failed"]
+        data = [data_frac, trial_i, performance, passed_safety, gvec]
+        colnames = ["data_frac", "trial_i", "performance", "passed_safety", "gvec"]
         self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
         return
 
@@ -372,7 +375,7 @@ class HeadlessSeldonianExperiment(Experiment):
         """
         # Use safety test branch so the confidence bounds on
         # leaf nodes are not inflated
-        failed = False
+        gvals = []
         if constraint_eval_fns == []:
             """User did not provide their own functions
             to evaluate the constraints. Use the default:
@@ -403,14 +406,14 @@ class HeadlessSeldonianExperiment(Experiment):
                 parse_tree.evaluate_constraint(**constraint_eval_kwargs)
 
                 g = parse_tree.root.value
-                if g > 0 or np.isnan(g):
-                    failed = True
+                gvals.append(g)
+                parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
 
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:
                 g = eval_fn(solution)
-                if g > 0 or np.isnan(g):
-                    failed = True
-        return failed
+                gvals.append(g)
+        
+        return np.array(gvals)
 

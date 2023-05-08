@@ -3,7 +3,7 @@ import pytest
 from experiments.experiments import (
 	BaselineExperiment,SeldonianExperiment)
 
-from experiments.utils import MSE
+from experiments.perf_eval_funcs import MSE
 
 def test_create_seldonian_experiment():
 	sd_exp = SeldonianExperiment(model_name='qsa',results_dir="./results")

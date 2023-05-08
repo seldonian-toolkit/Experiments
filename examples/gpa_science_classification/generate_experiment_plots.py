@@ -90,7 +90,7 @@ def gpa_example(
             include_fairlearn_models=include_fairlearn_models,
             fairlearn_kwargs=fairlearn_kwargs,
             performance_label=performance_metric,
-            performance_yscale="log",
+            performance_yscale="linear",
             plot_savename=plot_savename,
             plot_fontsize=12,
             legend_fontsize=8,
@@ -130,10 +130,10 @@ if __name__ == "__main__":
 
     gpa_example(
         spec_rootdir="data/spec",
-        results_dir=results_dir,
+        results_base_dir=results_base_dir,
         constraints=[constraint],
         n_trials=n_trials,
-        data_fracs=np.logspace(-3, 0, 15),
+        data_fracs=np.logspace(-4, 0, 15),
         baselines=baselines,
         include_fairlearn_models=include_fairlearn_models,
         performance_metric="accuracy",

@@ -13,7 +13,7 @@ from matplotlib import style
 from seldonian.utils.io_utils import save_pickle
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
-from .utils import generate_resampled_datasets
+from .utils import generate_resampled_datasets, has_failed
 
 seldonian_model_set = set(["qsa","headless_qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")
@@ -142,7 +142,6 @@ class PlotGenerator:
         :type savename: str, defaults to None
         """
         plt.style.use("bmh")
-        # plt.style.use('grayscale')
         regime = self.spec.dataset.regime
         if regime == "supervised_learning":
             tot_data_size = self.spec.dataset.num_datapoints
@@ -151,17 +150,9 @@ class PlotGenerator:
 
         # Read in constraints
         parse_trees = self.spec.parse_trees
-
-        constraint_dict = {}
-        for pt_ii, pt in enumerate(parse_trees):
-            delta = pt.delta
-            constraint_str = pt.constraint_str
-            constraint_dict[f"constraint_{pt_ii}"] = {
-                "delta": delta,
-                "constraint_str": constraint_str,
-            }
-
-        constraints = list(constraint_dict.keys())
+        n_constraints = len(parse_trees)
+        constraint_strs = [pt.constraint_str for pt in parse_trees]
+        deltas = [pt.delta for pt in parse_trees]
 
         # Figure out what experiments we have from subfolders in results_dir
         subfolders = [
@@ -187,6 +178,12 @@ class PlotGenerator:
             df_baseline["solution_returned"] = df_baseline["performance"].apply(
                 lambda x: ~np.isnan(x)
             )
+            df_baseline['gvec'] = df_baseline['gvec'].apply(lambda t: np.fromstring(t[1:-1],sep=' '))
+            new_colnames = ['g' + str(ii) + '_failed' for ii in range(1,n_constraints+1)]
+            for ii in range(len(new_colnames)):
+                colname = new_colnames[ii]
+                df_baseline[colname] = df_baseline['gvec'].str[ii].apply(has_failed)
+            df_baseline = df_baseline.drop('gvec', axis=1)
 
             valid_mask = ~np.isnan(df_baseline["performance"])
             df_baseline_valid = df_baseline[valid_mask]
@@ -213,6 +210,13 @@ class PlotGenerator:
             )
 
             df_seldonian = pd.read_csv(savename_seldonian)
+            df_seldonian['gvec'] = df_seldonian['gvec'].apply(lambda t: np.fromstring(t[1:-1],sep=' '))
+            new_colnames = ['g' + str(ii) + '_failed' for ii in range(1,n_constraints+1)]
+            for ii in range(len(new_colnames)):
+                colname = new_colnames[ii]
+                df_seldonian[colname] = df_seldonian['gvec'].str[ii].apply(has_failed)
+            df_seldonian = df_seldonian.drop('gvec', axis=1)
+
             passed_mask = df_seldonian["passed_safety"] == True
             df_seldonian_passed = df_seldonian[passed_mask]
             # Get the list of all data_fracs
@@ -229,22 +233,25 @@ class PlotGenerator:
             seldonian_dict[seldonian_model]["X_passed"] = X_passed
 
         ## PLOTTING SETUP
+        vert_size = 3 + n_constraints
         if include_legend:
-            figsize = (9, 4.5)
+            vert_size+=0.5
+            figsize = (9, vert_size)
         else:
-            figsize = (9, 4)
+            figsize = (9, vert_size)
         fig = plt.figure(figsize=figsize)
         plot_index = 1
-        n_rows = len(constraints)
+        n_rows = len(constraint_strs)
         n_cols = 3
         fontsize = fontsize
         legend_fontsize = legend_fontsize
         legend_handles = []
         legend_labels = []
-        ## Loop over constraints and make three plots for each constraint
-        for ii, constraint in enumerate(constraints):
-            constraint_str = constraint_dict[constraint]["constraint_str"]
-            delta = constraint_dict[constraint]["delta"]
+
+        # One row per constraint
+        for constraint_index, constraint_str in enumerate(constraint_strs):
+            constraint_num = constraint_index+1
+            delta = deltas[constraint_index]
 
             # SETUP FOR PLOTTING
             ax_performance = fig.add_subplot(n_rows, n_cols, plot_index)
@@ -264,14 +271,11 @@ class PlotGenerator:
 
             # Plot labels
             ax_performance.set_ylabel(performance_label, fontsize=fontsize)
-            ax_sr.set_ylabel("Probability of solution", fontsize=fontsize)
-            ax_fr.set_ylabel("Probability constraint was violated", fontsize=fontsize)
+            ax_sr.set_ylabel("Prob. of solution", fontsize=fontsize)
+            ax_fr.set_ylabel("Prob. of violation", fontsize=fontsize)
 
             # Only put horizontal axis labels on last row of plots
-            if ii == len(constraints) - 1:
-                # ax_performance.set_xlabel('Training samples',fontsize=fontsize)
-                # ax_sr.set_xlabel('Training samples',fontsize=fontsize)
-                # ax_fr.set_xlabel('Training samples',fontsize=fontsize)
+            if constraint_index == n_constraints - 1:
                 ax_performance.set_xlabel("Amount of data", fontsize=fontsize)
                 ax_sr.set_xlabel("Amount of data", fontsize=fontsize)
                 ax_fr.set_xlabel("Amount of data", fontsize=fontsize)
@@ -323,11 +327,12 @@ class PlotGenerator:
                     color=baseline_color,
                     label=baseline,
                 )
-                legend_handles.append(pl)
-                if baseline in model_label_dict:
-                    legend_labels.append(model_label_dict[baseline])
-                else:
-                    legend_labels.append(baseline)
+                if constraint_index == 0:
+                    legend_handles.append(pl)
+                    if baseline in model_label_dict:
+                        legend_labels.append(model_label_dict[baseline])
+                    else:
+                        legend_labels.append(baseline)
                 ax_performance.scatter(
                     X_valid_baseline,
                     baseline_mean_performance,
@@ -365,11 +370,12 @@ class PlotGenerator:
                     color=seldonian_color,
                     linestyle="--",
                 )
-                legend_handles.append(pl)
-                if seldonian_model in model_label_dict:
-                    legend_labels.append(model_label_dict[seldonian_model])
-                else:
-                    legend_labels.append(seldonian_model)
+                if constraint_index == 0:
+                    legend_handles.append(pl)
+                    if seldonian_model in model_label_dict:
+                        legend_labels.append(model_label_dict[seldonian_model])
+                    else:
+                        legend_labels.append(seldonian_model)
 
                 ax_performance.scatter(
                     X_passed_seldonian,
@@ -469,13 +475,20 @@ class PlotGenerator:
                 baseline_color = plot_colormap(baseline_i + len(seldonian_models))
                 # Baseline performance
                 this_baseline_dict = baseline_dict[baseline]
-                df_baseline_valid = this_baseline_dict["df_baseline_valid"]
-                n_trials = df_baseline_valid["trial_i"].max() + 1
+                df_baseline = this_baseline_dict["df_baseline"]
+                n_trials = df_baseline["trial_i"].max() + 1
 
-                baseline_mean_fr = df_baseline_valid.groupby("data_frac").mean()[
-                    "failed"
-                ].to_numpy()
-                baseline_std_fr = df_baseline_valid.groupby("data_frac").std()["failed"].to_numpy()
+                # baseline_mean_fr = df_baseline_valid.groupby("data_frac").mean()[
+                #     "failed"
+                # ].to_numpy()
+                # baseline_std_fr = df_baseline_valid.groupby("data_frac").std()["failed"].to_numpy()
+                gstr_failed = 'g' + str(constraint_num) + '_failed'
+
+                baseline_mean_fr = df_baseline.groupby("data_frac").mean()[
+                    gstr_failed].to_numpy()
+                # Need to groupby data frac
+                baseline_std_fr = df_baseline.groupby("data_frac").std()[
+                    gstr_failed].to_numpy()
                 baseline_ste_fr = baseline_std_fr / np.sqrt(n_trials)
 
                 X_valid_baseline = this_baseline_dict["X_valid"].to_numpy()
@@ -507,12 +520,19 @@ class PlotGenerator:
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
-                mean_fr = df_seldonian.groupby("data_frac").mean()["failed"].to_numpy()
-                std_fr = df_seldonian.groupby("data_frac").std()["failed"].to_numpy()
+
+                gstr_failed = 'g' + str(constraint_num) + '_failed'
+
+                mean_fr = df_seldonian.groupby("data_frac").mean()[
+                    gstr_failed].to_numpy()
+                # Need to groupby data frac
+                std_fr = df_seldonian.groupby("data_frac").std()[
+                    gstr_failed].to_numpy()
+
                 ste_fr = std_fr / np.sqrt(n_trials)
 
                 X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
-                
+
                 ax_fr.plot(
                     X_all_seldonian,
                     mean_fr,
@@ -681,7 +701,6 @@ class SupervisedPlotGenerator(PlotGenerator):
         sd_exp.run_experiment(**run_seldonian_kwargs)
         return
 
-
     def run_headless_seldonian_experiment(
         self, 
         full_pretraining_model,
@@ -747,8 +766,6 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         sd_exp.run_experiment(**run_kwargs)
         return
-
-
 
     def run_baseline_experiment(self, model_name, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute

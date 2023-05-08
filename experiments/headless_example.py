@@ -26,6 +26,7 @@ class HeadlessExample(BaseExample):
         results_dir,
         perf_eval_fn,
         perf_eval_kwargs,
+        constraint_eval_kwargs,
         n_workers=1,
         batch_epoch_dict={},
         datagen_method="resample",
@@ -54,6 +55,7 @@ class HeadlessExample(BaseExample):
             constraint_eval_fns=[],
             results_dir=results_dir,
             perf_eval_kwargs=perf_eval_kwargs,
+            constraint_eval_kwargs=constraint_eval_kwargs,
             batch_epoch_dict=batch_epoch_dict,
         )
 
