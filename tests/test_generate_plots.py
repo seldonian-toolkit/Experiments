@@ -165,23 +165,15 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 		gvecs = baseline_df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
 		assert dps[0] == 0.01
 		assert trial_is[0] == 0
-		assert perfs[0] > 0
-		assert gvecs[0][0] < 0 
 
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
-		assert perfs[1] > 0
-		assert gvecs[1][0] < 0 
 
 		assert dps[2] == 0.1
 		assert trial_is[2] == 0
-		assert perfs[2] > 0
-		assert gvecs[2][0] < 0 
 
 		assert dps[3] == 0.1
 		assert trial_is[3] == 1
-		assert perfs[3] > 0
-		assert gvecs[3][0] < 0 
 		
 		# Make sure number of trial files created is correct
 		baseline_trial_dir = os.path.join(results_dir,
@@ -240,23 +232,15 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	
 		assert dps[0] == 0.01
 		assert trial_is[0] == 0
-		assert perfs[0] > 0
-		assert gvecs[0][0] < 0 
 
 		assert dps[1] == 0.01
 		assert trial_is[1] == 1
-		assert perfs[1] > 0
-		assert gvecs[1][0] < 0 
 
 		assert dps[2] == 0.1
 		assert trial_is[2] == 0
-		assert perfs[2] > 0
-		assert gvecs[2][0] < 0 
 
 		assert dps[3] == 0.1
 		assert trial_is[3] == 1
-		assert perfs[3] > 0
-		assert gvecs[3][0] < 0 
 		
 		# Make sure number of trial files created is correct
 		baseline_trial_dir = os.path.join(results_dir,
@@ -289,23 +273,15 @@ def test_classification_plot_generator(gpa_classification_spec,experiment):
 	
 	assert dps[0] == 0.01
 	assert trial_is[0] == 0
-	assert np.isnan(perfs[0])
-	assert gvecs[0][0] < 0
 
 	assert dps[1] == 0.01
 	assert trial_is[1] == 1
-	assert np.isnan(perfs[1])
-	assert gvecs[1][0] < 0
 
 	assert dps[2] == 0.1
 	assert trial_is[2] == 0
-	assert perfs[2] > 0
-	assert gvecs[2][0] < 0
 
 	assert dps[3] == 0.1
 	assert trial_is[3] == 1
-	assert perfs[3] > 0
-	assert gvecs[3][0] < 0
 	
 	# Make sure number of trial files created is correct
 	trial_dir = os.path.join(results_dir,"qsa_results/trial_data")

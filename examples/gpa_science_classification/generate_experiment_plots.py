@@ -14,7 +14,7 @@ import numpy as np
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
-from experiments.utils import deterministic_accuracy
+from experiments.perf_eval_funcs import deterministic_accuracy
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss
 
