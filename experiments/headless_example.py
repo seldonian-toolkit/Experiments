@@ -37,6 +37,7 @@ class HeadlessExample(BaseExample):
         plot_savename=None,
         plot_fontsize=12,
         legend_fontsize=8,
+        model_label_dict={},
     ):
         """Run the experiment for this example.
         Runs any baseline models included in baselines
@@ -90,5 +91,6 @@ class HeadlessExample(BaseExample):
             legend_fontsize=legend_fontsize,
             performance_label=performance_label,
             performance_yscale=performance_yscale,
+            model_label_dict=model_label_dict,
             savename=plot_savename,
         )
