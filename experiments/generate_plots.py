@@ -13,7 +13,7 @@ from matplotlib import style
 from seldonian.utils.io_utils import save_pickle
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
-from .utils import generate_resampled_datasets, has_failed
+from .experiment_utils import generate_resampled_datasets, has_failed
 
 seldonian_model_set = set(["qsa","headless_qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")

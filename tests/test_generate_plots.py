@@ -7,7 +7,7 @@ import pytest
 from experiments.generate_plots import (
 	SupervisedPlotGenerator,RLPlotGenerator)
 
-from experiments.utils import (
+from experiments.experiment_utils import (
 	generate_episodes_and_calc_J,has_failed)
 
 from experiments.perf_eval_funcs import (MSE,probabilistic_accuracy)

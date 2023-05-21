@@ -6,7 +6,7 @@ from functools import partial
 
 from .experiments import Experiment 
 from . import headless_utils
-from .utils import batch_predictions
+from .experiment_utils import batch_predictions
 
 from seldonian.dataset import SupervisedDataSet
 from seldonian.seldonian_algorithm import SeldonianAlgorithm

@@ -1,7 +1,6 @@
 """ Module for running Seldonian Experiments """
 
 import os
-import pickle
 import autograd.numpy as np  # Thinly-wrapped version of Numpy
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
@@ -25,7 +24,7 @@ from seldonian.models.models import (
     RandomClassifierModel,
 )
 
-from .utils import batch_predictions
+from .experiment_utils import batch_predictions,load_resampled_dataset
 
 try:
     from fairlearn.reductions import ExponentiatedGradient
@@ -65,7 +64,6 @@ class Experiment:
         :param results_dir: Parent directory for saving any
                 experimental results
         :type results_dir: str
-
         """
         self.model_name = model_name
         self.results_dir = results_dir
@@ -221,9 +219,7 @@ class BaselineExperiment(Experiment):
         trial_dir = os.path.join(
             self.results_dir, f"{self.model_name}_results", "trial_data"
         )
-
         os.makedirs(trial_dir, exist_ok=True)
-
         savename = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
@@ -241,18 +237,10 @@ class BaselineExperiment(Experiment):
         ##############################################
 
         if datagen_method == "resample":
-            resampled_filename = os.path.join(
-                self.results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
-            )
-            resampled_dataset = load_pickle(resampled_filename)
-            num_datapoints_tot = resampled_dataset.num_datapoints
-            n_points = int(round(data_frac * num_datapoints_tot))
-
-            if verbose:
-                print(
-                    f"Using resampled dataset {resampled_filename} "
-                    f"with {num_datapoints_tot} datapoints"
-                )
+            trial_dataset,n_points = load_resampled_dataset(
+                self.results_dir,
+                trial_i,
+                data_frac)
         else:
             raise NotImplementedError(
                 f"datagen_method: {datagen_method} "
@@ -260,8 +248,8 @@ class BaselineExperiment(Experiment):
             )
 
         # Prepare features and labels
-        features = resampled_dataset.features
-        labels = resampled_dataset.labels
+        features = trial_dataset.features
+        labels = trial_dataset.labels
         # Only use first n_points for this trial
         if type(features) == list:
             features = [x[:n_points] for x in features]
@@ -527,28 +515,14 @@ class SeldonianExperiment(Experiment):
 
         if regime == "supervised_learning":
             if datagen_method == "resample":
-                resampled_filename = os.path.join(
-                    self.results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
-                )
-                resampled_dataset = load_pickle(resampled_filename)
-                num_datapoints_tot = resampled_dataset.num_datapoints
-                n_points = int(round(data_frac * num_datapoints_tot))
+                trial_dataset,n_points = load_resampled_dataset(
+                    self.results_dir,
+                    trial_i,
+                    data_frac)
 
-                if verbose:
-                    print(
-                        f"Using resampled dataset {resampled_filename} "
-                        f"with {num_datapoints_tot} datapoints"
-                    )
-                    if n_points < 1:
-                        raise ValueError(
-                            f"This data_frac={data_frac} "
-                            f"results in {n_points} data points. "
-                            "Must have at least 1 data point to run a trial."
-                        )
-
-                features = resampled_dataset.features
-                labels = resampled_dataset.labels
-                sensitive_attrs = resampled_dataset.sensitive_attrs
+                features = trial_dataset.features
+                labels = trial_dataset.labels
+                sensitive_attrs = trial_dataset.sensitive_attrs
                 # Only use first n_points for this trial
                 if type(features) == list:
                     features = [x[:n_points] for x in features]
@@ -568,7 +542,7 @@ class SeldonianExperiment(Experiment):
                 labels=labels,
                 sensitive_attrs=sensitive_attrs,
                 num_datapoints=n_points,
-                meta_information=resampled_dataset.meta_information,
+                meta_information=trial_dataset.meta_information,
             )
 
             # Make a new spec object
@@ -927,18 +901,10 @@ class FairlearnExperiment(Experiment):
         ##############################################
 
         if datagen_method == "resample":
-            resampled_filename = os.path.join(
-                self.results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
-            )
-            resampled_dataset = load_pickle(resampled_filename)
-            num_datapoints_tot = resampled_dataset.num_datapoints
-            n_points = int(round(data_frac * num_datapoints_tot))
-
-            if verbose:
-                print(
-                    f"Using resampled dataset {resampled_filename} "
-                    f"with {num_datapoints_tot} datapoints"
-                )
+            trial_dataset,n_points = load_resampled_dataset(
+                    self.results_dir,
+                    trial_i,
+                    data_frac)
         else:
             raise NotImplementedError(
                 f"datagen_method: {datagen_method} "
@@ -946,8 +912,8 @@ class FairlearnExperiment(Experiment):
             )
 
         # Prepare features and labels
-        features = resampled_dataset.features
-        labels = resampled_dataset.labels
+        features = trial_dataset.features
+        labels = trial_dataset.labels
         # Only use first n_points for this trial
         if type(features) == list:
             features = [x[:n_points] for x in features]
@@ -956,12 +922,12 @@ class FairlearnExperiment(Experiment):
         labels = labels[:n_points]
 
         sensitive_col_indices = [
-            resampled_dataset.sensitive_col_names.index(col)
+            trial_dataset.sensitive_col_names.index(col)
             for col in fairlearn_sensitive_feature_names
         ]
 
         fairlearn_sensitive_features = np.squeeze(
-            resampled_dataset.sensitive_attrs[:, sensitive_col_indices]
+            trial_dataset.sensitive_attrs[:, sensitive_col_indices]
         )[:n_points]
 
         ##############################################
