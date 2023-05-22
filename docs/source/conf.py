@@ -21,7 +21,7 @@ copyright = '2022, University of Massachusetts'
 author = 'Austin Hoag, Philip S. Thomas'
 
 # The full version, including alpha/beta/rc tags
-release = 'pre-release'
+release = 'alpha'
 
 # -- General configuration ---------------------------------------------------
 

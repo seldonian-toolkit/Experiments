@@ -103,7 +103,6 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
 	df_trial0 = pd.read_csv(trial_file_0)
 	assert len(df_trial0) == 1
 
-
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_too_few_datapoints(gpa_regression_spec,experiment):
 	""" Test that too small of a data_frac resulting in < 1
