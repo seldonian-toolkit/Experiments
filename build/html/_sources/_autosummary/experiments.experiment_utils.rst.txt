@@ -1,7 +1,7 @@
-experiments.utils
-=================
+experiments.experiment\_utils
+=============================
 
-.. automodule:: experiments.utils 
+.. automodule:: experiments.experiment_utils 
   
    
    
@@ -18,6 +18,7 @@ experiments.utils
       generate_episodes_and_calc_J
       generate_resampled_datasets
       has_failed
+      load_resampled_dataset
       make_batch_epoch_dict_fixedniter
       make_batch_epoch_dict_min_sample_repeat
    

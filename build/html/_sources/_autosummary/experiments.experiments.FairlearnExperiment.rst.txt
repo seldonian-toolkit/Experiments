@@ -1,4 +1,4 @@
-﻿experiments.experiments.FairlearnExperiment
+experiments.experiments.FairlearnExperiment
 ===========================================
 
 .. currentmodule:: experiments.experiments

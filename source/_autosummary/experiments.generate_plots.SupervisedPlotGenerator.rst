@@ -1,4 +1,4 @@
-﻿experiments.generate\_plots.SupervisedPlotGenerator
+experiments.generate\_plots.SupervisedPlotGenerator
 ===================================================
 
 .. currentmodule:: experiments.generate_plots
