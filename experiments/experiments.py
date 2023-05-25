@@ -1,14 +1,15 @@
 """ Module for running Seldonian Experiments """
 
 import os
+from operator import itemgetter
 import autograd.numpy as np  # Thinly-wrapped version of Numpy
-import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing as mp
-from functools import partial
 from tqdm import tqdm
+from functools import partial
 import copy
 
+import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
@@ -24,7 +25,12 @@ from seldonian.models.models import (
     RandomClassifierModel,
 )
 
-from .experiment_utils import batch_predictions,load_resampled_dataset
+from .experiment_utils import (
+    batch_predictions,
+    load_resampled_dataset,
+    prep_feat_labels,
+    setup_SA_spec_for_exp,
+)
 
 try:
     from fairlearn.reductions import ExponentiatedGradient
@@ -72,27 +78,25 @@ class Experiment:
         """Group together the data in each
         trial file into a single CSV file.
         """
-        savedir_results = os.path.join(self.results_dir, f"{self.model_name}_results")
-        os.makedirs(savedir_results, exist_ok=True)
-        savename_results = os.path.join(
-            savedir_results, f"{self.model_name}_results.csv"
-        )
+        d = os.path.join(self.results_dir, f"{self.model_name}_results")
+        os.makedirs(d, exist_ok=True)
+        res_fname = os.path.join(d, f"{self.model_name}_results.csv")
 
-        trial_dir = os.path.join(
+        d_trial = os.path.join(
             self.results_dir, f"{self.model_name}_results", "trial_data"
         )
         df_list = []
         for data_frac in kwargs["data_fracs"]:
             for trial_i in range(kwargs["n_trials"]):
                 filename = os.path.join(
-                    trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
+                    d_trial, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
                 )
                 df = pd.read_csv(filename)
                 df_list.append(df)
 
-        result_df = pd.concat(df_list)
-        result_df.to_csv(savename_results, index=False)
-        print(f"Saved {savename_results}")
+        res_df = pd.concat(df_list)
+        res_df.to_csv(res_fname, index=False)
+        print(f"Saved {res_fname}")
         return
 
     def write_trial_result(self, data, colnames, trial_dir, verbose=False):
@@ -112,17 +116,17 @@ class Experiment:
         :param verbose: if True, prints out saved filename
         :type verbose: bool
         """
-        result_df = pd.DataFrame([data])
-        result_df.columns = colnames
+        res_df = pd.DataFrame([data])
+        res_df.columns = colnames
         data_frac, trial_i = data[0:2]
 
-        savename = os.path.join(
+        fname = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
 
-        result_df.to_csv(savename, index=False)
+        res_df.to_csv(fname, index=False)
         if verbose:
-            print(f"Saved {savename}")
+            print(f"Saved {fname}")
         return
 
 
@@ -153,23 +157,26 @@ class BaselineExperiment(Experiment):
         n_trials = kwargs["n_trials"]
         n_workers = kwargs["n_workers"]
 
-        data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
-        trials_vector = np.array(
+        data_fracs_vec = np.array([x for x in data_fracs for y in range(n_trials)])
+        trials_vec = np.array(
             [x for y in range(len(data_fracs)) for x in range(n_trials)]
         )
 
         if n_workers == 1:
-            for ii in range(len(data_fracs_vector)):
-                data_frac = data_fracs_vector[ii]
-                trial_i = trials_vector[ii]
+            # run all trials synchronously
+            for ii in range(len(data_fracs_vec)):
+                data_frac = data_fracs_vec[ii]
+                trial_i = trials_vec[ii]
                 helper(data_frac, trial_i)
+
         elif n_workers > 1:
+            # run trials asynchronously
             with ProcessPoolExecutor(
                 max_workers=n_workers, mp_context=mp.get_context("fork")
             ) as ex:
                 results = tqdm(
-                    ex.map(helper, data_fracs_vector, trials_vector),
-                    total=len(data_fracs_vector),
+                    ex.map(helper, data_fracs_vec, trials_vec),
+                    total=len(data_fracs_vec),
                 )
                 for exc in results:
                     if exc:
@@ -195,13 +202,24 @@ class BaselineExperiment(Experiment):
             raise NotImplementedError("Baselines are not yet implemented for RL")
         dataset = spec.dataset
         parse_trees = spec.parse_trees
-        verbose = kwargs["verbose"]
-        datagen_method = kwargs["datagen_method"]
-        perf_eval_fn = kwargs["perf_eval_fn"]
-        perf_eval_kwargs = kwargs["perf_eval_kwargs"]
-        batch_epoch_dict = kwargs["batch_epoch_dict"]
-        constraint_eval_fns = kwargs["constraint_eval_fns"]
-        constraint_eval_kwargs = kwargs["constraint_eval_kwargs"]
+        (
+            verbose,
+            datagen_method,
+            perf_eval_fn,
+            perf_eval_kwargs,
+            batch_epoch_dict,
+            constraint_eval_fns,
+            constraint_eval_kwargs,
+        ) = itemgetter(
+            "verbose",
+            "datagen_method",
+            "perf_eval_fn",
+            "perf_eval_kwargs",
+            "batch_epoch_dict",
+            "constraint_eval_fns",
+            "constraint_eval_kwargs",
+        )(kwargs)
+
         if (
             batch_epoch_dict == {}
             and (spec.optimization_technique == "gradient_descent")
@@ -211,17 +229,17 @@ class BaselineExperiment(Experiment):
                 "WARNING: No batch_epoch_dict was provided. "
                 "Each data_frac will use the same values "
                 "for batch_size and n_epochs. "
-                "This can have adverse effects, "
-                "especially for small values of data_frac."
+                "This can have adverse effects",
+                " " "especially for small values of data_frac.",
             )
             warnings.warn(warning_msg)
 
-        trial_dir = os.path.join(
+        d_trial = os.path.join(
             self.results_dir, f"{self.model_name}_results", "trial_data"
         )
-        os.makedirs(trial_dir, exist_ok=True)
+        os.makedirs(d_trial, exist_ok=True)
         savename = os.path.join(
-            trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
+            d_trial, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
 
         if os.path.exists(savename):
@@ -237,25 +255,16 @@ class BaselineExperiment(Experiment):
         ##############################################
 
         if datagen_method == "resample":
-            trial_dataset,n_points = load_resampled_dataset(
-                self.results_dir,
-                trial_i,
-                data_frac)
+            trial_dataset, n_points = load_resampled_dataset(
+                self.results_dir, trial_i, data_frac
+            )
         else:
             raise NotImplementedError(
                 f"datagen_method: {datagen_method} "
                 f"not supported for regime: {regime}"
             )
 
-        # Prepare features and labels
-        features = trial_dataset.features
-        labels = trial_dataset.labels
-        # Only use first n_points for this trial
-        if type(features) == list:
-            features = [x[:n_points] for x in features]
-        else:
-            features = features[:n_points]
-        labels = labels[:n_points]
+        features, labels = prep_feat_labels(trial_dataset, n_points)
 
         ####################################################
         """" Instantiate model and fit to resampled data """
@@ -324,7 +333,7 @@ class BaselineExperiment(Experiment):
 
             if verbose:
                 print(f"Performance = {performance}")
-            
+
             # Determine whether this solution
             # violates any of the constraints
             # on the test dataset, which is the dataset from spec
@@ -335,13 +344,15 @@ class BaselineExperiment(Experiment):
                 constraint_eval_kwargs["verbose"] = verbose
 
             gvec = self.evaluate_constraint_functions(
-                    solution=solution,
-                    constraint_eval_fns=constraint_eval_fns,
-                    constraint_eval_kwargs=constraint_eval_kwargs,
-                )
+                solution=solution,
+                constraint_eval_fns=constraint_eval_fns,
+                constraint_eval_kwargs=constraint_eval_kwargs,
+            )
         else:
             print("NSF")
-            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            gvec = -np.inf * np.ones(
+                n_constraints
+            )  # NSF is safe, so set g=-inf for all constraints
             performance = np.nan
 
         # Write out file for this data_frac,trial_i combo
@@ -349,11 +360,12 @@ class BaselineExperiment(Experiment):
         # colnames = ["data_frac", "trial_i", "performance", "failed"]
         data = [data_frac, trial_i, performance, gvec]
         colnames = ["data_frac", "trial_i", "performance", "gvec"]
-        self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
+        self.write_trial_result(data, colnames, d_trial, verbose=kwargs["verbose"])
         return
-   
-    def evaluate_constraint_functions(self,
-        solution, constraint_eval_fns, constraint_eval_kwargs):
+
+    def evaluate_constraint_functions(
+        self, solution, constraint_eval_fns, constraint_eval_kwargs
+    ):
         """Helper function to evaluate
         the constraint functions to determine
         whether baseline solution was safe on ground truth
@@ -375,7 +387,7 @@ class BaselineExperiment(Experiment):
         """
         # Use safety test branch so the confidence bounds on
         # leaf nodes are not inflated
-        gvals=[]
+        gvals = []
         if constraint_eval_fns == []:
             parse_trees = constraint_eval_kwargs["parse_trees"]
             dataset = constraint_eval_kwargs["dataset"]
@@ -386,23 +398,25 @@ class BaselineExperiment(Experiment):
                 batch_size_safety = None
 
             for parse_tree in parse_trees:
-                    parse_tree.reset_base_node_dict(reset_data=True)
-                    parse_tree.evaluate_constraint(
-                        theta=solution,
-                        dataset=dataset,
-                        model=baseline_model,
-                        regime=dataset.regime,
-                        branch="safety_test",
-                        batch_size_safety=batch_size_safety,
-                    )
-                    g = parse_tree.root.value
+                parse_tree.reset_base_node_dict(reset_data=True)
+                parse_tree.evaluate_constraint(
+                    theta=solution,
+                    dataset=dataset,
+                    model=baseline_model,
+                    regime=dataset.regime,
+                    branch="safety_test",
+                    batch_size_safety=batch_size_safety,
+                )
+                g = parse_tree.root.value
 
-                    gvals.append(g)
-                    parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
+                gvals.append(g)
+                parse_tree.reset_base_node_dict(
+                    reset_data=True
+                )  # to clear out anything so the next trial has fresh data
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:
-                g = eval_fn(solution,**constraint_eval_kwargs)
+                g = eval_fn(solution, **constraint_eval_kwargs)
                 gvals.append(g)
         return np.array(gvals)
 
@@ -513,108 +527,24 @@ class SeldonianExperiment(Experiment):
         """ Setup for running Seldonian algorithm """
         ##############################################
 
-        if regime == "supervised_learning":
-            if datagen_method == "resample":
-                trial_dataset,n_points = load_resampled_dataset(
-                    self.results_dir,
-                    trial_i,
-                    data_frac)
+        spec_for_exp = setup_SA_spec_for_exp(
+            spec=spec,
+            regime=regime,
+            results_dir=self.results_dir,
+            trial_i=trial_i,
+            data_frac=data_frac,
+            datagen_method=datagen_method,
+            batch_epoch_dict=batch_epoch_dict,
+            kwargs=kwargs,
+            perf_eval_kwargs=perf_eval_kwargs,
+        )
 
-                features = trial_dataset.features
-                labels = trial_dataset.labels
-                sensitive_attrs = trial_dataset.sensitive_attrs
-                # Only use first n_points for this trial
-                if type(features) == list:
-                    features = [x[:n_points] for x in features]
-                else:
-                    features = features[:n_points]
-                labels = labels[:n_points]
-                sensitive_attrs = sensitive_attrs[:n_points]
-
-            else:
-                raise NotImplementedError(
-                    f"Eval method {datagen_method} "
-                    f"not supported for regime={regime}"
-                )
-
-            dataset_for_experiment = SupervisedDataSet(
-                features=features,
-                labels=labels,
-                sensitive_attrs=sensitive_attrs,
-                num_datapoints=n_points,
-                meta_information=trial_dataset.meta_information,
-            )
-
-            # Make a new spec object
-            # and update the dataset
-
-            spec_for_experiment = copy.deepcopy(spec)
-            spec_for_experiment.dataset = dataset_for_experiment
-
-        elif regime == "reinforcement_learning":
-            hyperparameter_and_setting_dict = kwargs["hyperparameter_and_setting_dict"]
-
-            if datagen_method == "generate_episodes":
-                n_episodes_for_eval = perf_eval_kwargs["n_episodes_for_eval"]
-                # Sample from resampled dataset on disk of n_episodes
-                save_dir = os.path.join(self.results_dir, "regenerated_datasets")
-
-                savename = os.path.join(
-                    save_dir, f"regenerated_data_trial{trial_i}.pkl"
-                )
-
-                episodes_all = load_pickle(savename)
-                # Take data_frac episodes from this df
-                n_episodes_all = len(episodes_all)
-
-                n_episodes_for_exp = int(round(n_episodes_all * data_frac))
-                if n_episodes_for_exp < 1:
-                    raise ValueError(
-                        f"This data_frac={data_frac} "
-                        f"results in {n_episodes_for_exp} episodes. "
-                        "Must have at least 1 episode to run a trial."
-                    )
-
-                print(f"Orig dataset should have {n_episodes_all} episodes")
-                print(
-                    f"This dataset with data_frac={data_frac} should have"
-                    f" {n_episodes_for_exp} episodes"
-                )
-
-                # Take first n_episodes episodes
-                episodes_for_exp = episodes_all[0:n_episodes_for_exp]
-                assert len(episodes_for_exp) == n_episodes_for_exp
-
-                dataset_for_experiment = RLDataSet(
-                    episodes=episodes_for_exp,
-                    meta_information=spec.dataset.meta_information,
-                    regime=regime,
-                )
-
-                # Make a new spec object from a copy of spec, where the
-                # only thing that is different is the dataset
-
-                spec_for_experiment = copy.deepcopy(spec)
-                spec_for_experiment.dataset = dataset_for_experiment
-            else:
-                raise NotImplementedError(
-                    f"Eval method {datagen_method} " "not supported for regime={regime}"
-                )
-        # If optimizing using gradient descent,
-        # and using mini-batches,
-        # update the batch_size and n_epochs
-        # using batch_epoch_dict
-        if spec_for_experiment.optimization_technique == "gradient_descent":
-            if spec_for_experiment.optimization_hyperparams["use_batches"] == True:
-                batch_size, n_epochs = batch_epoch_dict[data_frac]
-                spec_for_experiment.optimization_hyperparams["batch_size"] = batch_size
-                spec_for_experiment.optimization_hyperparams["n_epochs"] = n_epochs
         ################################
         """" Run Seldonian algorithm """
         ################################
 
         try:
-            SA = SeldonianAlgorithm(spec_for_experiment)
+            SA = SeldonianAlgorithm(spec_for_exp)
             passed_safety, solution = SA.run(write_cs_logfile=verbose, debug=verbose)
 
         except (ValueError, ZeroDivisionError):
@@ -663,7 +593,7 @@ class SeldonianExperiment(Experiment):
 
                     performance = perf_eval_fn(y_pred, model=model, **perf_eval_kwargs)
 
-                if regime == "reinforcement_learning":
+                elif regime == "reinforcement_learning":
                     model = copy.deepcopy(SA.model)
                     model.policy.set_new_params(solution)
                     perf_eval_kwargs["model"] = model
@@ -671,22 +601,21 @@ class SeldonianExperiment(Experiment):
                         "hyperparameter_and_setting_dict"
                     ] = hyperparameter_and_setting_dict
                     episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
+
                 if verbose:
                     print(f"Performance = {performance}")
-
-                ########################################
-                """ Calculate safety on ground truth """
-                ########################################
-                if verbose:
                     print(
                         "Determining whether solution "
                         "is actually safe on ground truth"
                     )
+                ########################################
+                """ Calculate safety on ground truth """
+                ########################################
 
                 if constraint_eval_fns == []:
                     constraint_eval_kwargs["model"] = model
                     constraint_eval_kwargs["spec_orig"] = spec
-                    constraint_eval_kwargs["spec_for_experiment"] = spec_for_experiment
+                    constraint_eval_kwargs["spec_for_exp"] = spec_for_exp
                     constraint_eval_kwargs["regime"] = regime
                     constraint_eval_kwargs["branch"] = "safety_test"
                     constraint_eval_kwargs["verbose"] = verbose
@@ -705,21 +634,22 @@ class SeldonianExperiment(Experiment):
                     print()
             else:
                 if verbose:
-                    print("Failed safety test ")
+                    print("Failed safety test")
                     performance = np.nan
 
-        else: # solution_found=False
+        else:  # solution_found=False
             n_constraints = len(spec.parse_trees)
-            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            # NSF is safe, so set g=-inf for all constraints
+            gvec = -np.inf * np.ones(n_constraints)
             if verbose:
                 print("NSF")
             performance = np.nan
-        
+
         # Clear out any cached data in the parse trees for the next trial.
-        # This handles the case where solution_found=False.
-        for parse_tree in spec_for_experiment.parse_trees:
+        # This also handles the case where solution_found=False.
+        for parse_tree in spec_for_exp.parse_trees:
             parse_tree.reset_base_node_dict(reset_data=True)
-            
+
         # Write out file for this data_frac,trial_i combo
         data = [data_frac, trial_i, performance, passed_safety, gvec]
         colnames = ["data_frac", "trial_i", "performance", "passed_safety", "gvec"]
@@ -758,7 +688,7 @@ class SeldonianExperiment(Experiment):
             """
             constraint_eval_kwargs["theta"] = solution
             spec_orig = constraint_eval_kwargs["spec_orig"]
-            spec_for_experiment = constraint_eval_kwargs["spec_for_experiment"]
+            spec_for_exp = constraint_eval_kwargs["spec_for_exp"]
             regime = constraint_eval_kwargs["regime"]
             if "eval_batch_size" in constraint_eval_kwargs:
                 constraint_eval_kwargs["batch_size_safety"] = constraint_eval_kwargs[
@@ -773,24 +703,26 @@ class SeldonianExperiment(Experiment):
 
                 dataset_for_eval = RLDataSet(
                     episodes=episodes_for_eval,
-                    meta_information=spec_for_experiment.dataset.meta_information,
+                    meta_information=spec_for_exp.dataset.meta_information,
                     regime=regime,
                 )
 
                 constraint_eval_kwargs["dataset"] = dataset_for_eval
 
-            for parse_tree in spec_for_experiment.parse_trees:
+            for parse_tree in spec_for_exp.parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
                 parse_tree.evaluate_constraint(**constraint_eval_kwargs)
 
                 g = parse_tree.root.value
                 gvals.append(g)
-                parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
+                parse_tree.reset_base_node_dict(
+                    reset_data=True
+                )  # to clear out anything so the next trial has fresh data
 
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:
-                g = eval_fn(solution,**constraint_eval_kwargs)
+                g = eval_fn(solution, **constraint_eval_kwargs)
                 gvals.append(g)
 
         return np.array(gvals)
@@ -901,10 +833,9 @@ class FairlearnExperiment(Experiment):
         ##############################################
 
         if datagen_method == "resample":
-            trial_dataset,n_points = load_resampled_dataset(
-                    self.results_dir,
-                    trial_i,
-                    data_frac)
+            trial_dataset, n_points = load_resampled_dataset(
+                self.results_dir, trial_i, data_frac
+            )
         else:
             raise NotImplementedError(
                 f"datagen_method: {datagen_method} "
@@ -912,14 +843,7 @@ class FairlearnExperiment(Experiment):
             )
 
         # Prepare features and labels
-        features = trial_dataset.features
-        labels = trial_dataset.labels
-        # Only use first n_points for this trial
-        if type(features) == list:
-            features = [x[:n_points] for x in features]
-        else:
-            features = features[:n_points]
-        labels = labels[:n_points]
+        features, labels = prep_feat_labels(trial_dataset, n_points)
 
         sensitive_col_indices = [
             trial_dataset.sensitive_col_names.index(col)
@@ -1004,9 +928,11 @@ class FairlearnExperiment(Experiment):
                 eval_method=fairlearn_eval_method,
                 sensitive_features=fairlearn_eval_kwargs["sensitive_features"],
             )
-        else: # solution_found=False
+        else:  # solution_found=False
             n_constraints = len(spec.parse_trees)
-            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            gvec = -np.inf * np.ones(
+                n_constraints
+            )  # NSF is safe, so set g=-inf for all constraints
             if verbose:
                 print("NSF")
 

@@ -1,14 +1,13 @@
 """ Utilities used in the rest of the library """
 
-import os
-import pickle
+import os, copy, pickle, math
 import numpy as np
-import math
 
 from seldonian.RL.RL_runner import create_agent, run_trial_given_agent_and_env
 from seldonian.utils.stats_utils import weighted_sum_gamma
-from seldonian.dataset import SupervisedDataSet
+from seldonian.dataset import SupervisedDataSet,RLDataSet
 from seldonian.utils.io_utils import load_pickle
+
 
 def generate_resampled_datasets(dataset, n_trials, save_dir):
     """Utility function for supervised learning to generate the
@@ -68,7 +67,8 @@ def generate_resampled_datasets(dataset, n_trials, save_dir):
                 pickle.dump(resampled_dataset, outfile)
             print(f"Saved {savename}")
 
-def load_resampled_dataset(results_dir,trial_i,data_frac,verbose=False):
+
+def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
     """Utility function for supervised learning to generate the
     resampled datasets to use in each trial. Resamples (with replacement)
     features, labels and sensitive attributes to create n_trials versions of these
@@ -86,7 +86,7 @@ def load_resampled_dataset(results_dir,trial_i,data_frac,verbose=False):
     :param verbose: boolean verbosity flag
     """
     resampled_filename = os.path.join(
-                results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
+        results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
     )
     resampled_dataset = load_pickle(resampled_filename)
     num_datapoints_tot = resampled_dataset.num_datapoints
@@ -103,7 +103,135 @@ def load_resampled_dataset(results_dir,trial_i,data_frac,verbose=False):
             f"results in {n_points} data points. "
             "Must have at least 1 data point to run a trial."
         )
-    return resampled_dataset,n_points
+    return resampled_dataset, n_points
+
+
+def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
+    """Utility function for preparing features and labels
+    for a given trial
+
+    :param trial_dataset: The Seldonian dataset object containing trial data
+    :param n_points: Number of points in this trial
+    :type n_points: int
+    :param include_sensitive_attrs: Whether to prep and return sensitive attributes
+        as well.
+    :type include_sensitive_attrs: bool
+    """
+    features = trial_dataset.features
+    labels = trial_dataset.labels
+    # Only use first n_points for this trial
+    if type(features) == list:
+        features = [x[:n_points] for x in features]
+    else:
+        features = features[:n_points]
+    labels = labels[:n_points]
+
+    if include_sensitive_attrs:
+        sensitive_attrs = trial_dataset.sensitive_attrs
+        sensitive_attrs = sensitive_attrs[:n_points]
+        return features, labels, sensitive_attrs
+
+    return features, labels
+
+
+def setup_SA_spec_for_exp(
+    spec,
+    regime,
+    results_dir,
+    trial_i,
+    data_frac,
+    datagen_method,
+    batch_epoch_dict,
+    kwargs,
+    perf_eval_kwargs,
+):
+    if regime == "supervised_learning":
+        if datagen_method == "resample":
+            trial_dataset, n_points = load_resampled_dataset(
+                results_dir, trial_i, data_frac
+            )
+
+        else:
+            raise NotImplementedError(
+                f"Eval method {datagen_method} " f"not supported for regime={regime}"
+            )
+
+        features, labels, sensitive_attrs = prep_feat_labels(
+            trial_dataset, n_points, include_sensitive_attrs=True
+        )
+
+        dataset_for_exp = SupervisedDataSet(
+            features=features,
+            labels=labels,
+            sensitive_attrs=sensitive_attrs,
+            num_datapoints=n_points,
+            meta_information=trial_dataset.meta_information,
+        )
+
+        # Make a new spec object and update its dataset
+        spec_for_exp = copy.deepcopy(spec)
+        spec_for_exp.dataset = dataset_for_exp
+
+    elif regime == "reinforcement_learning":
+        hyperparameter_and_setting_dict = kwargs["hyperparameter_and_setting_dict"]
+
+        if datagen_method == "generate_episodes":
+            n_episodes_for_eval = perf_eval_kwargs["n_episodes_for_eval"]
+            # Sample from resampled dataset on disk of n_episodes
+            save_dir = os.path.join(results_dir, "regenerated_datasets")
+
+            savename = os.path.join(save_dir, f"regenerated_data_trial{trial_i}.pkl")
+
+            episodes_all = load_pickle(savename)
+            # Take data_frac episodes from this df
+            n_episodes_all = len(episodes_all)
+
+            n_episodes_for_exp = int(round(n_episodes_all * data_frac))
+            if n_episodes_for_exp < 1:
+                raise ValueError(
+                    f"This data_frac={data_frac} "
+                    f"results in {n_episodes_for_exp} episodes. "
+                    "Must have at least 1 episode to run a trial."
+                )
+
+            print(f"Orig dataset should have {n_episodes_all} episodes")
+            print(
+                f"This dataset with data_frac={data_frac} should have"
+                f" {n_episodes_for_exp} episodes"
+            )
+
+            # Take first n_episodes episodes
+            episodes_for_exp = episodes_all[0:n_episodes_for_exp]
+            assert len(episodes_for_exp) == n_episodes_for_exp
+
+            dataset_for_exp = RLDataSet(
+                episodes=episodes_for_exp,
+                meta_information=spec.dataset.meta_information,
+                regime=regime,
+            )
+
+            # Make a new spec object from a copy of spec, where the
+            # only thing that is different is the dataset
+
+            spec_for_exp = copy.deepcopy(spec)
+            spec_for_exp.dataset = dataset_for_exp
+        else:
+            raise NotImplementedError(
+                f"Eval method {datagen_method} not supported for regime={regime}"
+            )
+
+    """ If optimizing using gradient descent and using mini-batches,
+     update the batch_size and n_epochs using batch_epoch_dict """
+    if (
+        batch_epoch_dict != {}
+        and spec_for_exp.optimization_technique == "gradient_descent"
+        and (spec_for_exp.optimization_hyperparams["use_batches"] == True)
+    ):
+        batch_size, n_epochs = batch_epoch_dict[data_frac]
+        spec_for_exp.optimization_hyperparams["batch_size"] = batch_size
+        spec_for_exp.optimization_hyperparams["n_epochs"] = n_epochs
+    return spec_for_exp
+
 
 def generate_episodes_and_calc_J(**kwargs):
     """Calculate the expected discounted return
@@ -137,6 +265,7 @@ def generate_episodes_and_calc_J(**kwargs):
     J = np.mean(returns)
     return episodes, J
 
+
 def batch_predictions(model, solution, X_test, **kwargs):
     batch_size = kwargs["eval_batch_size"]
     if type(X_test) == list:
@@ -161,38 +290,42 @@ def batch_predictions(model, solution, X_test, **kwargs):
         batch_start = batch_end
     return y_pred
 
-def make_batch_epoch_dict_fixedniter(niter,data_fracs,N_max,batch_size):
+
+def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     """
     Convenience function for figuring out the number of epochs necessary
-    to ensure that at each data fraction, the total 
-    number of iterations (and batch size) will be fixed. 
+    to ensure that at each data fraction, the total
+    number of iterations (and batch size) will be fixed.
 
     :param niter: The total number of iterations you want run at every data_frac
     :type niter: int
     :param data_fracs: 1-D array of data fractions
-    :type data_fracs: np.ndarray 
+    :type data_fracs: np.ndarray
     :param N_max: The maximum number of data points in the optimization process
     :type N_max: int
-    :param batch_size: The fixed batch size 
+    :param batch_size: The fixed batch size
     :type batch_size: int
-    :return batch_epoch_dict: A dictionary where keys are data fractions 
+    :return batch_epoch_dict: A dictionary where keys are data fractions
         and values are [batch_size,num_epochs]
     """
-    data_sizes=data_fracs*N_max # number of points used in candidate selection in each data frac
-    n_batches=data_sizes/batch_size # number of batches in each data frac
-    n_batches=np.array([math.ceil(x) for x in n_batches])
-    n_epochs_arr=niter/n_batches # number of epochs needed to get to niter iterations in each data frac
+    data_sizes = (
+        data_fracs * N_max
+    )  # number of points used in candidate selection in each data frac
+    n_batches = data_sizes / batch_size  # number of batches in each data frac
+    n_batches = np.array([math.ceil(x) for x in n_batches])
+    n_epochs_arr = (
+        niter / n_batches
+    )  # number of epochs needed to get to niter iterations in each data frac
     n_epochs_arr = np.array([math.ceil(x) for x in n_epochs_arr])
     batch_epoch_dict = {
-        data_fracs[ii]:[batch_size,n_epochs_arr[ii]] for ii in range(len(data_fracs))}
+        data_fracs[ii]: [batch_size, n_epochs_arr[ii]] for ii in range(len(data_fracs))
+    }
     return batch_epoch_dict
 
+
 def make_batch_epoch_dict_min_sample_repeat(
-    niter_min,
-    data_fracs,
-    N_max,
-    batch_size,
-    num_repeats):
+    niter_min, data_fracs, N_max, batch_size, num_repeats
+):
     """
     Convenience function for figuring out the number of epochs necessary
     to ensure that the number of iterations for each data frac is:
@@ -201,37 +334,37 @@ def make_batch_epoch_dict_min_sample_repeat(
     :param niter_min: The minimum total number of iterations you want run at every data_frac
     :type niter_min: int
     :param data_fracs: 1-D array of data fractions
-    :type data_fracs: np.ndarray 
+    :type data_fracs: np.ndarray
     :param N_max: The maximum number of data points in the optimization process
     :type N_max: int
     :param batch_size: The fixed batch size
     :type batch_size: int
     :param num_repeats: The minimum number of times each sample must be seen in the optimization process
     :type num_repeats: int
-    :return batch_epoch_dict: A dictionary where keys are data fractions 
+    :return batch_epoch_dict: A dictionary where keys are data fractions
         and values are [batch_size,num_epochs]
     """
     batch_epoch_dict = {}
     n_epochs_arr = np.zeros_like(data_fracs)
     for data_frac in data_fracs:
-        niter2 = num_repeats*N_max*data_frac/batch_size
+        niter2 = num_repeats * N_max * data_frac / batch_size
         if niter2 > niter_min:
             num_epochs = num_repeats
         else:
-            n_batches = max(1,N_max*data_frac/batch_size)
-            num_epochs = math.ceil(niter_min/n_batches)
-        batch_epoch_dict[data_frac] = [batch_size,num_epochs]
-    
+            n_batches = max(1, N_max * data_frac / batch_size)
+            num_epochs = math.ceil(niter_min / n_batches)
+        batch_epoch_dict[data_frac] = [batch_size, num_epochs]
+
     return batch_epoch_dict
 
+
 def has_failed(g):
-    """ Condition for whether a value of g is unsafe. This is used
+    """Condition for whether a value of g is unsafe. This is used
     to determine the failure rate in the right-most plot of the experiments plots.
 
-    :param g: The value of the behavioral constraint evaluated using a model and data 
+    :param g: The value of the behavioral constraint evaluated using a model and data
     :type g: float
 
     :return: True if g is unsafe, False if g is safe
     """
-    return g>0 or np.isnan(g)
-
+    return g > 0 or np.isnan(g)
