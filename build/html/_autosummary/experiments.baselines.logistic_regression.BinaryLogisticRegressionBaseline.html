@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline &#8212; Seldonian Experiments alpha documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="experiments.baselines.random_classifiers" href="experiments.baselines.random_classifiers.html" />
+    <link rel="prev" title="experiments.baselines.logistic_regression" href="experiments.baselines.logistic_regression.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="experiments-baselines-logistic-regression-binarylogisticregressionbaseline">
+<h1>experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline<a class="headerlink" href="#experiments-baselines-logistic-regression-binarylogisticregressionbaseline" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BinaryLogisticRegressionBaseline</span></span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryLogisticRegressionModel</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a classifier that always predicts
+that the positive class has prob=0.5,
+regardless of input</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model using features and labels.
+Let:</p>
+<blockquote>
+<div><p>i = number of datapoints
+j = number of features (including bias term, if provied)
+k = number of classes</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array</em><em> of </em><em>shape</em><em> (</em><em>i</em><em>,</em><em>j</em><em>)</em>) – The features</p></li>
+<li><p><strong>Y</strong> (<em>array</em><em> of </em><em>shape</em><em> (</em><em>i</em><em>,</em><em>k</em><em>)</em>) – The labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>fitted model weights</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of shape (j,k)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict the probability of 
+having each class label for each data point
+in X. Let:</p>
+<blockquote>
+<div><p>i = number of datapoints
+j = number of features (including bias term, if provied)
+k = number of classes</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em><em> of </em><em>length j</em><em> or </em><em>shape</em><em> (</em><em>j</em><em>,</em><em>1</em><em>)</em>) – The parameter weights</p></li>
+<li><p><strong>X</strong> (<em>array</em><em> of </em><em>shape</em><em> (</em><em>i</em><em>,</em><em>j</em><em>)</em>) – The features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>predictions for each class each observation</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of length i or shape (i,1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Seldonian Experiments</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.linear_regression.html">experiments.baselines.linear_regression</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="experiments.baselines.logistic_regression.html">experiments.baselines.logistic_regression</a><ul class="current">
+<li class="toctree-l5 current"><a class="current reference internal" href="#">experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline"><code class="docutils literal notranslate"><span class="pre">BinaryLogisticRegressionBaseline</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__"><code class="docutils literal notranslate"><span class="pre">BinaryLogisticRegressionBaseline.__init__()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__repr__"><code class="docutils literal notranslate"><span class="pre">BinaryLogisticRegressionBaseline.__repr__()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.fit"><code class="docutils literal notranslate"><span class="pre">BinaryLogisticRegressionBaseline.fit()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.predict"><code class="docutils literal notranslate"><span class="pre">BinaryLogisticRegressionBaseline.predict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.random_classifiers.html">experiments.baselines.random_classifiers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.experiment_utils.html">experiments.experiment_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API</a><ul>
+  <li><a href="experiments.html">experiments</a><ul>
+  <li><a href="experiments.baselines.html">experiments.baselines</a><ul>
+  <li><a href="experiments.baselines.logistic_regression.html">experiments.baselines.logistic_regression</a><ul>
+      <li>Previous: <a href="experiments.baselines.logistic_regression.html" title="previous chapter">experiments.baselines.logistic_regression</a></li>
+      <li>Next: <a href="experiments.baselines.random_classifiers.html" title="next chapter">experiments.baselines.random_classifiers</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, University of Massachusetts.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

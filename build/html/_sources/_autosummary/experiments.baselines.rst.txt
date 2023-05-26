@@ -30,5 +30,7 @@ experiments.baselines
 
 
    experiments.baselines.facial_recog_cnn
+   experiments.baselines.linear_regression
+   experiments.baselines.logistic_regression
    experiments.baselines.random_classifiers
 

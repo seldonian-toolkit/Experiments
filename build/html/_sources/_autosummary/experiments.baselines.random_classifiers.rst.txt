@@ -19,7 +19,8 @@ experiments.baselines.random\_classifiers
       :toctree:                                         
       :template: custom-class-template.rst              
    
-      WeightedRandomClassifierModel
+      UniformRandomClassifierBaseline
+      WeightedRandomClassifierBaseline
    
    
 

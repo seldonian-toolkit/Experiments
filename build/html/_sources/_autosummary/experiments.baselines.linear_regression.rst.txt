@@ -1,7 +1,7 @@
-experiments.baselines.random\_classifiers
-=========================================
+experiments.baselines.linear\_regression
+========================================
 
-.. automodule:: experiments.baselines.random_classifiers 
+.. automodule:: experiments.baselines.linear_regression 
   
    
    
@@ -19,8 +19,7 @@ experiments.baselines.random\_classifiers
       :toctree:                                         
       :template: custom-class-template.rst              
    
-      UniformRandomClassifierBaseline
-      WeightedRandomClassifierBaseline
+      LinearRegressionBaseline
    
    
 

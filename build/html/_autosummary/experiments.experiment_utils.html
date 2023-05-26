@@ -14,7 +14,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="experiments.experiment_utils.batch_predictions" href="experiments.experiment_utils.batch_predictions.html" />
-    <link rel="prev" title="experiments.baselines.random_classifiers.WeightedRandomClassifierModel" href="experiments.baselines.random_classifiers.WeightedRandomClassifierModel.html" />
+    <link rel="prev" title="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline" href="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -53,10 +53,16 @@
 <td><p>Utility function for supervised learning to generate the resampled datasets to use in each trial.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html#experiments.experiment_utils.make_batch_epoch_dict_fixedniter" title="experiments.experiment_utils.make_batch_epoch_dict_fixedniter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_fixedniter</span></code></a>(niter, ...)</p></td>
-<td><p>Convenience function for figuring out the number of epochs necessary to ensure that at each data fraction, the total  number of iterations (and batch size) will be fixed.</p></td>
+<td><p>Convenience function for figuring out the number of epochs necessary to ensure that at each data fraction, the total number of iterations (and batch size) will be fixed.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html#experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat" title="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_min_sample_repeat</span></code></a>(...)</p></td>
 <td><p>Convenience function for figuring out the number of epochs necessary to ensure that the number of iterations for each data frac is: max(niter_min,# of iterations s.t.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels.html#experiments.experiment_utils.prep_feat_labels" title="experiments.experiment_utils.prep_feat_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_feat_labels</span></code></a>(trial_dataset, n_points[, ...])</p></td>
+<td><p>Utility function for preparing features and labels for a given trial</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.setup_SA_spec_for_exp.html#experiments.experiment_utils.setup_SA_spec_for_exp" title="experiments.experiment_utils.setup_SA_spec_for_exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_SA_spec_for_exp</span></code></a>(spec, regime, ...)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -93,6 +99,8 @@
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.load_resampled_dataset.html">experiments.experiment_utils.load_resampled_dataset</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html">experiments.experiment_utils.make_batch_epoch_dict_fixedniter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html">experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels.html">experiments.experiment_utils.prep_feat_labels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.setup_SA_spec_for_exp.html">experiments.experiment_utils.setup_SA_spec_for_exp</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
@@ -111,7 +119,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API</a><ul>
   <li><a href="experiments.html">experiments</a><ul>
-      <li>Previous: <a href="experiments.baselines.random_classifiers.WeightedRandomClassifierModel.html" title="previous chapter">experiments.baselines.random_classifiers.WeightedRandomClassifierModel</a></li>
+      <li>Previous: <a href="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.html" title="previous chapter">experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline</a></li>
       <li>Next: <a href="experiments.experiment_utils.batch_predictions.html" title="next chapter">experiments.experiment_utils.batch_predictions</a></li>
   </ul></li>
   </ul></li>

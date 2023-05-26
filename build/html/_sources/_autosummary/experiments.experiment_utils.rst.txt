@@ -21,6 +21,8 @@ experiments.experiment\_utils
       load_resampled_dataset
       make_batch_epoch_dict_fixedniter
       make_batch_epoch_dict_min_sample_repeat
+      prep_feat_labels
+      setup_SA_spec_for_exp
    
    
 

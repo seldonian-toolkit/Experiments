@@ -1,9 +1,9 @@
-experiments.baselines.random\_classifiers.WeightedRandomClassifierModel
-=======================================================================
+experiments.baselines.random\_classifiers.WeightedRandomClassifierBaseline
+==========================================================================
 
 .. currentmodule:: experiments.baselines.random_classifiers
 
-.. autoclass:: WeightedRandomClassifierModel
+.. autoclass:: WeightedRandomClassifierBaseline
    :members:       
    :private-members:                                                 
    :show-inheritance:                           
@@ -18,9 +18,11 @@ experiments.baselines.random\_classifiers.WeightedRandomClassifierModel
 
    .. autosummary::
    .. 
-   ..    ~WeightedRandomClassifierModel.__init__
+   ..    ~WeightedRandomClassifierBaseline.__init__
    ..
-   ..    ~WeightedRandomClassifierModel.predict
+   ..    ~WeightedRandomClassifierBaseline.predict
+   ..
+   ..    ~WeightedRandomClassifierBaseline.train
    ..
    
    
