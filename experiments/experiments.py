@@ -131,7 +131,7 @@ class Experiment:
 
 
 class BaselineExperiment(Experiment):
-    def __init__(self, model_name, results_dir):
+    def __init__(self, baseline_model, results_dir):
         """Class for running baseline experiments
         against which to compare Seldonian Experiments
 
@@ -143,6 +143,8 @@ class BaselineExperiment(Experiment):
                 experimental results
         :type results_dir: str
         """
+        self.baseline_model = baseline_model
+        model_name = self.baseline_model.model_name
         super().__init__(model_name, results_dir)
 
     def run_experiment(self, **kwargs):
@@ -270,52 +272,82 @@ class BaselineExperiment(Experiment):
         """" Instantiate model and fit to resampled data """
         ####################################################
         X_test_baseline = perf_eval_kwargs["X"]
+        baseline_model = copy.deepcopy(self.baseline_model)
+        train_kwargs = {}
+        pred_kwargs = {}
+        try:
+            if hasattr(baseline_model,"batch_epoch_dict"):
+                batch_size, n_epochs = baseline_model.batch_epoch_dict[data_frac]
+                train_kwargs["batch_size"] = batch_size
+                train_kwargs["n_epochs"] = n_epochs
+            solution = baseline_model.train(features, labels, **train_kwargs)
+            
+            # predict the probabilities (e.g. 0.85) not the labels (e.g., 1) 
+            if hasattr(baseline_model,"eval_batch_size"):
+                pred_kwargs["eval_batch_size"] = getattr(baseline_model,"eval_batch_size")
+                if hasattr(baseline_model,"N_output_classes"):
+                    pred_kwargs["N_output_classes"] = getattr(baseline_model,"N_output_classes")
 
-        if self.model_name == "linear_regression":
-            baseline_model = LinearRegressionModel()
-            try:
-                solution = baseline_model.fit(features, labels)
-                # predict the probabilities not the class labels
-                y_pred = baseline_model.predict(solution, X_test_baseline)
-            except ValueError:
-                solution = "NSF"
+                y_pred = batch_predictions(
+                    model=baseline_model,
+                    solution=solution,
+                    X_test=X_test_baseline,
+                    **pred_kwargs,
+                )
+            else:
+                y_pred = baseline_model.predict(
+                    solution, 
+                    X_test_baseline, 
+                    **pred_kwargs)
+        except ValueError:
+            solution = "NSF"
 
-        if self.model_name == "logistic_regression":
-            baseline_model = BinaryLogisticRegressionModel()
-            try:
-                solution = baseline_model.fit(features, labels)
-                # predict the probabilities not the class labels
-                y_pred = baseline_model.predict(solution, X_test_baseline)
-            except ValueError:
-                solution = "NSF"
+        # if self.model_name == "linear_regression":
+        #     baseline_model = LinearRegressionModel()
+        #     try:
+        #         solution = baseline_model.fit(features, labels)
+        #         y_pred = baseline_model.predict(solution, X_test_baseline)
+        #     except ValueError:
+        #         solution = "NSF"
 
-        if self.model_name == "random_classifier":
-            # Returns the positive class with p=0.5 every time
-            baseline_model = RandomClassifierModel()
-            solution = None
-            y_pred = baseline_model.predict(solution, X_test_baseline)
+        # if self.model_name == "logistic_regression":
+        #     baseline_model = BinaryLogisticRegressionModel()
+        #     try:
+        #         solution = baseline_model.fit(features, labels)
+        #         # predict the probabilities not the class labels
+        #         y_pred = baseline_model.predict(solution, X_test_baseline)
+        #     except ValueError:
+        #         solution = "NSF"
 
-        if self.model_name == "weighted_random_classifier":
-            # Returns the positive class with p=num_pos_class/num_neg_class every time
-            from .baselines.random_classifiers import WeightedRandomClassifierModel
+        # if self.model_name == "random_classifier":
+        #     # Returns the positive class with p=0.5 every time
+        #     baseline_model = RandomClassifierModel()
+        #     solution = None
+        #     y_pred = baseline_model.predict(solution, X_test_baseline)
 
-            baseline_model = WeightedRandomClassifierModel(0.4772833)
-            solution = None
-            y_pred = baseline_model.predict(solution, X_test_baseline)
+        # if self.model_name == "weighted_random_classifier":
+        #     # Returns the positive class with p=num_pos_class/num_neg_class every time
+        #     from .baselines.random_classifiers import WeightedRandomClassifierModel
 
-        if self.model_name == "facial_recog_cnn":
-            from .baselines.facial_recog_cnn import PytorchFacialRecog
+        #     baseline_model = WeightedRandomClassifierModel(0.4772833)
+        #     solution = None
+        #     y_pred = baseline_model.predict(solution, X_test_baseline)
 
-            device = perf_eval_kwargs["device"]
-            baseline_model = PytorchFacialRecog(device=device)
-            batch_size, n_epochs = batch_epoch_dict[data_frac]
-            baseline_model.train(
-                features, labels, batch_size=batch_size, num_epochs=n_epochs
-            )
-            solution = baseline_model.get_model_params()
-            y_pred = batch_predictions(
-                baseline_model, solution, X_test_baseline, **perf_eval_kwargs
-            )
+        # if self.model_name == "facial_recog_cnn":
+        #     from .baselines.facial_recog_cnn import PytorchFacialRecog
+
+        #     device = perf_eval_kwargs["device"]
+        #     baseline_model = PytorchFacialRecog(device=device)
+        #     batch_size, n_epochs = batch_epoch_dict[data_frac]
+        #     baseline_model.train(
+        #         features, labels, batch_size=batch_size, num_epochs=n_epochs
+        #     )
+        #     solution = baseline_model.get_model_params()
+        #     y_pred = batch_predictions(
+        #         baseline_model, solution, X_test_baseline, **perf_eval_kwargs
+        #     )
+
+        
 
         #########################################################
         """" Calculate performance and safety on ground truth """
@@ -350,9 +382,11 @@ class BaselineExperiment(Experiment):
             )
         else:
             print("NSF")
+            # NSF is safe, so set g=-inf for all constraints
+            n_constraints = len(spec.parse_trees)
             gvec = -np.inf * np.ones(
                 n_constraints
-            )  # NSF is safe, so set g=-inf for all constraints
+            )  
             performance = np.nan
 
         # Write out file for this data_frac,trial_i combo
@@ -392,11 +426,10 @@ class BaselineExperiment(Experiment):
             parse_trees = constraint_eval_kwargs["parse_trees"]
             dataset = constraint_eval_kwargs["dataset"]
             baseline_model = constraint_eval_kwargs["baseline_model"]
-            if "eval_batch_size" in constraint_eval_kwargs:
-                batch_size_safety = constraint_eval_kwargs["eval_batch_size"]
+            if hasattr(baseline_model,"eval_batch_size"):
+                batch_size_safety = getattr(baseline_model,"eval_batch_size")
             else:
                 batch_size_safety = None
-
             for parse_tree in parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
                 parse_tree.evaluate_constraint(

@@ -767,13 +767,9 @@ class SupervisedPlotGenerator(PlotGenerator):
         sd_exp.run_experiment(**run_kwargs)
         return
 
-    def run_baseline_experiment(self, model_name, verbose=False):
+    def run_baseline_experiment(self, baseline_model, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute
         assigned to the class in __init__().
-
-        :param model_name: The name of the baseline model to use
-
-        :type model_name: str
 
         :param verbose: Whether to display results to stdout
                 while the Seldonian algorithms are running in each trial
@@ -805,7 +801,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         )
 
         ## Run experiment
-        bl_exp = BaselineExperiment(model_name=model_name, results_dir=self.results_dir)
+        bl_exp = BaselineExperiment(baseline_model=baseline_model, results_dir=self.results_dir)
 
         bl_exp.run_experiment(**run_baseline_kwargs)
         return

@@ -7,6 +7,7 @@ import pytest
 from experiments.base_example import BaseExample
 from examples.gpa_science_classification.generate_experiment_plots import gpa_example
 from examples.lie_detection.generate_experiment_plots import lie_detection_example
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
 
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_gpa_example(experiment):
@@ -21,7 +22,7 @@ def test_gpa_example(experiment):
         constraints=["disparate_impact"],
         n_trials=2,
         data_fracs=[0.01,0.1],
-        baselines=["logistic_regression"],
+        baselines=[BinaryLogisticRegressionBaseline()],
         include_fairlearn_models=True,
         performance_metric="accuracy",
         n_workers=1,
@@ -178,7 +179,7 @@ def test_lie_detection_example(experiment):
         epsilons=[0.2],
         n_trials=2,
         data_fracs=[0.01,0.1],
-        baselines = ["logistic_regression"],
+        baselines = [BinaryLogisticRegressionBaseline()],
         performance_metric="accuracy",
         n_workers=1,
     )

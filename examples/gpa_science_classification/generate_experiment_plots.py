@@ -12,11 +12,17 @@
 import argparse
 import numpy as np
 import os
-from experiments.generate_plots import SupervisedPlotGenerator
-from experiments.base_example import BaseExample
-from experiments.perf_eval_funcs import deterministic_accuracy
+
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss
+
+from experiments.generate_plots import SupervisedPlotGenerator
+from experiments.base_example import BaseExample
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
+from experiments.baselines.random_classifiers import (
+    UniformRandomClassifierBaseline)
+from experiments.perf_eval_funcs import deterministic_accuracy
+
 
 def gpa_example(
     spec_rootdir,
@@ -30,7 +36,7 @@ def gpa_example(
     ],
     n_trials=50,
     data_fracs=np.logspace(-4,0,15),
-    baselines=["random_classifier", "logistic_regression"],
+    baselines=[UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     include_fairlearn_models=True,
     performance_metric="accuracy",
     n_workers=1,
@@ -122,7 +128,7 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     if include_baselines:
-        baselines = ["random_classifier", "logistic_regression"]
+        baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
     else:
         baselines = []
 

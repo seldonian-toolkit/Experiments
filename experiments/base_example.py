@@ -57,7 +57,7 @@ class BaseExample:
         # Baselines first
         for baseline_model in baselines:
             plot_generator.run_baseline_experiment(
-                model_name=baseline_model, verbose=verbose
+                baseline_model=baseline_model, verbose=verbose
             )
         # Check if fairlearn requested
         if include_fairlearn_models:

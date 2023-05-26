@@ -1,19 +1,33 @@
 import autograd.numpy as np
-from seldonian.models.models import ClassificationModel
+from seldonian.models.models import ClassificationModel,RandomClassifierModel
 
 
-class WeightedRandomClassifierModel(ClassificationModel):
+class UniformRandomClassifierBaseline(RandomClassifierModel):
+    def __init__(self,):
+        """Implements a classifier that always predicts
+        that the positive class has prob=0.5,
+        regardless of input"""
+        super().__init__()
+        self.model_name = "uniform_random"
+
+    def train(self,X,Y):
+        return None
+
+class WeightedRandomClassifierBaseline(RandomClassifierModel):
     def __init__(self, weight):
         """Implements a classifier that always predicts
         that the positive class has prob=0.5,
         regardless of input"""
         super().__init__()
-        self.has_intercept = False
         assert 0.0 <= weight <= 1.0
         self.weight = weight
+        self.model_name=f'weighted_random_{weight:.2f}'
+
+    def train(self,X,Y):
+        return None
 
     def predict(self, theta, X):
-        """Predict the probability of
+        """Overrides child method. Predict the probability of
         having the positive class label
 
         :param theta: The parameter weights

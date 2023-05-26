@@ -3,11 +3,11 @@ import numpy as np
 import tracemalloc,linecache
 
 from experiments.generate_plots import SupervisedPlotGenerator
+from seldonian.utils.io_utils import load_pickle
+from sklearn.metrics import log_loss,accuracy_score
 from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
 from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline,WeightedRandomClassifierBaseline)
-from seldonian.utils.io_utils import load_pickle
-from sklearn.metrics import log_loss,accuracy_score
 
 def perf_eval_fn(y_pred,y,**kwargs):
     # Deterministic accuracy. Should really be using probabilistic accuracy, 
@@ -16,37 +16,37 @@ def perf_eval_fn(y_pred,y,**kwargs):
     if performance_metric == 'accuracy':
         return accuracy_score(y,y_pred > 0.5)
         
+
 def main():
     # Parameter setup
-    run_experiments = True
+    run_experiments = False
     make_plots = True
-    save_plot = False
+    save_plot = True
     include_legend = True
 
     model_label_dict = {
         'qsa':'Seldonian model',
         'uniform_random': 'Uniform random',
-        # 'weighted_random_0.80': 'Weighted random',
         'logistic_regression': 'Logistic regression (no constraint)',
         'fairlearn_eps0.01': 'Fairlearn (epsilon=0.01)',
         'fairlearn_eps0.10': 'Fairlearn (epsilon=0.1)',
         'fairlearn_eps1.00': 'Fairlearn (epsilon=1.0)',
         }
 
-    constraint_name = 'disparate_impact'
+    constraint_name = 'predictive_equality'
     fairlearn_constraint_name = constraint_name
-    fairlearn_epsilon_eval = 0.8 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
+    fairlearn_epsilon_eval = 0.2 # the epsilon used to evaluate g, needs to be same as epsilon in our definition
     fairlearn_eval_method = 'two-groups' # two-groups is the Seldonian definition, 'native' is the fairlearn definition
     fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
     performance_metric = 'accuracy'
-    n_trials = 10
+    n_trials = 50
     data_fracs = np.logspace(-4,0,15)
-    # data_fracs = [0.1,0.5,1.0]
     n_workers = 8
-    # results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
-    results_dir = f'results/gpa_test_newbaselines'
-    # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
-    plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fairware.png')
+    results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
+
+    save_dir = '/Users/ahoag/beri/conferences/ICSE_2023/fairware/talk/figs/gpa_plots'
+    plot_savename = os.path.join(save_dir,
+        f'gpa_{constraint_name}_{performance_metric}_fairware.png')
 
     verbose=True
 
@@ -82,22 +82,17 @@ def main():
         )
 
     # # Baseline models
-    
     if run_experiments:
         rand_classifier = UniformRandomClassifierBaseline()
         plot_generator.run_baseline_experiment(
             baseline_model=rand_classifier,verbose=True)
-
-        weighted_rand_classifier = WeightedRandomClassifierBaseline(weight=0.80)
-        plot_generator.run_baseline_experiment(
-            baseline_model=weighted_rand_classifier,verbose=True)
 
         lr_baseline = BinaryLogisticRegressionBaseline()
         plot_generator.run_baseline_experiment(
             baseline_model=lr_baseline,verbose=True)
 
         # Seldonian experiment
-        # plot_generator.run_seldonian_experiment(verbose=verbose)
+        plot_generator.run_seldonian_experiment(verbose=verbose)
 
 
     ######################

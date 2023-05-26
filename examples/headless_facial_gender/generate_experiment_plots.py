@@ -9,13 +9,15 @@ import math
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.headless_example import HeadlessExample
-from experiments.utils import (
+from experiments.experiment_utils import (
     make_batch_epoch_dict_min_sample_repeat)
 from experiments.perf_eval_funcs import (probabilistic_accuracy, binary_logistic_loss)
 from experiments.headless_utils import make_data_loaders
 from seldonian.utils.io_utils import load_pickle
 from examples.headless_facial_gender.full_model import CNN
 from examples.headless_facial_gender.headless_model import CNN_headless
+
+from experiments.baselines.facial_recog_cnn import PytorchFacialRecogBaseline
 
 import torch
 import torch.nn as nn
@@ -93,8 +95,10 @@ def headless_facial_gender_example(
             candidate_batch_size=1000, 
             safety_batch_size=1000,
         )
+
         perf_eval_kwargs = {
             "test_data_loaders": test_data_loaders,
+            "X":test_features,
             "y": test_labels,
             "eval_batch_size": 2000, # how many latent features are passed through perf_eval_fn at a time. Lower this if running into memory issues
         }
@@ -115,6 +119,7 @@ def headless_facial_gender_example(
             results_dir=results_dir,
             perf_eval_fn=perf_eval_fn,
             perf_eval_kwargs=perf_eval_kwargs,
+            constraint_eval_kwargs={},
             n_workers=n_workers,
             batch_epoch_dict=batch_epoch_dict,
             datagen_method="resample",
@@ -148,22 +153,43 @@ if __name__ == "__main__":
     #     baselines = ["random_classifier","logistic_regression"]
     # else:
     #     baselines = []
+    data_fracs = np.array([0.05,0.2,0.85])
+
+    niter_min_baseline=25 # how many iterations we want in each run. Overfitting happens with more than this.
+    N_candidate_max=11850
+    batch_size_baseline=100
+    num_repeats=4
+    batch_epoch_dict_baseline = make_batch_epoch_dict_min_sample_repeat(
+        niter_min_baseline,
+        data_fracs,
+        N_candidate_max,
+        batch_size_baseline,
+        num_repeats)
+    print("batch_epoch_dict_baseline:")
+    print(batch_epoch_dict_baseline)
+    facial_recog_baseline = PytorchFacialRecogBaseline(
+        device=torch.device('mps'),
+        learning_rate = 0.001,
+        batch_epoch_dict=batch_epoch_dict_baseline
+        )
     epsilon = 0.8
     performance_metric="accuracy"
 
-    results_base_dir = f"./results"
+    # results_base_dir = f"./results"
+    results_base_dir = f"./test_results"
 
     headless_facial_gender_example(
         spec_rootdir="data/spec/",
         results_base_dir=results_base_dir,
         epsilons=[epsilon],
-        n_trials=20,
-        data_fracs=np.array([0.0005,0.005,0.05,0.075,0.1,0.25,0.5,0.75,1.0]),
-        # data_fracs=np.array([0.2]),
-        baselines = [],
+        # n_trials=20,
+        n_trials=2,
+        # data_fracs=np.array([0.0005,0.005,0.05,0.075,0.1,0.25,0.5,0.75,1.0]),
+        data_fracs=data_fracs,
+        baselines = [facial_recog_baseline],
         performance_metric=performance_metric,
         n_workers=1,
-        verbose=False,
+        verbose=True,
     )
 
     

@@ -9,8 +9,9 @@ import math
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.headless_example import HeadlessExample
-from experiments.utils import (multiclass_accuracy,
-    multiclass_logistic_loss, make_batch_epoch_dict_min_sample_repeat)
+from experiments.experiment_utils import (make_batch_epoch_dict_min_sample_repeat)
+from experiments.perf_eval_funcs import (multiclass_accuracy,
+    multiclass_logistic_loss)
 from experiments.headless_utils import make_data_loaders
 from seldonian.utils.io_utils import load_pickle
 from examples.headless_mnist.full_model import CNN
@@ -123,6 +124,7 @@ def headless_mnist_example(
             results_dir=results_dir,
             perf_eval_fn=perf_eval_fn,
             perf_eval_kwargs=perf_eval_kwargs,
+            constraint_eval_kwargs={},
             n_workers=n_workers,
             batch_epoch_dict=batch_epoch_dict,
             datagen_method="resample",
@@ -150,7 +152,6 @@ if __name__ == "__main__":
     n_workers = int(args.n_workers)
     verbose = args.verbose
 
-    # Baselines are not yet supported for headless experiments. 
     # if include_baselines:
     #     baselines = ["random_classifier","logistic_regression"]
     # else:

@@ -63,10 +63,9 @@ class HeadlessExample(BaseExample):
         # Baselines first
         for baseline_model in baselines:
             plot_generator.run_baseline_experiment(
-                model_name=baseline_model, verbose=verbose
+                baseline_model=baseline_model, verbose=verbose
             )
         
-
         # Run Seldonian headless experiment
         # A special thing we need to do for headless experiments is get the 
         # initial weights of the model and freeze them so we can 

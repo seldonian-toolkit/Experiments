@@ -14,6 +14,9 @@ from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
 from seldonian.utils.io_utils import load_pickle
 from experiments.perf_eval_funcs import (probabilistic_accuracy, binary_logistic_loss)
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
+from experiments.baselines.random_classifiers import (
+    UniformRandomClassifierBaseline)
 
 def perf_eval_fn(y_pred,y,**kwargs):    
     return log_loss(y,y_pred)
@@ -28,7 +31,7 @@ def loans_example(
     ],
     n_trials=50,
     data_fracs=np.logspace(-3, 0, 15),
-    baselines=["random_classifier", "logistic_regression"],
+    baselines=[UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     include_fairlearn_models=True,
     performance_metric="log_loss",
     n_workers=1,
@@ -126,7 +129,7 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     if include_baselines:
-        baselines = ["random_classifier", "logistic_regression"]
+        baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
     else:
         baselines = []
 
