@@ -299,55 +299,8 @@ class BaselineExperiment(Experiment):
                     solution, 
                     X_test_baseline, 
                     **pred_kwargs)
-        except ValueError:
+        except (ValueError,IndexError):
             solution = "NSF"
-
-        # if self.model_name == "linear_regression":
-        #     baseline_model = LinearRegressionModel()
-        #     try:
-        #         solution = baseline_model.fit(features, labels)
-        #         y_pred = baseline_model.predict(solution, X_test_baseline)
-        #     except ValueError:
-        #         solution = "NSF"
-
-        # if self.model_name == "logistic_regression":
-        #     baseline_model = BinaryLogisticRegressionModel()
-        #     try:
-        #         solution = baseline_model.fit(features, labels)
-        #         # predict the probabilities not the class labels
-        #         y_pred = baseline_model.predict(solution, X_test_baseline)
-        #     except ValueError:
-        #         solution = "NSF"
-
-        # if self.model_name == "random_classifier":
-        #     # Returns the positive class with p=0.5 every time
-        #     baseline_model = RandomClassifierModel()
-        #     solution = None
-        #     y_pred = baseline_model.predict(solution, X_test_baseline)
-
-        # if self.model_name == "weighted_random_classifier":
-        #     # Returns the positive class with p=num_pos_class/num_neg_class every time
-        #     from .baselines.random_classifiers import WeightedRandomClassifierModel
-
-        #     baseline_model = WeightedRandomClassifierModel(0.4772833)
-        #     solution = None
-        #     y_pred = baseline_model.predict(solution, X_test_baseline)
-
-        # if self.model_name == "facial_recog_cnn":
-        #     from .baselines.facial_recog_cnn import PytorchFacialRecog
-
-        #     device = perf_eval_kwargs["device"]
-        #     baseline_model = PytorchFacialRecog(device=device)
-        #     batch_size, n_epochs = batch_epoch_dict[data_frac]
-        #     baseline_model.train(
-        #         features, labels, batch_size=batch_size, num_epochs=n_epochs
-        #     )
-        #     solution = baseline_model.get_model_params()
-        #     y_pred = batch_predictions(
-        #         baseline_model, solution, X_test_baseline, **perf_eval_kwargs
-        #     )
-
-        
 
         #########################################################
         """" Calculate performance and safety on ground truth """

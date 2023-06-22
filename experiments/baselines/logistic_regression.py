@@ -1,15 +1,19 @@
-import autograd.numpy as np
 from seldonian.models.models import BinaryLogisticRegressionModel
 
 
 class BinaryLogisticRegressionBaseline(BinaryLogisticRegressionModel):
     def __init__(self,):
-        """Implements a classifier that always predicts
-        that the positive class has prob=0.5,
-        regardless of input"""
+        """Implements a logistic regression classifier for binary classification"""
         super().__init__()
         self.model_name = "logistic_regression"
 
-    def train(self,X,Y):
-        return self.fit(X,Y) # parent method
+    def train(self,X,y):
+        """Train the model. Just a wrapper to parent fit() method.
+
+        :param X: features
+        :type X: 2D np.ndarray 
+        :param y: labels
+        :type y: 1D np.ndarray
+        """
+        return self.fit(X,y) # parent method
 

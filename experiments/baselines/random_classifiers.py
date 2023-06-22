@@ -19,6 +19,7 @@ class WeightedRandomClassifierBaseline(RandomClassifierModel):
         that the positive class has prob=0.5,
         regardless of input"""
         super().__init__()
+        self.model_name = "weighted_random_classifier"
         assert 0.0 <= weight <= 1.0
         self.weight = weight
         self.model_name=f'weighted_random_{weight:.2f}'
