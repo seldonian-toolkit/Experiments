@@ -214,7 +214,7 @@ class HeadlessSeldonianExperiment(Experiment):
             labels=labels,
             sensitive_attrs=sensitive_attrs,
             num_datapoints=n_points,
-            meta_information=resampled_dataset.meta_information,
+            meta=resampled_dataset.meta,
         )
 
         # Make a new spec object
@@ -398,7 +398,7 @@ class HeadlessSeldonianExperiment(Experiment):
                     labels=orig_dataset.labels,
                     sensitive_attrs=orig_dataset.sensitive_attrs,
                     num_datapoints=orig_dataset.num_datapoints,
-                    meta_information=orig_dataset.meta_information)
+                    meta=orig_dataset.meta)
                 constraint_eval_kwargs["dataset"] = dataset_for_eval
 
             for parse_tree in spec_for_experiment.parse_trees:

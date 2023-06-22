@@ -689,7 +689,7 @@ class SeldonianExperiment(Experiment):
 
                 dataset_for_eval = RLDataSet(
                     episodes=episodes_for_eval,
-                    meta_information=spec_for_exp.dataset.meta_information,
+                    meta=spec_for_exp.dataset.meta,
                     regime=regime,
                 )
 

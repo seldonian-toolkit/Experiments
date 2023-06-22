@@ -60,7 +60,7 @@ def generate_resampled_datasets(dataset, n_trials, save_dir):
                 labels=resamp_labels,
                 sensitive_attrs=resamp_sensitive_attrs,
                 num_datapoints=num_datapoints,
-                meta_information=dataset.meta_information,
+                meta=dataset.meta,
             )
 
             with open(savename, "wb") as outfile:
@@ -165,7 +165,7 @@ def setup_SA_spec_for_exp(
             labels=labels,
             sensitive_attrs=sensitive_attrs,
             num_datapoints=n_points,
-            meta_information=trial_dataset.meta_information,
+            meta=trial_dataset.meta,
         )
 
         # Make a new spec object and update its dataset
@@ -206,8 +206,7 @@ def setup_SA_spec_for_exp(
 
             dataset_for_exp = RLDataSet(
                 episodes=episodes_for_exp,
-                meta_information=spec.dataset.meta_information,
-                regime=regime,
+                meta=spec.dataset.meta,
             )
 
             # Make a new spec object from a copy of spec, where the
