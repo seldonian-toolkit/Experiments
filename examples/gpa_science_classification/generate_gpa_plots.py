@@ -6,6 +6,7 @@ from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
 from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline,WeightedRandomClassifierBaseline)
+from experiments.baselines.random_forest import RandomForestClassifierBaseline
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss,accuracy_score
 
@@ -18,9 +19,9 @@ def perf_eval_fn(y_pred,y,**kwargs):
         
 def main():
     # Parameter setup
-    run_experiments = True
+    run_experiments = False
     make_plots = True
-    save_plot = False
+    save_plot = True
     include_legend = True
 
     model_label_dict = {
@@ -39,16 +40,15 @@ def main():
     fairlearn_eval_method = 'two-groups' # two-groups is the Seldonian definition, 'native' is the fairlearn definition
     fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
     performance_metric = 'accuracy'
-    n_trials = 10
+    n_trials = 20
     data_fracs = np.logspace(-4,0,15)
-    # data_fracs = [0.1,0.5,1.0]
-    n_workers = 8
+    n_workers = 6
     # results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
     results_dir = f'results/gpa_test_newbaselines'
-    # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
-    plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fairware.png')
+    plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
+    # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fa.png')
 
-    verbose=True
+    verbose=False
 
     # Load spec
     specfile = f'../../../engine-repo-dev/examples/GPA_tutorial/{constraint_name}/spec.pkl'
@@ -88,53 +88,56 @@ def main():
         plot_generator.run_baseline_experiment(
             baseline_model=rand_classifier,verbose=True)
 
-        weighted_rand_classifier = WeightedRandomClassifierBaseline(weight=0.80)
-        plot_generator.run_baseline_experiment(
-            baseline_model=weighted_rand_classifier,verbose=True)
+        # weighted_rand_classifier = WeightedRandomClassifierBaseline(weight=0.80)
+        # plot_generator.run_baseline_experiment(
+        #     baseline_model=weighted_rand_classifier,verbose=True)
 
         lr_baseline = BinaryLogisticRegressionBaseline()
         plot_generator.run_baseline_experiment(
             baseline_model=lr_baseline,verbose=True)
 
+        rf_classifier = RandomForestClassifierBaseline()
+        plot_generator.run_baseline_experiment(
+            baseline_model=rf_classifier,verbose=True)
+
         # Seldonian experiment
-        # plot_generator.run_seldonian_experiment(verbose=verbose)
+        plot_generator.run_seldonian_experiment(verbose=verbose)
 
 
     ######################
     # Fairlearn experiment 
     ######################
 
-    fairlearn_sensitive_feature_names = ['M']
-    fairlearn_sensitive_col_indices = [dataset.sensitive_col_names.index(
-        col) for col in fairlearn_sensitive_feature_names]
-    fairlearn_sensitive_features = dataset.sensitive_attrs[:,fairlearn_sensitive_col_indices]
-    # Setup ground truth test dataset for Fairlearn
-    test_features_fairlearn = test_features
-    fairlearn_eval_kwargs = {
-        'X':test_features_fairlearn,
-        'y':test_labels,
-        'sensitive_features':fairlearn_sensitive_features,
-        'eval_method':fairlearn_eval_method,
-        'performance_metric':performance_metric,
-        }
+    # fairlearn_sensitive_feature_names = ['M']
+    # fairlearn_sensitive_col_indices = [dataset.sensitive_col_names.index(
+    #     col) for col in fairlearn_sensitive_feature_names]
+    # fairlearn_sensitive_features = dataset.sensitive_attrs[:,fairlearn_sensitive_col_indices]
+    # # Setup ground truth test dataset for Fairlearn
+    # test_features_fairlearn = test_features
+    # fairlearn_eval_kwargs = {
+    #     'X':test_features_fairlearn,
+    #     'y':test_labels,
+    #     'sensitive_features':fairlearn_sensitive_features,
+    #     'eval_method':fairlearn_eval_method,
+    #     'performance_metric':performance_metric,
+    #     }
 
-    if run_experiments:
-        for fairlearn_epsilon_constraint in fairlearn_epsilons_constraint:
-            plot_generator.run_fairlearn_experiment(
-                verbose=verbose,
-                fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
-                fairlearn_constraint_name=fairlearn_constraint_name,
-                fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
-                fairlearn_epsilon_eval=fairlearn_epsilon_eval,
-                fairlearn_eval_kwargs=fairlearn_eval_kwargs,
-                )
+    # if run_experiments:
+    #     for fairlearn_epsilon_constraint in fairlearn_epsilons_constraint:
+    #         plot_generator.run_fairlearn_experiment(
+    #             verbose=verbose,
+    #             fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
+    #             fairlearn_constraint_name=fairlearn_constraint_name,
+    #             fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
+    #             fairlearn_epsilon_eval=fairlearn_epsilon_eval,
+    #             fairlearn_eval_kwargs=fairlearn_eval_kwargs,
+    #             )
 
     if make_plots:
         plot_generator.make_plots(fontsize=12,legend_fontsize=8,
             performance_label=performance_metric,
             include_legend=include_legend,
             model_label_dict=model_label_dict,
-            show_title=False,
             save_format="png",
             savename=plot_savename if save_plot else None)
 

@@ -17,6 +17,7 @@ from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
 from experiments.perf_eval_funcs import probabilistic_accuracy
 from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
+from experiments.baselines.random_forest import RandomForestClassifierBaseline
 from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline)
 from seldonian.utils.io_utils import load_pickle
@@ -95,7 +96,11 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     if include_baselines:
-        baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
+        baselines = [
+            UniformRandomClassifierBaseline(),
+            BinaryLogisticRegressionBaseline(),
+            RandomForestClassifierBaseline()
+        ]
     else:
         baselines = []
 
@@ -109,6 +114,8 @@ if __name__ == "__main__":
         constraints = [constraint],
         epsilons=[epsilon],
         n_trials=n_trials,
-        performance_metric=performance_metric
+        baselines=baselines,
+        performance_metric=performance_metric,
+        n_workers=n_workers
     )
     

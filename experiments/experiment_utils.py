@@ -312,6 +312,8 @@ def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     )  # number of points used in candidate selection in each data frac
     n_batches = data_sizes / batch_size  # number of batches in each data frac
     n_batches = np.array([math.ceil(x) for x in n_batches])
+    print("n_batches:")
+    print(n_batches)
     n_epochs_arr = (
         niter / n_batches
     )  # number of epochs needed to get to niter iterations in each data frac

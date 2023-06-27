@@ -128,6 +128,8 @@ if __name__ == "__main__":
     include_fairlearn_models = args.include_fairlearn_models
     verbose = args.verbose
 
+    data_fracs = np.logspace(-3, 0, 15)
+
     if include_baselines:
         baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
     else:
@@ -139,14 +141,15 @@ if __name__ == "__main__":
     elif constraint in ["equalized_odds"]:
         epsilon = 0.8
 
-    results_base_dir = f"./results"
+    # results_base_dir = f"./results"
+    results_base_dir = "./results_newbaselines"
 
     loans_example(
         spec_rootdir="data/spec",
         results_base_dir=results_base_dir,
         constraints=[constraint],
         n_trials=n_trials,
-        data_fracs=np.logspace(-3, 0, 15),
+        data_fracs=data_fracs,
         baselines=baselines,
         include_fairlearn_models=include_fairlearn_models,
         performance_metric="log_loss",
