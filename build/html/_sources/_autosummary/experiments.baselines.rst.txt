@@ -29,8 +29,10 @@ experiments.baselines
    :recursive:
 
 
+   experiments.baselines.decision_tree
    experiments.baselines.facial_recog_cnn
    experiments.baselines.linear_regression
    experiments.baselines.logistic_regression
    experiments.baselines.random_classifiers
+   experiments.baselines.random_forest
 
