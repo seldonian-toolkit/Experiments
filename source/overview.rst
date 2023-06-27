@@ -8,15 +8,15 @@ This library is heavily dependent on the `Seldonian Engine library <https://seld
 
 Seldonian experiments
 ---------------------
-A Seldonian experiment is a way to evaluate the safety and performance of a SA. It involves running the SA many times with increasing amounts of input data. The way we evaluate safety and performance in this library is with the "Three Plots".
+A Seldonian experiment is a way to evaluate the safety and performance of an SA. It involves running the SA many times with increasing amounts of input data. The way we evaluate safety and performance in this library is with the "Three Plots."
 
 Three Plots
 -----------
 The Three Plots that are generated using this library are:
 
-1. Performance: the value of the primary objective function (e.g., accuracy), evaluated at the solution returned by the SA. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off. 
+1. Performance: the value of some function that indicates performance (e.g., accuracy), evaluated at the solution returned by the SA on a ground truth dataset. Satisfying the behavioral constraints sometimes comes at the cost of reduced performance, and this plot can help you understand that trade-off. 
 2. Solution rate: the probability that a solution is returned by the SA. If the behavioral constraints cannot be satisfied given the data provided to the SA, the SA will return No Solution Found. 
-3. Failure rate: the probability that a solution is not safe (on some ground truth dataset) despite the SA returning a solution it determined to be safe, i.e., it passed the safety test.
+3. Failure rate: the probability that a solution is not safe (evaluated on a ground truth dataset) despite the SA returning a solution it determined to be safe, i.e., it passed the safety test.
 
 All three quantities are plotted against the amount of data input to the algorithm on the horizontal axis. Evaluating the performance and failure rate of the algorithm assumes access to ground truth values for performance and safety. For a real-world problem with only a single data set, one typically does not have access to these ground truth quantities. Instead, one can adopt strategies such as bootstrap resampling of their single dataset in order to approximate ground truth. 
 
