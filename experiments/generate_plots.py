@@ -106,11 +106,18 @@ class PlotGenerator:
     def make_plots(
         self,
         model_label_dict={},
+        ignore_models=[],
         fontsize=12,
+        title_fontsize=12,
         legend_fontsize=8,
+        ncols_legend=3,
         performance_label="accuracy",
+        sr_label="Prob. of solution",
+        fr_label="Prob. of violation",
         performance_yscale="linear",
         performance_ylims=[],
+        hoz_axis_label="Amount of data",
+        show_confidence_level=True,
         marker_size=20,
         save_format="pdf",
         show_title=True,
@@ -161,6 +168,8 @@ class PlotGenerator:
         all_models = [
             x.split("_results")[0] for x in subfolders if x.endswith("_results")
         ]
+        if ignore_models != []:
+            all_models = [x for x in all_models if x not in ignore_models]
         seldonian_models = list(set(all_models).intersection(seldonian_model_set))
         baselines = sorted(list(set(all_models).difference(seldonian_model_set)))
         if not (seldonian_models or baselines):
@@ -236,15 +245,13 @@ class PlotGenerator:
         vert_size = 3 + n_constraints
         if include_legend:
             vert_size+=0.5
-            figsize = (9, vert_size)
+            figsize = (14, vert_size)
         else:
-            figsize = (9, vert_size)
+            figsize = (14, vert_size)
         fig = plt.figure(figsize=figsize)
         plot_index = 1
         n_rows = len(constraint_strs)
         n_cols = 3
-        fontsize = fontsize
-        legend_fontsize = legend_fontsize
         legend_handles = []
         legend_labels = []
 
@@ -267,18 +274,18 @@ class PlotGenerator:
                     title = custom_title
                 else:
                     title = f"constraint: \ng={constraint_str}"
-                ax_sr.set_title(title, y=1.05, fontsize=10)
+                ax_sr.set_title(title, y=1.05, fontsize=title_fontsize)
 
             # Plot labels
             ax_performance.set_ylabel(performance_label, fontsize=fontsize)
-            ax_sr.set_ylabel("Prob. of solution", fontsize=fontsize)
-            ax_fr.set_ylabel("Prob. of violation", fontsize=fontsize)
+            ax_sr.set_ylabel(sr_label, fontsize=fontsize)
+            ax_fr.set_ylabel(fr_label, fontsize=fontsize)
 
             # Only put horizontal axis labels on last row of plots
             if constraint_index == n_constraints - 1:
-                ax_performance.set_xlabel("Amount of data", fontsize=fontsize)
-                ax_sr.set_xlabel("Amount of data", fontsize=fontsize)
-                ax_fr.set_xlabel("Amount of data", fontsize=fontsize)
+                ax_performance.set_xlabel(hoz_axis_label, fontsize=fontsize)
+                ax_sr.set_xlabel(hoz_axis_label, fontsize=fontsize)
+                ax_fr.set_xlabel(hoz_axis_label, fontsize=fontsize)
 
             # axis scaling
             ax_performance.set_xscale("log")
@@ -303,6 +310,54 @@ class PlotGenerator:
             ### PERFORMANCE PLOT ###
             ########################
 
+
+            # Seldonian performance
+            for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                this_seldonian_dict = seldonian_dict[seldonian_model]
+                seldonian_color = plot_colormap(seldonian_i)
+                df_seldonian_passed = this_seldonian_dict["df_seldonian_passed"]
+                mean_performance = df_seldonian_passed.groupby("data_frac").mean()[
+                    "performance"
+                ].to_numpy()
+                std_performance = df_seldonian_passed.groupby("data_frac").std()[
+                    "performance"
+                ].to_numpy()
+                n_passed = df_seldonian_passed.groupby("data_frac").count()[
+                    "performance"
+                ].to_numpy()
+                ste_performance = std_performance / np.sqrt(n_passed)
+                X_passed_seldonian = this_seldonian_dict["X_passed"].to_numpy()
+                (pl,) = ax_performance.plot(
+                    X_passed_seldonian,
+                    mean_performance,
+                    color=seldonian_color,
+                    # linestyle="--",
+                    linestyle="-",
+                )
+                if constraint_index == 0:
+                    legend_handles.append(pl)
+                    if seldonian_model in model_label_dict:
+                        legend_labels.append(model_label_dict[seldonian_model])
+                    else:
+                        legend_labels.append(seldonian_model)
+
+                ax_performance.scatter(
+                    X_passed_seldonian,
+                    mean_performance,
+                    color=seldonian_color,
+                    s=marker_size,
+                    marker="o",
+                    zorder=10
+                )
+                ax_performance.fill_between(
+                    X_passed_seldonian,
+                    mean_performance - ste_performance,
+                    mean_performance + ste_performance,
+                    color=seldonian_color,
+                    alpha=0.5,
+                    zorder=10
+                )
+            
             # Baseline performance
             for baseline_i, baseline in enumerate(baselines):
                 baseline_color = plot_colormap(
@@ -347,56 +402,50 @@ class PlotGenerator:
                     color=baseline_color,
                     alpha=0.5,
                 )
-
-            # Seldonian performance
-            for seldonian_i, seldonian_model in enumerate(seldonian_models):
-                this_seldonian_dict = seldonian_dict[seldonian_model]
-                seldonian_color = plot_colormap(seldonian_i)
-                df_seldonian_passed = this_seldonian_dict["df_seldonian_passed"]
-                mean_performance = df_seldonian_passed.groupby("data_frac").mean()[
-                    "performance"
-                ].to_numpy()
-                std_performance = df_seldonian_passed.groupby("data_frac").std()[
-                    "performance"
-                ].to_numpy()
-                n_passed = df_seldonian_passed.groupby("data_frac").count()[
-                    "performance"
-                ].to_numpy()
-                ste_performance = std_performance / np.sqrt(n_passed)
-                X_passed_seldonian = this_seldonian_dict["X_passed"].to_numpy()
-                (pl,) = ax_performance.plot(
-                    X_passed_seldonian,
-                    mean_performance,
-                    color=seldonian_color,
-                    linestyle="--",
-                )
-                if constraint_index == 0:
-                    legend_handles.append(pl)
-                    if seldonian_model in model_label_dict:
-                        legend_labels.append(model_label_dict[seldonian_model])
-                    else:
-                        legend_labels.append(seldonian_model)
-
-                ax_performance.scatter(
-                    X_passed_seldonian,
-                    mean_performance,
-                    color=seldonian_color,
-                    s=marker_size,
-                    marker="o",
-                )
-                ax_performance.fill_between(
-                    X_passed_seldonian,
-                    mean_performance - ste_performance,
-                    mean_performance + ste_performance,
-                    color=seldonian_color,
-                    alpha=0.5,
-                )
+           
             if performance_ylims:
                 ax_performance.set_ylim(*performance_ylims)
-            
             ##########################
             ### SOLUTION RATE PLOT ###
             ##########################
+
+            # Seldonian solution rate
+            for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                this_seldonian_dict = seldonian_dict[seldonian_model]
+                seldonian_color = plot_colormap(seldonian_i)
+                df_seldonian = this_seldonian_dict["df_seldonian"]
+                n_trials = df_seldonian["trial_i"].max() + 1
+                mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
+                std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
+                ste_sr = std_sr / np.sqrt(n_trials)
+
+                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
+
+                ax_sr.plot(
+                    X_all_seldonian,
+                    mean_sr,
+                    color=seldonian_color,
+                    # linestyle="--",
+                    linestyle="-",
+                    label="QSA",
+                    zorder=10
+                )
+                ax_sr.scatter(
+                    X_all_seldonian,
+                    mean_sr,
+                    color=seldonian_color,
+                    s=marker_size,
+                    marker="o",
+                    zorder=10
+                )
+                ax_sr.fill_between(
+                    X_all_seldonian,
+                    mean_sr - ste_sr,
+                    mean_sr + ste_sr,
+                    color=seldonian_color,
+                    alpha=0.5,
+                    zorder=10
+                )
 
             # Plot baseline solution rate
             # (sometimes it doesn't return a solution due to not having enough training data
@@ -430,45 +479,56 @@ class PlotGenerator:
                     alpha=0.5,
                 )
 
-            # Seldonian solution rate
-            for seldonian_i, seldonian_model in enumerate(seldonian_models):
-                this_seldonian_dict = seldonian_dict[seldonian_model]
-                seldonian_color = plot_colormap(seldonian_i)
-                df_seldonian = this_seldonian_dict["df_seldonian"]
-                n_trials = df_seldonian["trial_i"].max() + 1
-                mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
-                std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
-                ste_sr = std_sr / np.sqrt(n_trials)
-
-                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
-
-                ax_sr.plot(
-                    X_all_seldonian,
-                    mean_sr,
-                    color=seldonian_color,
-                    linestyle="--",
-                    label="QSA",
-                )
-                ax_sr.scatter(
-                    X_all_seldonian,
-                    mean_sr,
-                    color=seldonian_color,
-                    s=marker_size,
-                    marker="o",
-                )
-                ax_sr.fill_between(
-                    X_all_seldonian,
-                    mean_sr - ste_sr,
-                    mean_sr + ste_sr,
-                    color=seldonian_color,
-                    alpha=0.5,
-                )
-
             ax_sr.set_ylim(-0.05, 1.05)
 
             ##########################
             ### FAILURE RATE PLOT ###
             ##########################
+
+            # Seldonian failure rate
+            for seldonian_i, seldonian_model in enumerate(seldonian_models):
+                this_seldonian_dict = seldonian_dict[seldonian_model]
+                seldonian_color = plot_colormap(seldonian_i)
+                df_seldonian = this_seldonian_dict["df_seldonian"]
+                n_trials = df_seldonian["trial_i"].max() + 1
+
+                gstr_failed = 'g' + str(constraint_num) + '_failed'
+
+                mean_fr = df_seldonian.groupby("data_frac").mean()[
+                    gstr_failed].to_numpy()
+                # Need to groupby data frac
+                std_fr = df_seldonian.groupby("data_frac").std()[
+                    gstr_failed].to_numpy()
+
+                ste_fr = std_fr / np.sqrt(n_trials)
+
+                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
+
+                ax_fr.plot(
+                    X_all_seldonian,
+                    mean_fr,
+                    color=seldonian_color,
+                    # linestyle="--",
+                    linestyle="-",
+                    label="QSA",
+                    zorder=10
+                )
+                ax_fr.fill_between(
+                    X_all_seldonian,
+                    mean_fr - ste_fr,
+                    mean_fr + ste_fr,
+                    color=seldonian_color,
+                    alpha=0.5,
+                    zorder=10
+                )
+                ax_fr.scatter(
+                    X_all_seldonian,
+                    mean_fr,
+                    color=seldonian_color,
+                    s=marker_size,
+                    marker="o",
+                    zorder=10
+                )
 
             # Baseline failure rate
             for baseline_i, baseline in enumerate(baselines):
@@ -514,62 +574,22 @@ class PlotGenerator:
                     alpha=0.5,
                 )
 
-            # Seldonian failure rate
-            for seldonian_i, seldonian_model in enumerate(seldonian_models):
-                this_seldonian_dict = seldonian_dict[seldonian_model]
-                seldonian_color = plot_colormap(seldonian_i)
-                df_seldonian = this_seldonian_dict["df_seldonian"]
-                n_trials = df_seldonian["trial_i"].max() + 1
-
-                gstr_failed = 'g' + str(constraint_num) + '_failed'
-
-                mean_fr = df_seldonian.groupby("data_frac").mean()[
-                    gstr_failed].to_numpy()
-                # Need to groupby data frac
-                std_fr = df_seldonian.groupby("data_frac").std()[
-                    gstr_failed].to_numpy()
-
-                ste_fr = std_fr / np.sqrt(n_trials)
-
-                X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
-
-                ax_fr.plot(
-                    X_all_seldonian,
-                    mean_fr,
-                    color=seldonian_color,
-                    linestyle="--",
-                    label="QSA",
-                )
-                ax_fr.fill_between(
-                    X_all_seldonian,
-                    mean_fr - ste_fr,
-                    mean_fr + ste_fr,
-                    color=seldonian_color,
-                    alpha=0.5,
-                )
-                ax_fr.scatter(
-                    X_all_seldonian,
-                    mean_fr,
-                    color=seldonian_color,
-                    s=marker_size,
-                    marker="o",
-                )
+            ax_fr.set_ylim(-0.05, 1.05)
+            if show_confidence_level:
                 ax_fr.axhline(
                     y=delta, color="k", linestyle="--", label=f"delta={delta}"
                 )
-            ax_fr.set_ylim(-0.05, 1.05)
-
         plt.tight_layout()
 
         if include_legend:
             fig.subplots_adjust(bottom=0.25)
-            ncol = 4
             fig.legend(
-                legend_handles[::-1],
-                legend_labels[::-1],
+                legend_handles,
+                legend_labels,
                 bbox_to_anchor=(0.5, 0.15),
                 loc="upper center",
-                ncol=ncol,
+                ncol=ncols_legend,
+                fontsize=legend_fontsize,
             )
 
         if savename:
