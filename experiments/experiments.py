@@ -532,7 +532,6 @@ class SeldonianExperiment(Experiment):
         try:
             SA = SeldonianAlgorithm(spec_for_exp)
             passed_safety, solution = SA.run(write_cs_logfile=verbose, debug=verbose)
-
         except (ValueError, ZeroDivisionError):
             passed_safety = False
             solution = "NSF"
@@ -585,7 +584,7 @@ class SeldonianExperiment(Experiment):
                     perf_eval_kwargs["model"] = model
                     perf_eval_kwargs[
                         "hyperparameter_and_setting_dict"
-                    ] = hyperparameter_and_setting_dict
+                    ] = kwargs["hyperparameter_and_setting_dict"]
                     episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
 
                 if verbose:

@@ -987,18 +987,28 @@ class RLPlotGenerator(PlotGenerator):
         if self.datagen_method == "generate_episodes":
             # generate full-size datasets for each trial so that
             # we can reference them for each data_frac
+            try:
+                n_workers_for_episode_generation = self.hyperparameter_and_setting_dict["n_workers_for_episode_generation"]
+            except:
+                n_workers_for_episode_generation = self.n_workers
             save_dir = os.path.join(self.results_dir, "regenerated_datasets")
             os.makedirs(save_dir, exist_ok=True)
             print("generating new episodes for each trial")
             for trial_i in range(self.n_trials):
-                print(f"Trial: {trial_i}")
+                print(f"Trial: {trial_i+1}/{self.n_trials}")
                 savename = os.path.join(
                     save_dir, f"regenerated_data_trial{trial_i}.pkl"
                 )
+                print(savename)
                 if not os.path.exists(savename):
-                    episodes, agent = run_trial(
-                        self.hyperparameter_and_setting_dict, parallel=False
-                    )
+                    if n_workers_for_episode_generation > 1:
+                        episodes = run_trial(
+                            self.hyperparameter_and_setting_dict, parallel=True, n_workers=n_workers_for_episode_generation,
+                        )
+                    else:
+                        episodes = run_trial(
+                            self.hyperparameter_and_setting_dict, parallel=False
+                        )
                     # Save episodes
                     save_pickle(savename, episodes, verbose=True)
                 else:
