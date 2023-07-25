@@ -322,14 +322,22 @@ class PlotGenerator:
                 std_performance = df_seldonian_passed.groupby("data_frac").std()[
                     "performance"
                 ].to_numpy()
+
                 n_passed = df_seldonian_passed.groupby("data_frac").count()[
                     "performance"
                 ].to_numpy()
                 ste_performance = std_performance / np.sqrt(n_passed)
+                # Only show if 2 or more passed. Otherwise std is not defined.
+                gt1_mask = n_passed > 1
+                mean_performance_masked = mean_performance[gt1_mask]
+                std_performance_masked = std_performance[gt1_mask]
+                ste_performance_masked = ste_performance[gt1_mask]
+
                 X_passed_seldonian = this_seldonian_dict["X_passed"].to_numpy()
+                X_passed_seldonian_masked = X_passed_seldonian[gt1_mask]
                 (pl,) = ax_performance.plot(
-                    X_passed_seldonian,
-                    mean_performance,
+                    X_passed_seldonian_masked,
+                    mean_performance_masked,
                     color=seldonian_color,
                     # linestyle="--",
                     linestyle="-",
@@ -342,17 +350,17 @@ class PlotGenerator:
                         legend_labels.append(seldonian_model)
 
                 ax_performance.scatter(
-                    X_passed_seldonian,
-                    mean_performance,
+                    X_passed_seldonian_masked,
+                    mean_performance_masked,
                     color=seldonian_color,
                     s=marker_size,
                     marker="o",
                     zorder=10
                 )
                 ax_performance.fill_between(
-                    X_passed_seldonian,
-                    mean_performance - ste_performance,
-                    mean_performance + ste_performance,
+                    X_passed_seldonian_masked,
+                    mean_performance_masked - ste_performance_masked,
+                    mean_performance_masked + ste_performance_masked,
                     color=seldonian_color,
                     alpha=0.5,
                     zorder=10
@@ -376,9 +384,18 @@ class PlotGenerator:
                 ]
                 baseline_ste_performance = baseline_std_performance / np.sqrt(n_trials)
                 X_valid_baseline = this_baseline_dict["X_valid"]
+                n_valid = df_baseline_valid.groupby("data_frac").count()[
+                     "performance"
+                 ].to_numpy()
+                # Only show if 2 or more passed. Otherwise std is not defined.
+                gt1_mask = n_valid > 1
+                baseline_mean_performance_masked = baseline_mean_performance[gt1_mask]
+                baseline_std_performance_masked = baseline_std_performance[gt1_mask]
+                baseline_ste_performance_masked = baseline_ste_performance[gt1_mask]
+                X_valid_baseline_masked = X_valid_baseline[gt1_mask]
                 (pl,) = ax_performance.plot(
-                    X_valid_baseline.to_numpy(),
-                    baseline_mean_performance.to_numpy(),
+                    X_valid_baseline_masked.to_numpy(),
+                    baseline_mean_performance_masked.to_numpy(),
                     color=baseline_color,
                     label=baseline,
                 )
@@ -389,16 +406,16 @@ class PlotGenerator:
                     else:
                         legend_labels.append(baseline)
                 ax_performance.scatter(
-                    X_valid_baseline,
-                    baseline_mean_performance,
+                    X_valid_baseline_masked,
+                    baseline_mean_performance_masked,
                     color=baseline_color,
                     s=marker_size,
                     marker=marker_list[baseline_i],
                 )
                 ax_performance.fill_between(
-                    X_valid_baseline,
-                    baseline_mean_performance - baseline_ste_performance,
-                    baseline_mean_performance + baseline_ste_performance,
+                    X_valid_baseline_masked,
+                    baseline_mean_performance_masked - baseline_ste_performance_masked,
+                    baseline_mean_performance_masked + baseline_ste_performance_masked,
                     color=baseline_color,
                     alpha=0.5,
                 )
