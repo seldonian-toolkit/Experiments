@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Overview &#8212; Seldonian Experiments alpha documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=bc8d421b" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=3d6c492d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -59,7 +59,7 @@
 </section>
 <section id="plot-generator">
 <h2>Plot generator<a class="headerlink" href="#plot-generator" title="Permalink to this heading">¶</a></h2>
-<p>Depending on the regime of your problem, i.e., supervised learning or reinforcement learning (RL), the object used to produce the Three Plots is either <a class="reference internal" href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator" title="experiments.generate_plots.SupervisedPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code></a> or <a class="reference internal" href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator" title="experiments.generate_plots.RLPlotGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code></a>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
+<p>Depending on the regime of your problem, i.e., supervised learning or reinforcement learning (RL), the object used to produce the Three Plots is either <code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedPlotGenerator</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">RLPlotGenerator</span></code>. While the inputs for both of these classes are described in the API documentation, we will describe their inputs in more detail here.</p>
 <p>Regardless of regime, the following inputs are required:</p>
 <section id="spec-object">
 <h3>Spec object<a class="headerlink" href="#spec-object" title="Permalink to this heading">¶</a></h3>
@@ -121,7 +121,7 @@
 </section>
 <section id="baselines">
 <h2>Baselines<a class="headerlink" href="#baselines" title="Permalink to this heading">¶</a></h2>
-<p>Often one wants to evaluate the accuracy, solution rate and failure rate of their Seldonian algorithm against that of other machine learning models. In this library, we call all of these other models baselines. We created the <a class="reference internal" href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment" title="experiments.experiments.BaselineExperiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaselineExperiment</span></code></a> class to make it easy for developers to easily add their own baseline models. We added several example baselines already, including logistic regression and a random classifier which predicts the positive class with <span class="math notranslate nohighlight">\(p=0.5\)</span> every time. For example, to run the same experiment above including a baseline logistic regression experiment we would simply add one line to the code block above, like:</p>
+<p>Often one wants to evaluate the accuracy, solution rate and failure rate of their Seldonian algorithm against that of other machine learning models. In this library, we call all of these other models baselines. We created the <code class="xref py py-class docutils literal notranslate"><span class="pre">BaselineExperiment</span></code> class to make it easy for developers to easily add their own baseline models. We added several example baselines already, including logistic regression and a random classifier which predicts the positive class with <span class="math notranslate nohighlight">\(p=0.5\)</span> every time. For example, to run the same experiment above including a baseline logistic regression experiment we would simply add one line to the code block above, like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_generator</span> <span class="o">=</span> <span class="n">SupervisedPlotGenerator</span><span class="p">(</span>
         <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span>
         <span class="n">n_trials</span><span class="o">=</span><span class="n">n_trials</span><span class="p">,</span>
@@ -349,7 +349,7 @@
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
