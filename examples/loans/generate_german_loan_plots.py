@@ -33,11 +33,11 @@ if __name__ == "__main__":
 	fairlearn_eval_method = 'two-groups' # the epsilon used to evaluate g, needs to be same as epsilon in our definition
 	fairlearn_epsilons_constraint = [0.01,0.1,0.9,1.0] # the epsilons used in the fitting constraint
 	performance_metric = 'Log loss'
-	n_trials = 20
+	n_trials = 5
 	data_fracs = np.logspace(-3,0,15)
 	n_workers = 6
 	verbose=False
-	results_dir = f'../../results/loan_{constraint_name}_seldo_random_forest'
+	results_dir = f'../../results/loan_{constraint_name}_debug_2023Jul20'
 	os.makedirs(results_dir,exist_ok=True)
 
 	plot_savename = os.path.join(results_dir,f'{constraint_name}_{performance_metric}.png')

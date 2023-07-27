@@ -214,7 +214,7 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	spec = gridworld_spec(constraint_strs,deltas)
 	spec.optimization_hyperparams['num_iters'] = 10
 	n_trials = 2
-	data_fracs = [0.01,0.1]
+	data_fracs = [0.05,0.1]
 	datagen_method="generate_episodes"
 	perf_eval_fn = generate_episodes_and_calc_J
 	results_dir = "./tests/static/results"
@@ -271,10 +271,10 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	print("df:")
 	print(df)
 	
-	assert dps[0] == 0.01
+	assert dps[0] == 0.05
 	assert trial_is[0] == 0
 
-	assert dps[1] == 0.01
+	assert dps[1] == 0.05
 	assert trial_is[1] == 1
 
 	assert dps[2] == 0.1
