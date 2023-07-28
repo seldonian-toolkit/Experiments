@@ -1,10 +1,11 @@
 from sklearn.tree import DecisionTreeClassifier
 
 class DecisionTreeClassifierBaseline():
-    def __init__(self):
+    def __init__(self,max_depth=None):
         """Implements a random forest classifier baseline for 
         a binary classification task"""
         self.model_name = "decision_tree"
+        self.max_depth = max_depth
 
     def train(self,X,Y):
         """Instantiate a new model instance and train (fit) 
@@ -14,7 +15,7 @@ class DecisionTreeClassifierBaseline():
         :param y: labels
         :type y: 1D np.ndarray
         """
-        self.trained_model = DecisionTreeClassifier()
+        self.trained_model = DecisionTreeClassifier(max_depth=self.max_depth)
         self.trained_model.fit(X,Y) # parent method
         return None 
 
