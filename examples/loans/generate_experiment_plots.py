@@ -24,8 +24,8 @@ def loans_example(
     results_base_dir,
     constraints=[
         "disparate_impact",
-        "disparate_impact_fairlearndef",
-        "equalized_odds",
+        # "disparate_impact_fairlearndef",
+        # "equalized_odds",
     ],
     n_trials=50,
     data_fracs=np.logspace(-3, 0, 15),
@@ -33,6 +33,7 @@ def loans_example(
     include_fairlearn_models=True,
     performance_metric="log_loss",
     n_workers=1,
+    hyperparam_select_spec=None,
 ):
     if performance_metric != "log_loss":
         raise NotImplementedError(
@@ -91,6 +92,7 @@ def loans_example(
             perf_eval_fn=perf_eval_fn,
             n_workers=n_workers,
             datagen_method="resample",
+            hyperparam_select_spec=hyperparam_select_spec,
             verbose=False,
             baselines=baselines,
             include_fairlearn_models=include_fairlearn_models,
@@ -103,8 +105,8 @@ def loans_example(
         )
 
 
-# Run the loans example with different fractions of data in safety
-def ds_loans_example(
+# Run the loans example with all different fractions of data in safety
+def loans_example_all_safety_frac(
     spec_rootdir,
     results_base_dir,
     constraints=[
@@ -126,9 +128,10 @@ def ds_loans_example(
             "Performance metric must be 'log_loss' for this example"
         )
 
-    for frac_data_in_safety in all_frac_data_in_safety:
+    for frac_data_in_safety in all_frac_data_in_safety: # Run trials for each safety frac.
         print(frac_data_in_safety)
-        for constraint in constraints:
+
+        for constraint in constraints: # Run trials for each type of constraint.
             print(constraint)
             if constraint in ["disparate_impact", "disparate_impact_fairlearndef"]:
                 epsilon = 0.9
@@ -143,6 +146,7 @@ def ds_loans_example(
                 fairlearn_constraint_name = constraint
             
 
+            # All trials for the specific trial
             specfile = os.path.join(spec_rootdir, f"loans_{constraint}_{epsilon}_spec.pkl")
             spec = load_pickle(specfile)
 

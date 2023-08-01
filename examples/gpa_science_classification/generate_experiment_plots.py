@@ -34,6 +34,7 @@ def gpa_example(
     include_fairlearn_models=True,
     performance_metric="accuracy",
     n_workers=1,
+    hyperparam_select_spec=None,
 ):
     if performance_metric == "accuracy":
         perf_eval_fn = deterministic_accuracy
@@ -85,6 +86,7 @@ def gpa_example(
             perf_eval_fn=perf_eval_fn,
             n_workers=n_workers,
             datagen_method="resample",
+            hyperparam_select_spec=hyperparam_select_spec,
             verbose=False,
             baselines=baselines,
             include_fairlearn_models=include_fairlearn_models,
@@ -98,7 +100,7 @@ def gpa_example(
 
 
 # Run the gpa example with different fractions of data in safety
-def ds_gpa_example(
+def gpa_example_all_safety_frac(
     spec_rootdir,
     results_base_dir,
     constraints=[

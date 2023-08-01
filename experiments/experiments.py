@@ -17,6 +17,7 @@ from sklearn.linear_model import LogisticRegression
 from seldonian.utils.io_utils import load_pickle
 from seldonian.dataset import SupervisedDataSet, RLDataSet
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
+from seldonian.hyperparam_search import HyperparamSearch
 from seldonian.spec import RLSpec
 from seldonian.models.models import (
     LinearRegressionModel,
@@ -442,6 +443,7 @@ class SeldonianExperiment(Experiment):
         :type trial_i: int
         """
         spec = kwargs["spec"]
+        hyperparam_select_spec = kwargs["hyperparam_select_spec"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
         perf_eval_fn = kwargs["perf_eval_fn"]
@@ -458,23 +460,15 @@ class SeldonianExperiment(Experiment):
                 "especially for small values of data_frac."
             )
             warnings.warn(warning_msg)
+
         regime = spec.dataset.regime
 
         trial_dir = os.path.join(self.results_dir, "qsa_results", "trial_data")
+        os.makedirs(trial_dir, exist_ok=True) 
 
         savename = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
-
-        if os.path.exists(savename):
-            if verbose:
-                print(
-                    f"Trial {trial_i} already run for "
-                    f"this data_frac: {data_frac}. Skipping this trial. "
-                )
-            return
-
-        os.makedirs(trial_dir, exist_ok=True)
 
         parse_trees = spec.parse_trees
         dataset = spec.dataset
@@ -534,6 +528,36 @@ class SeldonianExperiment(Experiment):
 
             spec_for_experiment = copy.deepcopy(spec)
             spec_for_experiment.dataset = dataset_for_experiment
+
+            # If hyperparam_select_spec is specified, do hyperparamter selection.
+            if hyperparam_select_spec is not None: # Run selection.
+                bootstrap_dir = os.path.join(
+                        self.results_dir, "all_bootstrap_info",
+                        f"bootstrap_info_{trial_i}_{data_frac:.4f}")
+                os.makedirs(bootstrap_dir, exist_ok=True)
+
+                # Estimate the best frac_data_in_safety.
+                HS = HyperparamSearch(
+                        spec_for_experiment,
+                        hyperparam_select_spec.all_frac_data_in_safety,
+                        bootstrap_dir)
+                (best_frac_data_in_safety, _, _, ran_new_bs_trials) = HS.find_best_hyperparams(
+                        n_bootstrap_trials=hyperparam_select_spec.n_bootstrap_trials,
+                        n_workers=hyperparam_select_spec.n_bootstrap_workers)
+
+                # Update the spec with the new selected best fraction in safety.
+                spec_for_experiment.frac_data_in_safety = best_frac_data_in_safety
+
+
+            if os.path.exists(savename): # Previous results exist.
+                # If no changes to frac_data_in_safety, then no need to update result.
+                if (hyperparam_select_spec is None) or not(ran_new_bs_trials): 
+                    if verbose:
+                        print(
+                            f"Trial {trial_i} already run for "
+                            f"this data_frac: {data_frac}. Skipping this trial. "
+                        )
+                    return
 
         elif regime == "reinforcement_learning":
             hyperparameter_and_setting_dict = kwargs["hyperparameter_and_setting_dict"]
