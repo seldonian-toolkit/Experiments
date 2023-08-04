@@ -10,7 +10,7 @@ from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 from matplotlib import style
 
-from seldonian.utils.io_utils import save_pickle
+from seldonian.utils.io_utils import save_pickle, load_pickle
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .utils import generate_resampled_datasets
@@ -30,7 +30,6 @@ class PlotGenerator:
         perf_eval_fn,
         results_dir,
         n_workers,
-        allsafetyfrac_results_dir=None,
         hyperparam_select_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
@@ -104,7 +103,6 @@ class PlotGenerator:
         self.perf_eval_fn = perf_eval_fn
         self.results_dir = results_dir
         self.n_workers = n_workers
-        self.allsafetyfrac_results_dir = allsafetyfrac_results_dir
         self.hyperparam_select_spec = hyperparam_select_spec
         self.constraint_eval_fns = constraint_eval_fns
         self.perf_eval_kwargs = perf_eval_kwargs
@@ -560,7 +558,28 @@ class PlotGenerator:
         else:
             plt.show()
 
-    def make_allsafetyfrac_probpass_plots(
+    def get_selected_frac_data_in_safety(
+            self
+    ):
+        """
+        For each trial and datafrac, gets information about the selected safety_frac used.
+        """
+        selected_rho_dict = dict()
+
+        for data_frac in self.data_fracs:
+            selected_rho_dict[data_frac] = []
+            for trial_i in range(self.n_trials):
+                all_bootstrap_est_path = os.path.join(
+                        self.results_dir, "all_bootstrap_info", 
+                        f"bootstrap_info_{trial_i}_{data_frac:.4f}", "all_bootstrap_est.csv")
+                bootstrap_est_df = pd.read_csv(all_bootstrap_est_path)
+                selected_rho_dict[data_frac].append(
+                        min(bootstrap_est_df["frac_data_in_safety"]))
+
+        return selected_rho_dict
+
+
+    def make_selectedsafetyfrac_plot(
         self,
         model_label_dict={},
         fontsize=12,
@@ -577,29 +596,50 @@ class PlotGenerator:
         include_legend=True,
         savename=None,
     ):
-        """Make the three plots from results files saved to
-        self.results_dir
-
-        :param model_label_dict: An optional dictionary where keys
-                are model names and values are the names you want
-                shown in the legend.
-        :type model_label_dict: int
-
-        :param fontsize: The font size to use for the axis labels
-        :type fontsize: int
-
-        :param legend_fontsize: The font size to use for text
-                in the legend
-        :type legend_fontsize: int
-
-        :param performance_label: The y axis label on the performance
-                plot you want to use.
-        :type performance_label: str, defaults to "accuracy"
-
-        :param savename: If not None, the filename path to which the plot
-                will be saved on disk.
-        :type savename: str, defaults to None
         """
+        Plot the selected rho values across dataset size.
+        """
+        plt.style.use("bmh")
+        # plt.style.use('grayscale')
+        regime = self.spec.dataset.regime
+        tot_data_size = self.spec.dataset.num_datapoints
+
+        # Read in constraints
+        parse_trees = self.spec.parse_trees
+
+        constraint_dict = {}
+        for pt_ii, pt in enumerate(parse_trees):
+            delta = pt.delta
+            constraint_str = pt.constraint_str
+            constraint_dict[f"constraint_{pt_ii}"] = {
+                "delta": delta,
+                "constraint_str": constraint_str,
+            }
+
+        constraints = list(constraint_dict.keys())
+
+        selected_rho_dict = self.get_selected_frac_data_in_safety()
+        print(selected_rho_dict)
+
+
+    def make_allsafetyfrac_probpass_plots(
+        self,
+        all_fixed_rho_plot_data_path=None,
+        model_label_dict={},
+        fontsize=12,
+        legend_fontsize=8,
+        performance_label="accuracy",
+        performance_xscale="linear",
+        performance_yscale="linear",
+        performance_xlims=[],
+        performance_ylims=[],
+        marker_size=20,
+        save_format="pdf",
+        show_title=True,
+        custom_title=None,
+        include_legend=True,
+        savename=None,
+    ):
         plt.style.use("bmh")
         # plt.style.use('grayscale')
         regime = self.spec.dataset.regime
@@ -633,51 +673,10 @@ class PlotGenerator:
             print("No results for Seldonian models or baselines found ")
             return
 
-
-        # FIXED SAFETY FRAC RESULTS SETUP
-        if self.allsafetyfrac_results_dir is not None:
-            # Figure out what all_rho experiments we have from subfolders in results_dir
-            subfolders = [os.path.basename(f) for f in os.scandir(self.allsafetyfrac_results_dir) 
-                    if f.is_dir()]
-            safety_folders = [x for x in subfolders if x.startswith("safety")]
-            safety_subfolders = [os.path.basename(f) for f in os.scandir(os.path.join(self.allsafetyfrac_results_dir, safety_folders[0])) if f.is_dir()]
-            all_models = [x.split("_results")[0] for x in safety_subfolders if x.endswith("_results")]
-            all_safetyfrac = sorted([float("." + x.split("safety")[1]) for x in safety_folders])
-            seldonian_models = list(set(all_models).intersection(seldonian_model_set))
-            baselines = sorted(list(set(all_models).difference(seldonian_model_set)))
-            if not (seldonian_models or baselines):
-                print("No results for Seldonian models or baselines found ")
-                return
-
-            safetyfrac_dict = {}
-            for safetyfrac in all_safetyfrac:
-                safetyfrac_str = '{0:.2f}'.format(safetyfrac).split(".")[1]
-                safetyfrac_dict[safetyfrac] = {}
-                for seldonian_model in seldonian_models: 
-                    safetyfrac_dict[safetyfrac][seldonian_model] = {}
-                    # TODO: Update this to have the same naming convention as the new data.
-                    savename_safetyfrac = os.path.join(
-                        self.allsafetyfrac_results_dir,
-                        f"safety{safetyfrac_str}",
-                        f"{seldonian_model}_results",
-                        f"{seldonian_model}_results.csv",
-                    )
-
-                    df_safetyfrac = pd.read_csv(savename_safetyfrac)
-                    passed_mask = df_safetyfrac["passed_safety"] == True
-                    df_safetyfrac_passed = df_safetyfrac[passed_mask]
-                    # Get the list of all data_fracs
-                    X_all = df_safetyfrac.groupby("data_frac").mean().index * tot_data_size
-                    # Get the list of data_fracs for which there is at least one trial that passed the safety test
-                    X_passed = (
-                        df_safetyfrac_passed.groupby("data_frac").mean().index * tot_data_size
-                    )
-                    safetyfrac_dict[safetyfrac][seldonian_model]["df_safetyfrac"] = df_safetyfrac.copy()
-                    safetyfrac_dict[safetyfrac][seldonian_model][
-                        "df_safetyfrac_passed"
-                    ] = df_safetyfrac_passed.copy()
-                    safetyfrac_dict[safetyfrac][seldonian_model]["X_all"] = X_all
-                    safetyfrac_dict[safetyfrac][seldonian_model]["X_passed"] = X_passed
+        # Load data for plotting fixed rho performance plots.
+        if all_fixed_rho_plot_data_path is not None:
+            safetyfrac_dict = load_pickle(all_fixed_rho_plot_data_path)
+            all_safetyfrac = safetyfrac_dict.keys()
 
         # SELECT SAFETY FRAC RESULTS SETUP
         seldonian_dict = {}
@@ -690,6 +689,7 @@ class PlotGenerator:
             )
 
             df_seldonian = pd.read_csv(savename_seldonian)
+            print(df_seldonian)
             passed_mask = df_seldonian["passed_safety"] == True
             df_seldonian_passed = df_seldonian[passed_mask]
             # Get the list of all data_fracs
@@ -726,11 +726,11 @@ class PlotGenerator:
             ##########################
             ### SOLUTION RATE PLOT ###
             ##########################
+            if all_fixed_rho_plot_data_path is not None:
+                for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
 
-            for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
-
-                for seldonian_i, seldonian_model in enumerate(seldonian_models):
-                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac][seldonian_model]
+                    # Fixed rho plots.
+                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac]
                     safetyfrac_color = plot_colormap(safetyfrac_i)
                     df_safetyfrac = this_safetyfrac_dict["df_safetyfrac"]
                     n_trials = df_safetyfrac["trial_i"].max() + 1
@@ -745,7 +745,7 @@ class PlotGenerator:
                         mean_sr,
                         color=safetyfrac_color,
                         linestyle="--",
-                        label=f"{safetyfrac:.1f}", # TODO: Check that this is what we want.
+                        label=f"{safetyfrac:.1f}",
                     )
                     ax_sr.scatter(
                         X_all_safetyfrac,
@@ -762,9 +762,11 @@ class PlotGenerator:
                         alpha=0.2,
                     )
 
+            # These are the selected models
+            color_start = len(all_safetyfrac) if all_fixed_rho_plot_data_path is not None else 0
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
-                seldonian_color = plot_colormap(seldonian_i + len(all_safetyfrac))
+                seldonian_color = plot_colormap(seldonian_i + color_start)
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
                 mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"]
@@ -778,7 +780,7 @@ class PlotGenerator:
                     mean_sr,
                     color=seldonian_color,
                     linestyle="--",
-                    label="QSA",
+                    label="select rho",
                 )
                 ax_sr.scatter(
                     X_all_seldonian,
@@ -824,7 +826,6 @@ class SupervisedPlotGenerator(PlotGenerator):
         perf_eval_fn,
         results_dir,
         n_workers,
-        allsafetyfrac_results_dir=None,
         hyperparam_select_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
@@ -896,7 +897,6 @@ class SupervisedPlotGenerator(PlotGenerator):
             perf_eval_fn=perf_eval_fn,
             results_dir=results_dir,
             n_workers=n_workers,
-            allsafetyfrac_results_dir=allsafetyfrac_results_dir,
             hyperparam_select_spec=hyperparam_select_spec,
             constraint_eval_fns=constraint_eval_fns,
             perf_eval_kwargs=perf_eval_kwargs,
