@@ -125,26 +125,55 @@ class PlotGenerator:
         include_legend=True,
         savename=None,
     ):
-        """Make the three plots from results files saved to
-        self.results_dir
+        """Make the three plots of the experiment. Looks up any
+        experiments run in self.results_dir and plots them on the 
+        same three plots. 
 
         :param model_label_dict: An optional dictionary where keys
                 are model names and values are the names you want
-                shown in the legend.
+                shown in the legend. Note that if you specify this 
+                dict, then only the models in this dictionary 
+                will appear in the legend, and they will show up in the legend
+                in the order that you specify them in the dict.
         :type model_label_dict: int
-
+        :param ignore_models: Do not plot any models that appear in this list. 
+        :type ignore_models: List
         :param fontsize: The font size to use for the axis labels
         :type fontsize: int
-
         :param legend_fontsize: The font size to use for text
                 in the legend
         :type legend_fontsize: int
-
+        :param ncols_legend: The number of columns to use in the legend
+        :type ncols_legend: int, defaults to 3
         :param performance_label: The y axis label on the performance
-                plot you want to use.
+                plot (left plot) you want to use.
         :type performance_label: str, defaults to "accuracy"
-
-        :param savename: If not None, the filename path to which the plot
+        :param sr_label: The y axis label on the solution rate 
+                plot (middle plot) you want to use.
+        :type sr_label: str, defaults to "Prob. of solution"
+        :param fr_label: The y axis label on the failure rate 
+                plot (right plot) you want to use.
+        :type fr_label: str, defaults to "Prob. of violation"
+        :param performance_yscale: The y axis scaling, "log" or "linear"
+        :param performance_ylims: The y limits of the performance plot. 
+            Default is to use matplotlib's automatic determination.
+        :param hoz_axis_label: What you want to show as the horizontal axis
+            label for all plots
+        :type hoz_axis_label: str, defaults to "Amount of data"
+        :param show_confidence_level: Whether to show the black dotted line for the value
+            of delta in the failure rate plot (right plot)
+        :type show_confidence_level: Bool
+        :param marker_size: The size of the points in each plots
+        :type marker_size: float
+        :param save_format: The file type for the saved plot
+        :type save_format: str, defaults to "pdf"
+        :param show_title: Whether to show the title at the top of the figure
+        :type show_title: bool
+        :param custom_title: A custom title 
+        :type custom_title: str, defaults to None
+        :param include_legend: Whether to include the legend
+        :type include_legend: bool, defaults to True
+        :param savename: If not None, the filename to which the figure
                 will be saved on disk.
         :type savename: str, defaults to None
         """
@@ -599,6 +628,19 @@ class PlotGenerator:
         plt.tight_layout()
 
         if include_legend:
+            if model_label_dict:
+                reordered_legend_labels = []
+                reordered_legend_handles = []
+                for name in model_label_dict:
+                    display_name = model_label_dict[name]
+                    if display_name in legend_labels:
+                        leg_index = legend_labels.index(display_name)
+                        leg_name = legend_labels[leg_index]
+                        leg_handle = legend_handles[leg_index]
+                        reordered_legend_labels.append(leg_name)
+                        reordered_legend_handles.append(leg_handle)
+                legend_handles = reordered_legend_handles
+                legend_labels = reordered_legend_labels
             fig.subplots_adjust(bottom=0.25)
             fig.legend(
                 legend_handles,

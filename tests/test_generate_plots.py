@@ -302,3 +302,52 @@ def test_RL_plot_generator(gridworld_spec,experiment):
 	# Make sure it was saved
 	assert os.path.exists(savename)
 	
+@pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
+def test_no_trials_pass_safety(gpa_regression_spec,experiment):
+	np.random.seed(42)
+	constraint_strs = ['Mean_Squared_Error - 3.0']
+	deltas = [0.05]
+	spec = gpa_regression_spec(constraint_strs,deltas)
+	n_trials = 5
+	data_fracs = [0.1,0.2,0.3]
+	datagen_method="resample"
+	perf_eval_fn = MSE
+	results_dir = "./static/test_results"
+	n_workers = 1
+	# Get performance evaluation kwargs set up
+	# Use entire original dataset as ground truth for test set
+	dataset = spec.dataset
+
+	test_features = dataset.features
+	test_labels = dataset.labels
+
+	# Define any additional keyword arguments (besides theta)
+	# of the performance evaluation function,
+	# which in our case is accuracy
+	perf_eval_kwargs = {
+		'X':test_features,
+		'y':test_labels,
+		}
+	
+	spg = SupervisedPlotGenerator(
+		spec=spec,
+		n_trials=n_trials,
+		data_fracs=data_fracs,
+		datagen_method=datagen_method,
+		perf_eval_fn=perf_eval_fn,
+		results_dir=results_dir,
+		n_workers=n_workers,
+		constraint_eval_fns=[],
+		perf_eval_kwargs=perf_eval_kwargs,
+		constraint_eval_kwargs={})
+	
+	# Seldonian experiment
+
+	# spg.run_seldonian_experiment(verbose=True)
+
+	## Make sure results file was created
+	results_file = os.path.join(results_dir,"qsa_results/qsa_results.csv")
+	assert os.path.exists(results_file)
+
+	spg.make_plots(fontsize=12,legend_fontsize=12,
+		performance_label='MSE')
