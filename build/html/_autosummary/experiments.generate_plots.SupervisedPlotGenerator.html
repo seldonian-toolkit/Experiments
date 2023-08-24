@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>experiments.generate_plots.SupervisedPlotGenerator &#8212; Seldonian Experiments alpha documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=bc8d421b" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=3d6c492d"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
@@ -93,20 +93,42 @@ for each data frac</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.make_plots">
 <span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_label_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_models</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Prob.</span> <span class="pre">of</span> <span class="pre">solution'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fr_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Prob.</span> <span class="pre">of</span> <span class="pre">violation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_ylims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hoz_axis_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Amount</span> <span class="pre">of</span> <span class="pre">data'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_confidence_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.make_plots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make the three plots from results files saved to
-self.results_dir</p>
+<dd><p>Make the three plots of the experiment. Looks up any
+experiments run in self.results_dir and plots them on the 
+same three plots.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model_label_dict</strong> (<em>int</em>) – An optional dictionary where keys
 are model names and values are the names you want
-shown in the legend.</p></li>
+shown in the legend. Note that if you specify this 
+dict, then only the models in this dictionary 
+will appear in the legend, and they will show up in the legend
+in the order that you specify them in the dict.</p></li>
+<li><p><strong>ignore_models</strong> (<em>List</em>) – Do not plot any models that appear in this list.</p></li>
 <li><p><strong>fontsize</strong> (<em>int</em>) – The font size to use for the axis labels</p></li>
 <li><p><strong>legend_fontsize</strong> (<em>int</em>) – The font size to use for text
 in the legend</p></li>
+<li><p><strong>ncols_legend</strong> (<em>int</em><em>, </em><em>defaults to 3</em>) – The number of columns to use in the legend</p></li>
 <li><p><strong>performance_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;accuracy&quot;</em>) – The y axis label on the performance
-plot you want to use.</p></li>
-<li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename path to which the plot
+plot (left plot) you want to use.</p></li>
+<li><p><strong>sr_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;Prob.</em><em> of </em><em>solution&quot;</em>) – The y axis label on the solution rate 
+plot (middle plot) you want to use.</p></li>
+<li><p><strong>fr_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;Prob.</em><em> of </em><em>violation&quot;</em>) – The y axis label on the failure rate 
+plot (right plot) you want to use.</p></li>
+<li><p><strong>performance_yscale</strong> – The y axis scaling, “log” or “linear”</p></li>
+<li><p><strong>performance_ylims</strong> – The y limits of the performance plot. 
+Default is to use matplotlib’s automatic determination.</p></li>
+<li><p><strong>hoz_axis_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;Amount</em><em> of </em><em>data&quot;</em>) – What you want to show as the horizontal axis
+label for all plots</p></li>
+<li><p><strong>show_confidence_level</strong> (<em>Bool</em>) – Whether to show the black dotted line for the value
+of delta in the failure rate plot (right plot)</p></li>
+<li><p><strong>marker_size</strong> (<em>float</em>) – The size of the points in each plots</p></li>
+<li><p><strong>save_format</strong> (<em>str</em><em>, </em><em>defaults to &quot;pdf&quot;</em>) – The file type for the saved plot</p></li>
+<li><p><strong>show_title</strong> (<em>bool</em>) – Whether to show the title at the top of the figure</p></li>
+<li><p><strong>custom_title</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – A custom title</p></li>
+<li><p><strong>include_legend</strong> (<em>bool</em><em>, </em><em>defaults to True</em>) – Whether to include the legend</p></li>
+<li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename to which the figure
 will be saved on disk.</p></li>
 </ul>
 </dd>
@@ -261,7 +283,7 @@ while the Seldonian algorithms are running in each trial</p>
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

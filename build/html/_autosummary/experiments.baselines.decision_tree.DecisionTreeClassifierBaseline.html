@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>experiments.baselines.decision_tree.DecisionTreeClassifierBaseline &#8212; Seldonian Experiments alpha documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b3523f8e" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=bc8d421b" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=3d6c492d"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
@@ -35,13 +35,19 @@
 <h1>experiments.baselines.decision_tree.DecisionTreeClassifierBaseline<a class="headerlink" href="#experiments-baselines-decision-tree-decisiontreeclassifierbaseline" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DecisionTreeClassifierBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DecisionTreeClassifierBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dt_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a random forest classifier baseline for 
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dt_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a decision tree classifier baseline for 
 a binary classification task</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt_kwargs</strong> – Any keyword arguments that scikit-learn’s</p>
+</dd>
+</dl>
+<p>DecisionTreeClassifier takes.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -60,7 +66,7 @@ a binary classification task</p>
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the trained model to predict positive class probabilities
 theta isn’t used here because there are no fitted parameters 
-in random forests. 
+in decision trees. 
 :param theta: Model weights, None in this case
 :param X: features
 :type X: 2D np.ndarray</p>
@@ -177,7 +183,7 @@ it to the training data, X,y
       &copy;2022, University of Massachusetts.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
