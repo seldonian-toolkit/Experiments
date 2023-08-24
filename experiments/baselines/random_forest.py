@@ -1,11 +1,11 @@
 from sklearn.ensemble import RandomForestClassifier
 
 class RandomForestClassifierBaseline():
-    def __init__(self,n_estimators=100):
+    def __init__(self,**rf_kwargs):
         """Implements a random forest classifier baseline for 
         a binary classification task"""
         self.model_name = "random_forest"
-        self.n_estimators = n_estimators
+        self.rf_kwargs = rf_kwargs
 
     def train(self,X,Y):
         """Instantiate a new model instance and train (fit) 
@@ -15,7 +15,7 @@ class RandomForestClassifierBaseline():
         :param y: labels
         :type y: 1D np.ndarray
         """
-        self.trained_model = RandomForestClassifier(n_estimators=self.n_estimators)
+        self.trained_model = RandomForestClassifier(**self.rf_kwargs)
         self.trained_model.fit(X,Y) # parent method
         return None 
 
