@@ -447,7 +447,7 @@ class SeldonianExperiment(Experiment):
         if n_workers == 1:
             for data_frac in data_fracs:
                 for trial_i in range(n_trials):
-                    self.run_QSA_trial(data_frac, trial_i, trial_kwargs)
+                    self.run_QSA_trial(data_frac, trial_i, **trial_kwargs)
 
         elif n_workers > 1:
             import itertools
