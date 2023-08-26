@@ -30,6 +30,7 @@ from .experiment_utils import (
     load_resampled_dataset,
     prep_feat_labels,
     setup_SA_spec_for_exp,
+    trial_arg_chunker
 )
 
 try:
@@ -430,32 +431,26 @@ class SeldonianExperiment(Experiment):
     def run_experiment(self, **kwargs):
         """Run the Seldonian experiment"""
         n_workers = kwargs["n_workers"]
-        partial_kwargs = {
+        self.trial_kwargs = {
             key: kwargs[key] for key in kwargs if key not in ["data_fracs", "n_trials"]
         }
 
-        # Pass partial_kwargs onto self.QSA()
-        helper = partial(self.run_QSA_trial, **partial_kwargs)
-
         data_fracs = kwargs["data_fracs"]
         n_trials = kwargs["n_trials"]
-        data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
-        trials_vector = np.array(
-            [x for y in range(len(data_fracs)) for x in range(n_trials)]
-        )
 
         if n_workers == 1:
-            for ii in range(len(data_fracs_vector)):
-                data_frac = data_fracs_vector[ii]
-                trial_i = trials_vector[ii]
-                helper(data_frac, trial_i)
+            for data_frac in data_fracs:
+                for trial_i in range(n_trials):
+                    self.run_QSA_trial(data_frac, trial_i, **self.trial_kwargs)
+
         elif n_workers > 1:
+            chunked_arg_list = trial_arg_chunker(data_fracs,n_trials,n_workers)
             with ProcessPoolExecutor(
                 max_workers=n_workers, mp_context=mp.get_context("fork")
             ) as ex:
                 results = tqdm(
-                    ex.map(helper, data_fracs_vector, trials_vector),
-                    total=len(data_fracs_vector),
+                    ex.map(self.run_trials_par, chunked_arg_list),
+                    total=len(chunked_arg_list),
                 )
                 for exc in results:
                     if exc:
@@ -464,6 +459,11 @@ class SeldonianExperiment(Experiment):
             raise ValueError(f"n_workers value of {n_workers} must be >=1 ")
 
         self.aggregate_results(**kwargs)
+
+    def run_trials_par(self, args_list, **kwargs):
+        for args in args_list:
+            data_frac,trial_i = args
+            self.run_QSA_trial(data_frac,trial_i,**self.trial_kwargs)
 
     def run_QSA_trial(self, data_frac, trial_i, **kwargs):
         """Run a trial of the quasi-Seldonian algorithm
@@ -474,6 +474,8 @@ class SeldonianExperiment(Experiment):
         :param trial_i: The index of the trial
         :type trial_i: int
         """
+        print(f"data_frac: {data_frac}, trial_i: {trial_i}")
+        print(f"kwargs: {kwargs}")
         spec = kwargs["spec"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
@@ -498,6 +500,7 @@ class SeldonianExperiment(Experiment):
         savename = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
+        print(f"Savename: {savename}")
 
         if os.path.exists(savename):
             if verbose:
