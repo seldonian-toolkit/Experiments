@@ -430,10 +430,16 @@ class SeldonianExperiment(Experiment):
 
     def run_experiment(self, **kwargs):
         """Run the Seldonian experiment"""
+
         n_workers = kwargs["n_workers"]
-        self.trial_kwargs = {
+        trial_kwargs = {
             key: kwargs[key] for key in kwargs if key not in ["data_fracs", "n_trials"]
         }
+        manager = mp.Manager()
+        shared_namespace = manager.Namespace()
+
+        # Store the trial_kwargs in the shared namespace
+        shared_namespace.trial_kwargs = trial_kwargs
 
         data_fracs = kwargs["data_fracs"]
         n_trials = kwargs["n_trials"]
@@ -441,15 +447,16 @@ class SeldonianExperiment(Experiment):
         if n_workers == 1:
             for data_frac in data_fracs:
                 for trial_i in range(n_trials):
-                    self.run_QSA_trial(data_frac, trial_i, **self.trial_kwargs)
+                    self.run_QSA_trial(data_frac, trial_i, trial_kwargs)
 
         elif n_workers > 1:
+            import itertools
             chunked_arg_list = trial_arg_chunker(data_fracs,n_trials,n_workers)
             with ProcessPoolExecutor(
                 max_workers=n_workers, mp_context=mp.get_context("fork")
             ) as ex:
                 results = tqdm(
-                    ex.map(self.run_trials_par, chunked_arg_list),
+                    ex.map(self.run_trials_par,chunked_arg_list,itertools.repeat(shared_namespace)),
                     total=len(chunked_arg_list),
                 )
                 for exc in results:
@@ -460,10 +467,10 @@ class SeldonianExperiment(Experiment):
 
         self.aggregate_results(**kwargs)
 
-    def run_trials_par(self, args_list, **kwargs):
+    def run_trials_par(self, args_list, shared_namespace):
         for args in args_list:
             data_frac,trial_i = args
-            self.run_QSA_trial(data_frac,trial_i,**self.trial_kwargs)
+            self.run_QSA_trial(data_frac,trial_i,**shared_namespace.trial_kwargs)
 
     def run_QSA_trial(self, data_frac, trial_i, **kwargs):
         """Run a trial of the quasi-Seldonian algorithm
