@@ -16,12 +16,16 @@ def perf_eval_fn(y_pred,y,**kwargs):
     performance_metric = kwargs['performance_metric']
     if performance_metric == 'accuracy':
         return accuracy_score(y,y_pred > 0.5)
-        
+   
+
+def initial_solution_fn(model,X,Y):
+    return model.fit(X,Y)
+
 def main():
     # Parameter setup
-    run_experiments = False
-    make_plots = True
-    save_plot = True
+    run_experiments = True
+    make_plots = False
+    save_plot = False
     include_legend = True
 
     model_label_dict = {
@@ -44,14 +48,14 @@ def main():
     data_fracs = np.logspace(-4,0,15)
     n_workers = 6
     # results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
-    results_dir = f'results/gpa_test_newbaselines'
+    results_dir = f'results/test_run'
     plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
     # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fa.png')
 
-    verbose=False
+    verbose=True
 
     # Load spec
-    specfile = f'../../../engine-repo-dev/examples/GPA_tutorial/{constraint_name}/spec.pkl'
+    specfile = f'gpa_{constraint_name}/spec.pkl'
     spec = load_pickle(specfile)
 
     os.makedirs(results_dir,exist_ok=True)
@@ -84,21 +88,21 @@ def main():
     # # Baseline models
     
     if run_experiments:
-        rand_classifier = UniformRandomClassifierBaseline()
-        plot_generator.run_baseline_experiment(
-            baseline_model=rand_classifier,verbose=True)
-
-        # weighted_rand_classifier = WeightedRandomClassifierBaseline(weight=0.80)
+        # rand_classifier = UniformRandomClassifierBaseline()
         # plot_generator.run_baseline_experiment(
-        #     baseline_model=weighted_rand_classifier,verbose=True)
+        #     baseline_model=rand_classifier,verbose=True)
 
-        lr_baseline = BinaryLogisticRegressionBaseline()
-        plot_generator.run_baseline_experiment(
-            baseline_model=lr_baseline,verbose=True)
+        # # weighted_rand_classifier = WeightedRandomClassifierBaseline(weight=0.80)
+        # # plot_generator.run_baseline_experiment(
+        # #     baseline_model=weighted_rand_classifier,verbose=True)
 
-        rf_classifier = RandomForestClassifierBaseline()
-        plot_generator.run_baseline_experiment(
-            baseline_model=rf_classifier,verbose=True)
+        # lr_baseline = BinaryLogisticRegressionBaseline()
+        # plot_generator.run_baseline_experiment(
+        #     baseline_model=lr_baseline,verbose=True)
+
+        # rf_classifier = RandomForestClassifierBaseline()
+        # plot_generator.run_baseline_experiment(
+        #     baseline_model=rf_classifier,verbose=True)
 
         # Seldonian experiment
         plot_generator.run_seldonian_experiment(verbose=verbose)
