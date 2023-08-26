@@ -16,7 +16,6 @@ def perf_eval_fn(y_pred,y,**kwargs):
     performance_metric = kwargs['performance_metric']
     if performance_metric == 'accuracy':
         return accuracy_score(y,y_pred > 0.5)
-   
 
 def initial_solution_fn(model,X,Y):
     return model.fit(X,Y)
@@ -24,7 +23,7 @@ def initial_solution_fn(model,X,Y):
 def main():
     # Parameter setup
     run_experiments = True
-    make_plots = False
+    make_plots = True
     save_plot = False
     include_legend = True
 
@@ -44,11 +43,12 @@ def main():
     fairlearn_eval_method = 'two-groups' # two-groups is the Seldonian definition, 'native' is the fairlearn definition
     fairlearn_epsilons_constraint = [0.01,0.1,1.0] # the epsilons used in the fitting constraint
     performance_metric = 'accuracy'
-    n_trials = 20
-    data_fracs = np.logspace(-4,0,15)
+    n_trials = 5
+    # data_fracs = np.logspace(-4,0,15)
+    data_fracs = 0.1*np.arange(1,11)
     n_workers = 6
     # results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
-    results_dir = f'results/test_run'
+    results_dir = f'results/test_run_v5'
     plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
     # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fa.png')
 
@@ -107,35 +107,6 @@ def main():
         # Seldonian experiment
         plot_generator.run_seldonian_experiment(verbose=verbose)
 
-
-    ######################
-    # Fairlearn experiment 
-    ######################
-
-    # fairlearn_sensitive_feature_names = ['M']
-    # fairlearn_sensitive_col_indices = [dataset.sensitive_col_names.index(
-    #     col) for col in fairlearn_sensitive_feature_names]
-    # fairlearn_sensitive_features = dataset.sensitive_attrs[:,fairlearn_sensitive_col_indices]
-    # # Setup ground truth test dataset for Fairlearn
-    # test_features_fairlearn = test_features
-    # fairlearn_eval_kwargs = {
-    #     'X':test_features_fairlearn,
-    #     'y':test_labels,
-    #     'sensitive_features':fairlearn_sensitive_features,
-    #     'eval_method':fairlearn_eval_method,
-    #     'performance_metric':performance_metric,
-    #     }
-
-    # if run_experiments:
-    #     for fairlearn_epsilon_constraint in fairlearn_epsilons_constraint:
-    #         plot_generator.run_fairlearn_experiment(
-    #             verbose=verbose,
-    #             fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
-    #             fairlearn_constraint_name=fairlearn_constraint_name,
-    #             fairlearn_epsilon_constraint=fairlearn_epsilon_constraint,
-    #             fairlearn_epsilon_eval=fairlearn_epsilon_eval,
-    #             fairlearn_eval_kwargs=fairlearn_eval_kwargs,
-    #             )
 
     if make_plots:
         plot_generator.make_plots(fontsize=12,legend_fontsize=8,
