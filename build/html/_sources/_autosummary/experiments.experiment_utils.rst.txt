@@ -23,6 +23,7 @@ experiments.experiment\_utils
       make_batch_epoch_dict_min_sample_repeat
       prep_feat_labels
       setup_SA_spec_for_exp
+      trial_arg_chunker
    
    
 

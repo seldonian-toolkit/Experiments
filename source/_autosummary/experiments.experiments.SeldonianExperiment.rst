@@ -28,6 +28,8 @@ experiments.experiments.SeldonianExperiment
    ..
    ..    ~SeldonianExperiment.run_experiment
    ..
+   ..    ~SeldonianExperiment.run_trials_par
+   ..
    ..    ~SeldonianExperiment.write_trial_result
    ..
    
