@@ -30,13 +30,16 @@ N_TRIALS = 5
 N_WORKERS = 1
 N_BOOTSTRAP_TRIALS = 50
 N_BOOTSTRAP_WORKERS = 60
-ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+# ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+# CONFIDENCE_INTERVAL_TYPE = "clopper-pearson"
 
 ## Create HyperparameterSelectionSpec.
 hyperparam_select_spec = HyperparameterSelectionSpec(
         n_bootstrap_trials=N_BOOTSTRAP_TRIALS,
         all_frac_data_in_safety=ALL_FRAC_DATA_IN_SAFETY,
-        n_bootstrap_workers=N_BOOTSTRAP_WORKERS
+        n_bootstrap_workers=N_BOOTSTRAP_WORKERS,
+        confidence_interval_type=CONFIDENCE_INTERVAL_TYPE
 )
 
 ## Details for running each example.

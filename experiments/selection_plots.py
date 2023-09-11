@@ -237,6 +237,7 @@ class SelectionPlots:
         self,
         all_safety_frac,
         bound_type,
+        alpha
     ):
         """
         Creates plot of the estimated probability of passing for each future_safety_frac
@@ -246,6 +247,8 @@ class SelectionPlots:
         :type pass_count: np.array
         :param bound_type: indicates what time of confidence bound to put around
         :type bound_type: string
+        :param alpha: confidence parameter
+        :type num_bootstrap_samples: float
         """
         tot_data_size = self.spec.dataset.num_datapoints
         all_data_size = np.array(self.data_fracs) * tot_data_size
@@ -261,28 +264,27 @@ class SelectionPlots:
                     # Average over bootstrap trials, to get the estimate for trial_i.
                     trial_probpass_est = np.nanmean(all_bootstrap_trial_info[
                         safety_frac][future_safety_frac][trial_i], axis=1) 
-                    plt.plot(all_data_size, trial_probpass_est, label=future_safkety_frac)
-
+                    plt.plot(all_data_size, trial_probpass_est, label=future_safety_frac)
 
                     if bound_type == "ste": 
                         # Get the standard error of the Bernoulli of the bootstrap trials.
                         bootstrap_trial_ste = np.nanstd(all_bootstrap_trial_info[
                             safety_frac][future_safety_frac][trial_i], axis=1) / np.sqrt(self.n_bootstrap_trials)
                         plt.fill_between(all_data_size, trial_probpass_est - bootstrap_trial_ste, 
-                                trial_probpass_est + bootstrap_trial_ste, alpha=0.1)
+                                trial_probpass_est + bootstrap_trial_ste, alpha=alpha)
 
                     elif bound_type == "clopper-pearson":
                         trial_pass_count = np.nansum(all_bootstrap_trial_info[
                             safety_frac][future_safety_frac][trial_i], axis=1)
                         lower_bound, upper_bound = self.clopper_pearson_bound(
-                                trial_pass_count, num_bootstrap_trials)
+                                trial_pass_count, self.n_bootstrap_trials)
                         lower_bound = np.nan_to_num(lower_bound) # If lower bound nan, set to 0.
-                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=0.1)
+                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=alpha)
 
                     elif bound_type == "ttest":
                         lower_bound, upper_bound = self.ttest_bound(all_bootstrap_trial_info[
                             safety_frac][future_safety_frac][trial_i])
-                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=0.1)
+                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=alpha)
 
                 plt.xscale("log")
                 plt.title(f"rho {safety_frac:.2f}, trial {trial_i}")
