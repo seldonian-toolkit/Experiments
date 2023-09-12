@@ -481,8 +481,6 @@ class SeldonianExperiment(Experiment):
         :param trial_i: The index of the trial
         :type trial_i: int
         """
-        print(f"data_frac: {data_frac}, trial_i: {trial_i}")
-        print(f"kwargs: {kwargs}")
         spec = kwargs["spec"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]

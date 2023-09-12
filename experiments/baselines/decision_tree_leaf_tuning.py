@@ -1,10 +1,10 @@
 from sklearn.tree import DecisionTreeClassifier
 from autograd import grad
 import autograd.numpy as np
-from seldonian.models.trees.sktree_model import SKTreeModel, probs2theta
+from seldonian.models.trees.sktree_model import SeldonianDecisionTree, probs2theta
 from seldonian.warnings.custom_warnings import *
 
-class DecisionTreeClassifierLeafTuningBaseline(SKTreeModel):
+class DecisionTreeClassifierLeafTuningBaseline(SeldonianDecisionTree):
     def __init__(self,primary_objective_fn,sub_regime,adam_kwargs,dt_kwargs={}):
         """Implements a decision classifier with leaf node tuning
         as a baseline for binary classification tasks
