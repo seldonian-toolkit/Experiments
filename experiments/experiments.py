@@ -540,7 +540,9 @@ class SeldonianExperiment(Experiment):
                 HS = HyperparamSearch(
                         spec_for_experiment,
                         hyperparam_select_spec.all_frac_data_in_safety,
-                        bootstrap_dir)
+                        bootstrap_dir,
+                        confidence_interval_type=hyperparam_select_spec.confidence_interval_type
+                        )
                 (best_frac_data_in_safety, _, _, ran_new_bs_trials) = HS.find_best_hyperparams(
                         n_bootstrap_trials=hyperparam_select_spec.n_bootstrap_trials,
                         n_workers=hyperparam_select_spec.n_bootstrap_workers)
