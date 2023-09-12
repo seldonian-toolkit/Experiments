@@ -19,11 +19,14 @@ class BaseExample:
         datagen_method="resample",
         verbose=False,
         baselines=[],
+        model_label_dict = {},
         include_fairlearn_models=False,
         fairlearn_kwargs={},
         performance_label="performance",
         performance_yscale="linear",
         plot_savename=None,
+        plot_save_format="pdf",
+        include_legend=True,
         plot_fontsize=12,
         legend_fontsize=8,
     ):
@@ -101,9 +104,12 @@ class BaseExample:
         plot_generator.run_seldonian_experiment(verbose=verbose)
 
         plot_generator.make_plots(
+            model_label_dict=model_label_dict,
             fontsize=plot_fontsize,
+            include_legend=include_legend,
             legend_fontsize=legend_fontsize,
             performance_label=performance_label,
             performance_yscale=performance_yscale,
+            save_format=plot_save_format,
             savename=plot_savename,
         )
