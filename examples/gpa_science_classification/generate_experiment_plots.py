@@ -10,8 +10,9 @@
 # ]
 
 import argparse
-import numpy as np
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+import numpy as np
 
 from seldonian.utils.io_utils import load_pickle
 from sklearn.metrics import log_loss
@@ -23,6 +24,8 @@ from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline)
 from experiments.perf_eval_funcs import deterministic_accuracy
 
+def initial_solution_fn(model,X,Y):
+    return model.fit(X,Y)
 
 def gpa_example(
     spec_rootdir,
@@ -39,6 +42,9 @@ def gpa_example(
     baselines=[UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     include_fairlearn_models=True,
     performance_metric="accuracy",
+    plot_save_format="pdf",
+    include_legend=True,
+    model_label_dict={},
     n_workers=1,
 ):
     if performance_metric == "accuracy":
@@ -65,7 +71,7 @@ def gpa_example(
         results_dir = os.path.join(results_base_dir,
                 f"gpa_science_classification_{constraint}_{epsilon}_{performance_metric}")
         plot_savename = os.path.join(
-            results_dir, f"{constraint}_{epsilon}_{performance_metric}.pdf"
+            results_dir, f"{constraint}_{epsilon}_{performance_metric}.{plot_save_format}"
         )
 
         if include_fairlearn_models:
@@ -92,14 +98,17 @@ def gpa_example(
             n_workers=n_workers,
             datagen_method="resample",
             verbose=False,
+            model_label_dict=model_label_dict,
             baselines=baselines,
             include_fairlearn_models=include_fairlearn_models,
             fairlearn_kwargs=fairlearn_kwargs,
             performance_label=performance_metric,
             performance_yscale="linear",
             plot_savename=plot_savename,
+            plot_save_format=plot_save_format,
             plot_fontsize=12,
-            legend_fontsize=8,
+            include_legend=include_legend,
+            legend_fontsize=12,
         )
 
 
@@ -116,6 +125,11 @@ if __name__ == "__main__":
         help="whether to run fairlearn models",
         action="store_true",
     )
+    parser.add_argument(
+        "--include_legend",
+        help="whether to run fairlearn models",
+        action="store_true",
+    )
     parser.add_argument("--verbose", help="verbose", action="store_true")
 
     args = parser.parse_args()
@@ -124,8 +138,18 @@ if __name__ == "__main__":
     n_trials = int(args.n_trials)
     n_workers = int(args.n_workers)
     include_baselines = args.include_baselines
+    include_legend = args.include_legend
     include_fairlearn_models = args.include_fairlearn_models
     verbose = args.verbose
+
+    model_label_dict = {
+        "qsa": "Quasi-Seldonian algorithm",
+        "logistic_regression": "Logistic regression (no constraint)",
+        "uniform_random": "Uniform random classifier",
+        "fairlearn_eps0.01": "Fairlearn (eps=0.01)",
+        "fairlearn_eps0.10": "Fairlearn (eps=0.1)",
+        "fairlearn_eps1.00": "Fairlearn (eps=1.0)",
+    }
 
     if include_baselines:
         baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
@@ -140,8 +164,11 @@ if __name__ == "__main__":
         constraints=[constraint],
         n_trials=n_trials,
         data_fracs=np.logspace(-4, 0, 15),
+        model_label_dict=model_label_dict,
         baselines=baselines,
         include_fairlearn_models=include_fairlearn_models,
         performance_metric="accuracy",
         n_workers=n_workers,
+        include_legend=include_legend,
+        plot_save_format="png"
     )
