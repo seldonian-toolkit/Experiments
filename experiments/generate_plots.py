@@ -10,7 +10,7 @@ from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 from matplotlib import style
 
-from seldonian.utils.io_utils import save_pickle
+from seldonian.utils.io_utils import (load_pickle,save_pickle)
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .experiment_utils import generate_resampled_datasets, has_failed
@@ -1092,3 +1092,387 @@ class RLPlotGenerator(PlotGenerator):
         sd_exp = SeldonianExperiment(model_name="qsa", results_dir=self.results_dir)
 
         sd_exp.run_experiment(**run_seldonian_kwargs)
+
+
+    def plot_importance_weights(
+        self,
+        n_trials,
+        data_fracs,
+        fontsize=12,
+        title_fontsize=12,
+        marker_size=20,
+        save_format="pdf",
+        show_title=True,
+        custom_title=None,
+        savename=None,
+    ):
+        """Plot the mean importance weights (over episodes) for 
+        all trials in an experiment. Only uses the qsa_results/
+        folder since that is the only experiment that is relevant.
+
+        :param fontsize: The font size to use for the axis labels
+        :type fontsize: int
+        :param marker_size: The size of the points in each plots
+        :type marker_size: float
+        :param save_format: The file type for the saved plot
+        :type save_format: str, defaults to "pdf"
+        :param show_title: Whether to show the title at the top of the figure
+        :type show_title: bool
+        :param custom_title: A custom title 
+        :type custom_title: str, defaults to None
+        :param savename: If not None, the filename to which the figure
+                will be saved on disk.
+        :type savename: str, defaults to None
+        """
+        plt.style.use("bmh")
+        regime = self.spec.dataset.regime
+        if regime != "reinforcement_learning":
+            raise ValueError(
+                "Importance weights can only be plotted for reinforcement learning problems"
+            )
+
+        tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
+
+        # Figure out what experiments we have from subfolders in results_dir
+        is_parent_dir = os.path.join(self.results_dir,"qsa_results","importance_weights")
+        cs_weights_dir = os.path.join(is_parent_dir,"candidate_selection")
+        st_weights_dir = os.path.join(is_parent_dir,"safety_test")
+
+        ## PLOTTING SETUP
+        
+        figsize = (12, 6)
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(1,1,1)
+        locmaj = matplotlib.ticker.LogLocator(base=10, numticks=12)
+        locmin = matplotlib.ticker.LogLocator(
+            base=10.0,
+            subs=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+            numticks=12,
+        )
+
+        ax.minorticks_on()
+        ax.xaxis.set_major_locator(locmaj)
+        ax.xaxis.set_minor_locator(locmin)
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.set_xscale("log")
+        # SELDONIAN RESULTS SETUP
+        for branch in ["cs","st"]:
+            if branch == "cs":
+                color="blue"
+                label="Candidate selection"
+                weights_dir = cs_weights_dir
+            else: 
+                color="red"
+                label="Safety test"
+                weights_dir = st_weights_dir
+            
+            IS_weights_dict = {
+                data_frac:[] for data_frac in data_fracs
+            } # keys: data_fracs, values: lists of mean IS weights for all trials at that data_frac
+            for data_frac in data_fracs:
+                for trial_i in range(n_trials):
+                    filename = os.path.join(
+                        weights_dir, f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl"
+                    )
+                    importance_weights = load_pickle(filename)
+                    if importance_weights is not None:
+                        mean_IS = np.mean(importance_weights)
+                        IS_weights_dict[data_frac].append(mean_IS)
+
+            good_data_fracs = np.array([key for key in IS_weights_dict if len(IS_weights_dict[key])>1])
+            n_trials_good_list = np.array([len(IS_weights_dict[key]) for key in good_data_fracs])
+            mean_good_IS_weights = np.array([np.mean(IS_weights_dict[key]) for key in good_data_fracs])
+            ste_good_IS_weights = np.array([np.std(IS_weights_dict[good_data_fracs[ii]])/n_trials_good_list[ii] for ii in range(len(good_data_fracs))])
+            
+            ax.scatter(
+                good_data_fracs*tot_data_size,
+                mean_good_IS_weights,
+                s=marker_size,
+                color=color,
+                marker="o",
+                zorder=10,
+                label=label)
+            
+            ax.fill_between(
+                good_data_fracs*tot_data_size,
+                mean_good_IS_weights - ste_good_IS_weights,
+                mean_good_IS_weights + ste_good_IS_weights,
+                color=color,
+                alpha=0.5,
+                zorder=10
+            )
+        
+        ax.set_xlim(5,tot_data_size)
+        ax.set_xlabel("Amount of data", fontsize=fontsize)
+        ax.set_ylabel("Mean importance weight",fontsize=fontsize)
+        ax.legend()
+
+        if custom_title:
+            title = custom_title
+        else:
+            title = f"Importance weights vs. amount of data"
+        ax.set_title(title, y=1.05, fontsize=title_fontsize)
+
+        if savename:
+            plt.savefig(savename, format=save_format,bbox_inches="tight")
+            print(f"Saved {savename}")
+        else:
+            plt.show()
+            
+
+        
+
+        #     # Plot labels
+        #     ax_performance.set_ylabel(performance_label, fontsize=fontsize)
+        #     ax_sr.set_ylabel(sr_label, fontsize=fontsize)
+        #     ax_fr.set_ylabel(fr_label, fontsize=fontsize)
+
+        #     # Only put horizontal axis labels on last row of plots
+        #     if constraint_index == n_constraints - 1:
+        #         ax_performance.set_xlabel(hoz_axis_label, fontsize=fontsize)
+        #         ax_sr.set_xlabel(hoz_axis_label, fontsize=fontsize)
+        #         ax_fr.set_xlabel(hoz_axis_label, fontsize=fontsize)
+
+        #     # axis scaling
+        #     ax_performance.set_xscale("log")
+        #     if performance_yscale.lower() == "log":
+        #         ax_performance.set_yscale("log")
+        #     ax_sr.set_xscale("log")
+        #     ax_fr.set_xscale("log")
+
+        #     locmaj = matplotlib.ticker.LogLocator(base=10, numticks=12)
+        #     locmin = matplotlib.ticker.LogLocator(
+        #         base=10.0,
+        #         subs=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+        #         numticks=12,
+        #     )
+        #     for ax in [ax_performance, ax_sr, ax_fr]:
+        #         ax.minorticks_on()
+        #         ax.xaxis.set_major_locator(locmaj)
+        #         ax.xaxis.set_minor_locator(locmin)
+        #         ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+
+        #     ########################
+        #     ### PERFORMANCE PLOT ###
+        #     ########################
+
+
+        #     # Seldonian performance
+        #     for seldonian_i, seldonian_model in enumerate(seldonian_models):
+        #         this_seldonian_dict = seldonian_dict[seldonian_model]
+        #         seldonian_color = plot_colormap(seldonian_i)
+        #         df_seldonian_passed = this_seldonian_dict["df_seldonian_passed"]
+        #         mean_performance = df_seldonian_passed.groupby("data_frac").mean()[
+        #             "performance"
+        #         ].to_numpy()
+        #         std_performance = df_seldonian_passed.groupby("data_frac").std()[
+        #             "performance"
+        #         ].to_numpy()
+
+        #         n_passed = df_seldonian_passed.groupby("data_frac").count()[
+        #             "performance"
+        #         ].to_numpy()
+        #         ste_performance = std_performance / np.sqrt(n_passed)
+        #         # Only show if 2 or more passed. Otherwise std is not defined.
+        #         gt1_mask = n_passed > 1
+        #         mean_performance_masked = mean_performance[gt1_mask]
+        #         std_performance_masked = std_performance[gt1_mask]
+        #         ste_performance_masked = ste_performance[gt1_mask]
+
+        #         X_passed_seldonian = this_seldonian_dict["X_passed"].to_numpy()
+        #         X_passed_seldonian_masked = X_passed_seldonian[gt1_mask]
+        #         (pl,) = ax_performance.plot(
+        #             X_passed_seldonian_masked,
+        #             mean_performance_masked,
+        #             color=seldonian_color,
+        #             # linestyle="--",
+        #             linestyle="-",
+        #         )
+        #         if constraint_index == 0:
+        #             legend_handles.append(pl)
+        #             if seldonian_model in model_label_dict:
+        #                 legend_labels.append(model_label_dict[seldonian_model])
+        #             else:
+        #                 legend_labels.append(seldonian_model)
+
+        #         ax_performance.scatter(
+        #             X_passed_seldonian_masked,
+        #             mean_performance_masked,
+        #             color=seldonian_color,
+        #             s=marker_size,
+        #             marker="o",
+        #             zorder=10
+        #         )
+        #         ax_performance.fill_between(
+        #             X_passed_seldonian_masked,
+        #             mean_performance_masked - ste_performance_masked,
+        #             mean_performance_masked + ste_performance_masked,
+        #             color=seldonian_color,
+        #             alpha=0.5,
+        #             zorder=10
+        #         )
+            
+        #     # Baseline performance
+        #     for baseline_i, baseline in enumerate(baselines):
+        #         baseline_color = plot_colormap(
+        #             baseline_i + len(seldonian_models)
+        #         )  # 0 is reserved for Seldonian model
+        #         this_baseline_dict = baseline_dict[baseline]
+        #         df_baseline_valid = this_baseline_dict["df_baseline_valid"]
+        #         n_trials = df_baseline_valid["trial_i"].max() + 1
+
+        #         # Performance
+        #         baseline_mean_performance = df_baseline_valid.groupby(
+        #             "data_frac"
+        #         ).mean()["performance"]
+        #         baseline_std_performance = df_baseline_valid.groupby("data_frac").std()[
+        #             "performance"
+        #         ]
+        #         baseline_ste_performance = baseline_std_performance / np.sqrt(n_trials)
+        #         X_valid_baseline = this_baseline_dict["X_valid"]
+        #         n_valid = df_baseline_valid.groupby("data_frac").count()[
+        #              "performance"
+        #          ].to_numpy()
+        #         # Only show if 2 or more passed. Otherwise std is not defined.
+        #         gt1_mask = n_valid > 1
+        #         baseline_mean_performance_masked = baseline_mean_performance[gt1_mask]
+        #         baseline_std_performance_masked = baseline_std_performance[gt1_mask]
+        #         baseline_ste_performance_masked = baseline_ste_performance[gt1_mask]
+        #         X_valid_baseline_masked = X_valid_baseline[gt1_mask]
+        #         (pl,) = ax_performance.plot(
+        #             X_valid_baseline_masked.to_numpy(),
+        #             baseline_mean_performance_masked.to_numpy(),
+        #             color=baseline_color,
+        #             label=baseline,
+        #         )
+        #         if constraint_index == 0:
+        #             legend_handles.append(pl)
+        #             if baseline in model_label_dict:
+        #                 legend_labels.append(model_label_dict[baseline])
+        #             else:
+        #                 legend_labels.append(baseline)
+        #         ax_performance.scatter(
+        #             X_valid_baseline_masked,
+        #             baseline_mean_performance_masked,
+        #             color=baseline_color,
+        #             s=marker_size,
+        #             marker=marker_list[baseline_i],
+        #         )
+        #         ax_performance.fill_between(
+        #             X_valid_baseline_masked,
+        #             baseline_mean_performance_masked - baseline_ste_performance_masked,
+        #             baseline_mean_performance_masked + baseline_ste_performance_masked,
+        #             color=baseline_color,
+        #             alpha=0.5,
+        #         )
+           
+        #     if performance_ylims:
+        #         ax_performance.set_ylim(*performance_ylims)
+        #     ##########################
+        #     ### SOLUTION RATE PLOT ###
+        #     ##########################
+
+        #     # Seldonian solution rate
+        #     for seldonian_i, seldonian_model in enumerate(seldonian_models):
+        #         this_seldonian_dict = seldonian_dict[seldonian_model]
+        #         seldonian_color = plot_colormap(seldonian_i)
+        #         df_seldonian = this_seldonian_dict["df_seldonian"]
+        #         n_trials = df_seldonian["trial_i"].max() + 1
+        #         mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
+        #         std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
+        #         ste_sr = std_sr / np.sqrt(n_trials)
+
+        #         X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
+
+        #         ax_sr.plot(
+        #             X_all_seldonian,
+        #             mean_sr,
+        #             color=seldonian_color,
+        #             # linestyle="--",
+        #             linestyle="-",
+        #             label="QSA",
+        #             zorder=10
+        #         )
+        #         ax_sr.scatter(
+        #             X_all_seldonian,
+        #             mean_sr,
+        #             color=seldonian_color,
+        #             s=marker_size,
+        #             marker="o",
+        #             zorder=10
+        #         )
+        #         ax_sr.fill_between(
+        #             X_all_seldonian,
+        #             mean_sr - ste_sr,
+        #             mean_sr + ste_sr,
+        #             color=seldonian_color,
+        #             alpha=0.5,
+        #             zorder=10
+        #         )
+
+        #     # Plot baseline solution rate
+        #     # (sometimes it doesn't return a solution due to not having enough training data
+        #     # to run model.fit() )
+        #     for baseline_i, baseline in enumerate(baselines):
+        #         this_baseline_dict = baseline_dict[baseline]
+        #         baseline_color = plot_colormap(baseline_i + len(seldonian_models))
+        #         df_baseline = this_baseline_dict["df_baseline"]
+        #         n_trials = df_baseline["trial_i"].max() + 1
+        #         mean_sr = df_baseline.groupby("data_frac").mean()["solution_returned"].to_numpy()
+        #         std_sr = df_baseline.groupby("data_frac").std()["solution_returned"].to_numpy()
+        #         ste_sr = std_sr / np.sqrt(n_trials)
+
+        #         X_all_baseline = this_baseline_dict["X_all"].to_numpy()
+
+        #         ax_sr.plot(
+        #             X_all_baseline, mean_sr, color=baseline_color, label=baseline
+        #         )
+        #         ax_sr.scatter(
+        #             X_all_baseline,
+        #             mean_sr,
+        #             color=baseline_color,
+        #             s=marker_size,
+        #             marker=marker_list[baseline_i],
+        #         )
+        #         ax_sr.fill_between(
+        #             X_all_baseline,
+        #             mean_sr - ste_sr,
+        #             mean_sr + ste_sr,
+        #             color=baseline_color,
+        #             alpha=0.5,
+        #         )
+
+        #     ax_sr.set_ylim(-0.05, 1.05)
+
+            
+        # plt.tight_layout()
+
+        # if include_legend:
+        #     if model_label_dict:
+        #         reordered_legend_labels = []
+        #         reordered_legend_handles = []
+        #         for name in model_label_dict:
+        #             display_name = model_label_dict[name]
+        #             if display_name in legend_labels:
+        #                 leg_index = legend_labels.index(display_name)
+        #                 leg_name = legend_labels[leg_index]
+        #                 leg_handle = legend_handles[leg_index]
+        #                 reordered_legend_labels.append(leg_name)
+        #                 reordered_legend_handles.append(leg_handle)
+        #         legend_handles = reordered_legend_handles
+        #         legend_labels = reordered_legend_labels
+        #     fig.subplots_adjust(bottom=0.25)
+        #     fig.legend(
+        #         legend_handles,
+        #         legend_labels,
+        #         bbox_to_anchor=(0.5, 0.15),
+        #         loc="upper center",
+        #         ncol=ncols_legend,
+        #         fontsize=legend_fontsize,
+        #     )
+
+        # if savename:
+        #     plt.savefig(savename, format=save_format,bbox_inches="tight")
+        #     print(f"Saved {savename}")
+        # else:
+        #     plt.show()

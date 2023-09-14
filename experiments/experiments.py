@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 
-from seldonian.utils.io_utils import load_pickle
+from seldonian.utils.io_utils import (load_pickle,save_pickle)
 from seldonian.dataset import SupervisedDataSet, RLDataSet
 from seldonian.seldonian_algorithm import SeldonianAlgorithm
 from seldonian.spec import RLSpec
@@ -129,6 +129,40 @@ class Experiment:
         if verbose:
             print(f"Saved {fname}")
         return
+    
+    def write_importance_weights(
+        self,
+        data_frac, 
+        trial_i, 
+        is_trial_dir, 
+        cs_importance_weights, 
+        st_importance_weights, 
+        verbose=False
+    ):
+        """Write out the importance weights from a single trial
+        to a file.
+
+        """
+        os.makedirs
+        fname_cs = os.path.join(
+            is_trial_dir, 
+            "candidate_selection",
+            f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl"
+        )
+        save_pickle(fname_cs,cs_importance_weights)
+        if verbose:
+            print(f"Saved {fname_cs}")
+
+        fname_st = os.path.join(
+            is_trial_dir, 
+            "safety_test",
+            f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl"
+        )
+        save_pickle(fname_st,st_importance_weights)
+        if verbose:
+            print(f"Saved {fname_st}")
+        return
+
 
 
 class BaselineExperiment(Experiment):
@@ -647,6 +681,31 @@ class SeldonianExperiment(Experiment):
         data = [data_frac, trial_i, performance, passed_safety, gvec]
         colnames = ["data_frac", "trial_i", "performance", "passed_safety", "gvec"]
         self.write_trial_result(data, colnames, trial_dir, verbose=kwargs["verbose"])
+        
+        # Write out importance weights
+        if regime == "reinforcement_learning":
+            is_trial_dir = os.path.join(self.results_dir, "qsa_results", "importance_weights")
+            cs_trial_dir = os.path.join(is_trial_dir,"candidate_selection")
+            st_trial_dir = os.path.join(is_trial_dir,"safety_test")
+            os.makedirs(cs_trial_dir,exist_ok=True)
+            os.makedirs(st_trial_dir,exist_ok=True)
+            if solution_found:
+                cs_importance_weights = SA.get_importance_weights(
+                    branch="candidate_selection",
+                    theta=solution)
+                st_importance_weights = SA.get_importance_weights(
+                    branch="safety_test",
+                    theta=solution)
+            else:
+                cs_importance_weights=None
+                st_importance_weights=None
+            self.write_importance_weights(
+                data_frac, 
+                trial_i, 
+                is_trial_dir, 
+                cs_importance_weights, 
+                st_importance_weights, 
+                verbose=kwargs["verbose"])
         return
 
     def evaluate_constraint_functions(
