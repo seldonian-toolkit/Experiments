@@ -28,6 +28,7 @@ from seldonian.models.models import (
 from .experiment_utils import (
     batch_predictions,
     load_resampled_dataset,
+    load_regenerated_episodes,
     prep_feat_labels,
     setup_SA_spec_for_exp,
     trial_arg_chunker
@@ -201,9 +202,9 @@ class BaselineExperiment(Experiment):
         """
 
         spec = copy.deepcopy(kwargs["spec"])
-        if isinstance(spec, RLSpec):
-            raise NotImplementedError("Baselines are not yet implemented for RL")
+        
         dataset = spec.dataset
+        regime = dataset.regime
         parse_trees = spec.parse_trees
         (
             verbose,
@@ -256,52 +257,75 @@ class BaselineExperiment(Experiment):
         ##############################################
         """ Setup for running baseline algorithm """
         ##############################################
-
-        if datagen_method == "resample":
-            trial_dataset, n_points = load_resampled_dataset(
-                self.results_dir, trial_i, data_frac
-            )
-        else:
-            raise NotImplementedError(
-                f"datagen_method: {datagen_method} "
-                f"not supported for regime: {regime}"
-            )
-
-        features, labels = prep_feat_labels(trial_dataset, n_points)
-
-        ####################################################
-        """" Instantiate model and fit to resampled data """
-        ####################################################
-        X_test_baseline = perf_eval_kwargs["X"]
-        baseline_model = copy.deepcopy(self.baseline_model)
-        train_kwargs = {}
-        pred_kwargs = {}
-        try:
-            if hasattr(baseline_model,"batch_epoch_dict"):
-                batch_size, n_epochs = baseline_model.batch_epoch_dict[data_frac]
-                train_kwargs["batch_size"] = batch_size
-                train_kwargs["n_epochs"] = n_epochs
-            solution = baseline_model.train(features, labels, **train_kwargs)
-            
-            # predict the probabilities (e.g. 0.85) not the labels (e.g., 1) 
-            if hasattr(baseline_model,"eval_batch_size"):
-                pred_kwargs["eval_batch_size"] = getattr(baseline_model,"eval_batch_size")
-                if hasattr(baseline_model,"N_output_classes"):
-                    pred_kwargs["N_output_classes"] = getattr(baseline_model,"N_output_classes")
-
-                y_pred = batch_predictions(
-                    model=baseline_model,
-                    solution=solution,
-                    X_test=X_test_baseline,
-                    **pred_kwargs,
+        if regime == "supervised_learning":
+            if datagen_method == "resample":
+                trial_dataset, n_points = load_resampled_dataset(
+                    self.results_dir, trial_i, data_frac, verbose=verbose
                 )
             else:
-                y_pred = baseline_model.predict(
-                    solution, 
-                    X_test_baseline, 
-                    **pred_kwargs)
-        except (ValueError,IndexError):
-            solution = "NSF"
+                raise NotImplementedError(
+                    f"datagen_method: {datagen_method} "
+                    f"not supported for regime: {regime}"
+                )
+
+            features, labels = prep_feat_labels(trial_dataset, n_points)
+
+            ####################################################
+            """" Instantiate model and fit to resampled data """
+            ####################################################
+            X_test_baseline = perf_eval_kwargs["X"]
+            baseline_model = copy.deepcopy(self.baseline_model)
+            train_kwargs = {}
+            pred_kwargs = {}
+            try:
+                if hasattr(baseline_model,"batch_epoch_dict"):
+                    batch_size, n_epochs = baseline_model.batch_epoch_dict[data_frac]
+                    train_kwargs["batch_size"] = batch_size
+                    train_kwargs["n_epochs"] = n_epochs
+                solution = baseline_model.train(features, labels, **train_kwargs)
+                
+                # predict the probabilities (e.g. 0.85) not the labels (e.g., 1) 
+                if hasattr(baseline_model,"eval_batch_size"):
+                    pred_kwargs["eval_batch_size"] = getattr(baseline_model,"eval_batch_size")
+                    if hasattr(baseline_model,"N_output_classes"):
+                        pred_kwargs["N_output_classes"] = getattr(baseline_model,"N_output_classes")
+
+                    y_pred = batch_predictions(
+                        model=baseline_model,
+                        solution=solution,
+                        X_test=X_test_baseline,
+                        **pred_kwargs,
+                    )
+                else:
+                    y_pred = baseline_model.predict(
+                        solution, 
+                        X_test_baseline, 
+                        **pred_kwargs)
+            except:
+                if verbose: print("Error training baseline model. Returning NSF")
+                solution = "NSF"
+        elif regime == "reinforcement_learning":
+            if datagen_method == "generate_episodes":
+                trial_dataset = load_regenerated_episodes(
+                    self.results_dir, trial_i, data_frac, spec.dataset.meta, verbose=verbose
+                )
+            else:
+                raise NotImplementedError(
+                    f"datagen_method: {datagen_method} "
+                    f"not supported for regime: {regime}"
+                )
+
+            ####################################################
+            """" Instantiate model and run it on resampled data """
+            ####################################################
+            baseline_model = copy.deepcopy(self.baseline_model)
+            # train_kwargs = {}
+            # pred_kwargs = {}
+            # try: 
+            solution = baseline_model.train(trial_dataset)
+            baseline_model.set_new_params(solution)
+            # except:
+            #     solution = "NSF"
 
         #########################################################
         """" Calculate performance and safety on ground truth """
@@ -311,11 +335,16 @@ class BaselineExperiment(Experiment):
         if type(solution) == str and solution == "NSF":
             solution_found = False
 
-        #########################################################
-        """" Calculate performance and safety on ground truth """
-        #########################################################
         if solution_found:
-            performance = perf_eval_fn(y_pred, **perf_eval_kwargs)
+            if verbose: print("Solution was found. Calculating performance.")
+            if regime == "supervised_learning":
+                performance = perf_eval_fn(y_pred, **perf_eval_kwargs)
+            elif regime == "reinforcement_learning":
+                perf_eval_kwargs["model"] = baseline_model
+                perf_eval_kwargs[
+                    "hyperparameter_and_setting_dict"
+                ] = kwargs["hyperparameter_and_setting_dict"]
+                episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
 
             if verbose:
                 print(f"Performance = {performance}")
@@ -323,9 +352,21 @@ class BaselineExperiment(Experiment):
             # Determine whether this solution
             # violates any of the constraints
             # on the test dataset, which is the dataset from spec
+            
+            if regime == "supervised_learning":
+                dataset_for_eval = dataset # the original one
+            if regime == "reinforcement_learning":
+                # Need to put the newly generated episodes into the new dataset
+                constraint_eval_kwargs["episodes_for_eval"] = episodes_for_eval
+                dataset_for_eval = RLDataSet(
+                    episodes=episodes_for_eval,
+                    meta=dataset.meta
+                )
+
             if constraint_eval_fns == []:
+                constraint_eval_kwargs["solution"] = solution
                 constraint_eval_kwargs["baseline_model"] = baseline_model
-                constraint_eval_kwargs["dataset"] = dataset
+                constraint_eval_kwargs["dataset"] = dataset_for_eval
                 constraint_eval_kwargs["parse_trees"] = parse_trees
                 constraint_eval_kwargs["verbose"] = verbose
 
@@ -335,7 +376,7 @@ class BaselineExperiment(Experiment):
                 constraint_eval_kwargs=constraint_eval_kwargs,
             )
         else:
-            print("NSF")
+            if verbose: print("NSF")
             # NSF is safe, so set g=-inf for all constraints
             n_constraints = len(spec.parse_trees)
             gvec = -np.inf * np.ones(
@@ -378,19 +419,20 @@ class BaselineExperiment(Experiment):
         gvals = []
         if constraint_eval_fns == []:
             parse_trees = constraint_eval_kwargs["parse_trees"]
-            dataset = constraint_eval_kwargs["dataset"]
+            dataset_for_eval = constraint_eval_kwargs["dataset"]
             baseline_model = constraint_eval_kwargs["baseline_model"]
             if hasattr(baseline_model,"eval_batch_size"):
                 batch_size_safety = getattr(baseline_model,"eval_batch_size")
             else:
                 batch_size_safety = None
+                
             for parse_tree in parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
                 parse_tree.evaluate_constraint(
                     theta=solution,
-                    dataset=dataset,
+                    dataset=dataset_for_eval,
                     model=baseline_model,
-                    regime=dataset.regime,
+                    regime=dataset_for_eval.regime,
                     branch="safety_test",
                     batch_size_safety=batch_size_safety,
                 )
@@ -400,6 +442,7 @@ class BaselineExperiment(Experiment):
                 parse_tree.reset_base_node_dict(
                     reset_data=True
                 )  # to clear out anything so the next trial has fresh data
+
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:

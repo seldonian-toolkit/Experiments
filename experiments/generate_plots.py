@@ -13,7 +13,11 @@ from matplotlib import style
 from seldonian.utils.io_utils import save_pickle
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
-from .experiment_utils import generate_resampled_datasets, has_failed
+from .experiment_utils import (
+    generate_resampled_datasets, 
+    generate_behavior_policy_episodes, 
+    has_failed
+)
 
 seldonian_model_set = set(["qsa","headless_qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")
@@ -181,7 +185,7 @@ class PlotGenerator:
         regime = self.spec.dataset.regime
         if regime == "supervised_learning":
             tot_data_size = self.spec.dataset.num_datapoints
-        else:
+        elif regime == "reinforcement_learning":
             tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
 
         # Read in constraints
@@ -1046,32 +1050,9 @@ class RLPlotGenerator(PlotGenerator):
         if self.datagen_method == "generate_episodes":
             # generate full-size datasets for each trial so that
             # we can reference them for each data_frac
-            try:
-                n_workers_for_episode_generation = self.hyperparameter_and_setting_dict["n_workers_for_episode_generation"]
-            except:
-                n_workers_for_episode_generation = self.n_workers
             save_dir = os.path.join(self.results_dir, "regenerated_datasets")
             os.makedirs(save_dir, exist_ok=True)
-            print("generating new episodes for each trial")
-            for trial_i in range(self.n_trials):
-                print(f"Trial: {trial_i+1}/{self.n_trials}")
-                savename = os.path.join(
-                    save_dir, f"regenerated_data_trial{trial_i}.pkl"
-                )
-                print(savename)
-                if not os.path.exists(savename):
-                    if n_workers_for_episode_generation > 1:
-                        episodes = run_trial(
-                            self.hyperparameter_and_setting_dict, parallel=True, n_workers=n_workers_for_episode_generation,
-                        )
-                    else:
-                        episodes = run_trial(
-                            self.hyperparameter_and_setting_dict, parallel=False
-                        )
-                    # Save episodes
-                    save_pickle(savename, episodes, verbose=True)
-                else:
-                    print(f"{savename} already created")
+            generate_behavior_policy_episodes(self.hyperparameter_and_setting_dict,self.n_trials,save_dir)
 
         run_seldonian_kwargs = dict(
             spec=self.spec,
@@ -1092,3 +1073,47 @@ class RLPlotGenerator(PlotGenerator):
         sd_exp = SeldonianExperiment(model_name="qsa", results_dir=self.results_dir)
 
         sd_exp.run_experiment(**run_seldonian_kwargs)
+
+
+    def run_baseline_experiment(self, baseline_model, verbose=False):
+        """Run a supervised Seldonian experiment using the spec attribute
+        assigned to the class in __init__().
+
+        :param verbose: Whether to display results to stdout
+                while the Seldonian algorithms are running in each trial
+        :type verbose: bool, defaults to False
+        """
+
+        dataset = self.spec.dataset
+
+        if self.datagen_method == "generate_episodes":
+            # Generate n_trials resampled datasets of full length
+            # These will be cropped to data_frac fractional size
+            if verbose: print("checking for regenerated episodes")
+            save_dir = os.path.join(self.results_dir, "regenerated_datasets")
+            generate_behavior_policy_episodes(self.hyperparameter_and_setting_dict,self.n_trials,save_dir)
+            if verbose:  print("Done checking for regenerated episodes\n")
+        else:
+            raise NotImplementedError(
+                f"datagen_method {datagen_method} not supported for RL experiments")
+
+        run_baseline_kwargs = dict(
+            spec=self.spec,
+            data_fracs=self.data_fracs,
+            n_trials=self.n_trials,
+            n_workers=self.n_workers,
+            datagen_method=self.datagen_method,
+            hyperparameter_and_setting_dict=self.hyperparameter_and_setting_dict,
+            perf_eval_fn=self.perf_eval_fn,
+            perf_eval_kwargs=self.perf_eval_kwargs,
+            constraint_eval_fns=self.constraint_eval_fns,
+            constraint_eval_kwargs=self.constraint_eval_kwargs,
+            batch_epoch_dict=self.batch_epoch_dict,
+            verbose=verbose,
+        )
+
+        ## Run experiment
+        bl_exp = BaselineExperiment(baseline_model=baseline_model, results_dir=self.results_dir)
+
+        bl_exp.run_experiment(**run_baseline_kwargs)
+        return

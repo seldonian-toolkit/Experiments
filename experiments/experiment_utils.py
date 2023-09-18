@@ -3,11 +3,10 @@
 import os, copy, pickle, math
 import numpy as np
 
-# from seldonian.RL.RL_runner import create_agent, run_trial_given_agent_and_env
-from seldonian.RL.RL_runner import create_agent_fromdict, run_trial_given_agent_and_env
+from seldonian.RL.RL_runner import run_trial, create_agent_fromdict, run_trial_given_agent_and_env
 from seldonian.utils.stats_utils import weighted_sum_gamma
-from seldonian.dataset import SupervisedDataSet,RLDataSet
-from seldonian.utils.io_utils import load_pickle
+from seldonian.dataset import SupervisedDataSet, RLDataSet
+from seldonian.utils.io_utils import load_pickle, save_pickle
 
 
 def generate_resampled_datasets(dataset, n_trials, save_dir):
@@ -68,6 +67,43 @@ def generate_resampled_datasets(dataset, n_trials, save_dir):
                 pickle.dump(resampled_dataset, outfile)
             print(f"Saved {savename}")
 
+def generate_behavior_policy_episodes(hyperparameter_and_setting_dict,n_trials,save_dir,verbose=False):
+    """Utility function for reinforcement learning to generate new episodes
+    using the behavior policy to use in each trial. 
+
+    :param hyperparameter_and_setting_dict: Contains the number of episodes to generate,
+        environment, agent, etc. needed for generating new episodes.
+    :type hyperparameter_and_setting_dict: dict
+
+    :param save_dir: The parent directory in which to save the
+            regenerated_episodes
+    :type save_dir: str
+    """
+    try:
+        n_workers_for_episode_generation = hyperparameter_and_setting_dict["n_workers_for_episode_generation"]
+    except:
+        n_workers_for_episode_generation = 1
+    
+    if verbose: print("generating new episodes for each trial")
+    for trial_i in range(n_trials):
+        if verbose: print(f"Trial: {trial_i+1}/{self.n_trials}")
+        savename = os.path.join(
+            save_dir, f"regenerated_data_trial{trial_i}.pkl"
+        )
+        if not os.path.exists(savename):
+            if n_workers_for_episode_generation > 1:
+                episodes = run_trial(
+                    hyperparameter_and_setting_dict, parallel=True, n_workers=n_workers_for_episode_generation,
+                )
+            else:
+                episodes = run_trial(
+                    hyperparameter_and_setting_dict, parallel=False
+                )
+            # Save episodes
+            save_pickle(savename, episodes, verbose=verbose)
+        else:
+            if verbose: print(f"{savename} already created")
+    return
 
 def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
     """Utility function for supervised learning to generate the
@@ -91,6 +127,7 @@ def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
     )
     resampled_dataset = load_pickle(resampled_filename)
     num_datapoints_tot = resampled_dataset.num_datapoints
+    
     n_points = int(round(data_frac * num_datapoints_tot))
 
     if verbose:
@@ -106,6 +143,37 @@ def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
         )
     return resampled_dataset, n_points
 
+def load_regenerated_episodes(results_dir, trial_i, data_frac, orig_meta, verbose=False):
+    save_dir = os.path.join(results_dir, "regenerated_datasets")
+    savename = os.path.join(save_dir, f"regenerated_data_trial{trial_i}.pkl")
+
+    episodes_all = load_pickle(savename)
+    # Take data_frac episodes from this df
+    n_episodes_all = len(episodes_all)
+
+    n_episodes_for_exp = int(round(n_episodes_all * data_frac))
+    if n_episodes_for_exp < 1:
+        raise ValueError(
+            f"This data_frac={data_frac} "
+            f"results in {n_episodes_for_exp} episodes. "
+            "Must have at least 1 episode to run a trial."
+        )
+
+    if verbose: print(f"Orig dataset should have {n_episodes_all} episodes")
+    if verbose: print(
+        f"This dataset with data_frac={data_frac} should have"
+        f" {n_episodes_for_exp} episodes"
+    )
+
+    # Take first n_episodes episodes
+    episodes_for_exp = episodes_all[0:n_episodes_for_exp]
+    assert len(episodes_for_exp) == n_episodes_for_exp
+
+    dataset_for_exp = RLDataSet(
+        episodes=episodes_for_exp,
+        meta=orig_meta,
+    )
+    return dataset_for_exp
 
 def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
     """Utility function for preparing features and labels
@@ -177,38 +245,8 @@ def setup_SA_spec_for_exp(
         hyperparameter_and_setting_dict = kwargs["hyperparameter_and_setting_dict"]
 
         if datagen_method == "generate_episodes":
-            n_episodes_for_eval = perf_eval_kwargs["n_episodes_for_eval"]
             # Sample from resampled dataset on disk of n_episodes
-            save_dir = os.path.join(results_dir, "regenerated_datasets")
-
-            savename = os.path.join(save_dir, f"regenerated_data_trial{trial_i}.pkl")
-
-            episodes_all = load_pickle(savename)
-            # Take data_frac episodes from this df
-            n_episodes_all = len(episodes_all)
-
-            n_episodes_for_exp = int(round(n_episodes_all * data_frac))
-            if n_episodes_for_exp < 1:
-                raise ValueError(
-                    f"This data_frac={data_frac} "
-                    f"results in {n_episodes_for_exp} episodes. "
-                    "Must have at least 1 episode to run a trial."
-                )
-
-            print(f"Orig dataset should have {n_episodes_all} episodes")
-            print(
-                f"This dataset with data_frac={data_frac} should have"
-                f" {n_episodes_for_exp} episodes"
-            )
-
-            # Take first n_episodes episodes
-            episodes_for_exp = episodes_all[0:n_episodes_for_exp]
-            assert len(episodes_for_exp) == n_episodes_for_exp
-
-            dataset_for_exp = RLDataSet(
-                episodes=episodes_for_exp,
-                meta=spec.dataset.meta,
-            )
+            dataset_for_exp = load_regenerated_episodes(results_dir,trial_i,data_frac,spec.dataset.meta)
 
             # Make a new spec object from a copy of spec, where the
             # only thing that is different is the dataset

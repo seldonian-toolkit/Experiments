@@ -161,7 +161,7 @@ def test_too_few_episodes(gridworld_spec,experiment):
 	""" Test that too small of a data_frac resulting in < 1
 	episodes in a trial raises an error """
 	np.random.seed(42)
-	constraint_strs = ['J_pi_new >= -0.25']
+	constraint_strs = ['J_pi_new_IS >= -0.25']
 	deltas=[0.05]
 	spec = gridworld_spec(constraint_strs,deltas)
 	n_trials = 1
@@ -209,7 +209,7 @@ def test_too_few_episodes(gridworld_spec,experiment):
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_RL_plot_generator(gridworld_spec,experiment):
 	np.random.seed(42)
-	constraint_strs = ['J_pi_new >= - 0.25']
+	constraint_strs = ['J_pi_new_IS >= - 0.25']
 	deltas = [0.05]
 	spec = gridworld_spec(constraint_strs,deltas)
 	spec.optimization_hyperparams['num_iters'] = 10
