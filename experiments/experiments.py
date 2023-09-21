@@ -98,7 +98,8 @@ class Experiment:
 
         res_df = pd.concat(df_list)
         res_df.to_csv(res_fname, index=False)
-        print(f"Saved {res_fname}")
+        if kwargs["verbose"]:
+            print(f"Saved {res_fname}")
         return
 
     def write_trial_result(self, data, colnames, trial_dir, verbose=False):
@@ -302,7 +303,7 @@ class BaselineExperiment(Experiment):
                         X_test_baseline, 
                         **pred_kwargs)
             except:
-                if verbose: print("Error training baseline model. Returning NSF")
+                if verbose: print("Error training baseline model. Returning NSF\n")
                 solution = "NSF"
         elif regime == "reinforcement_learning":
             if datagen_method == "generate_episodes":
@@ -336,7 +337,7 @@ class BaselineExperiment(Experiment):
             solution_found = False
 
         if solution_found:
-            if verbose: print("Solution was found. Calculating performance.")
+            if verbose: print("Solution was found. Calculating performance.\n")
             if regime == "supervised_learning":
                 performance = perf_eval_fn(y_pred, **perf_eval_kwargs)
             elif regime == "reinforcement_learning":
@@ -347,7 +348,7 @@ class BaselineExperiment(Experiment):
                 episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
 
             if verbose:
-                print(f"Performance = {performance}")
+                print(f"Performance = {performance}\n")
 
             # Determine whether this solution
             # violates any of the constraints
@@ -376,7 +377,7 @@ class BaselineExperiment(Experiment):
                 constraint_eval_kwargs=constraint_eval_kwargs,
             )
         else:
-            if verbose: print("NSF")
+            if verbose: print("NSF\n")
             # NSF is safe, so set g=-inf for all constraints
             n_constraints = len(spec.parse_trees)
             gvec = -np.inf * np.ones(
@@ -548,7 +549,6 @@ class SeldonianExperiment(Experiment):
         savename = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
         )
-        print(f"Savename: {savename}")
 
         if os.path.exists(savename):
             if verbose:
@@ -588,9 +588,8 @@ class SeldonianExperiment(Experiment):
             solution = "NSF"
 
         if verbose:
-            print("Solution from running seldonian algorithm:")
-            print(solution)
-            print()
+            print(f"Solution from running seldonian algorithm: {solution}\n")
+
 
         # Handle whether solution was found
         solution_found = True
@@ -642,7 +641,7 @@ class SeldonianExperiment(Experiment):
                     print(f"Performance = {performance}")
                     print(
                         "Determining whether solution "
-                        "is actually safe on ground truth"
+                        "is actually safe on ground truth\n"
                     )
                 ########################################
                 """ Calculate safety on ground truth """
@@ -666,11 +665,10 @@ class SeldonianExperiment(Experiment):
                 )
 
                 if verbose:
-                    print(f"gvec: {gvec}")
-                    print()
+                    print(f"gvec: {gvec}\n")
             else:
                 if verbose:
-                    print("Failed safety test")
+                    print("Failed safety test\n")
                     performance = np.nan
 
         else:  # solution_found=False
@@ -678,7 +676,7 @@ class SeldonianExperiment(Experiment):
             # NSF is safe, so set g=-inf for all constraints
             gvec = -np.inf * np.ones(n_constraints)
             if verbose:
-                print("NSF")
+                print("NSF\n")
             performance = np.nan
 
         # Clear out any cached data in the parse trees for the next trial.
@@ -940,7 +938,7 @@ class FairlearnExperiment(Experiment):
             ]  # same as X_test but drops the offset column
             y_pred = self.get_fairlearn_predictions(mitigator, X_test_fairlearn)
         except:
-            print("Error when fitting. Returning NSF")
+            print("Error when fitting. Returning NSF\n")
             solution_found = False
             performance = np.nan
         #########################################################
@@ -970,7 +968,7 @@ class FairlearnExperiment(Experiment):
                 n_constraints
             )  # NSF is safe, so set g=-inf for all constraints
             if verbose:
-                print("NSF")
+                print("NSF\n")
 
         # Write out file for this data_frac,trial_i combo
         data = [data_frac, trial_i, performance, gvec]
@@ -1048,7 +1046,6 @@ class FairlearnExperiment(Experiment):
                 sensitive in the Fairlearn dataset
         :type sensitive_features: List(str)
         """
-        print(f"Evaluating constraint for: {fairlearn_constraint_name}")
         failed = False
         if fairlearn_constraint_name == "demographic_parity":
             # g = abs((PR | ATR1) - (PR | ATR2)) - eps

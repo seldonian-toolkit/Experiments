@@ -42,12 +42,8 @@ class RLDiabetesUSAgentBaseline():
         """
         self.episodes = dataset.episodes
         n_eps = len(self.episodes)
-        print(f"Training baseline with {n_eps} behavior episodes")
         theta_init = self.initial_solution
-        print(f"theta_init: {theta_init}")
         crmin_init,crmax_init,cfmin_init,cfmax_init = self.policy.theta2crcf(theta_init)
-        print("crmin_init,crmax_init,cfmin_init,cfmax_init:")
-        print(crmin_init,crmax_init,cfmin_init,cfmax_init)
         opts = {}
         if "seed" in kwargs:
             opts["seed"] = kwargs["seed"]
@@ -63,10 +59,7 @@ class RLDiabetesUSAgentBaseline():
         # the negative expected return 
         es.optimize(self.primary_objective_fn,callback=None)
         solution = es.result.xbest
-        print(f"Found solution: {solution}")
         crmin_sol,crmax_sol,cfmin_sol,cfmax_sol = self.policy.theta2crcf(solution)
-        print("crmin_sol,crmax_sol,cfmin_sol,cfmax_sol:")
-        print(crmin_sol,crmax_sol,cfmin_sol,cfmax_sol)
         if (solution is None) or (not all(np.isfinite(solution))):
             solution = "NSF"
         return solution
