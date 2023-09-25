@@ -15,9 +15,11 @@ experiments.experiment\_utils
       :toctree:                                         
    
       batch_predictions
+      generate_behavior_policy_episodes
       generate_episodes_and_calc_J
       generate_resampled_datasets
       has_failed
+      load_regenerated_episodes
       load_resampled_dataset
       make_batch_epoch_dict_fixedniter
       make_batch_epoch_dict_min_sample_repeat

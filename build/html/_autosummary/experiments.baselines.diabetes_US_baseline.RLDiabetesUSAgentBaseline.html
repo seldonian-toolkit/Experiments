@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline &#8212; Seldonian Experiments alpha documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=bc8d421b" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=3d6c492d"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="experiments.baselines.linear_regression" href="experiments.baselines.linear_regression.html" />
+    <link rel="prev" title="experiments.baselines.diabetes_US_baseline" href="experiments.baselines.diabetes_US_baseline.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="experiments-baselines-diabetes-us-baseline-rldiabetesusagentbaseline">
+<h1>experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline<a class="headerlink" href="#experiments-baselines-diabetes-us-baseline-rldiabetesusagentbaseline" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RLDiabetesUSAgentBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements an RL baseline that uses importance sampling 
+with unequal support (US) with a fixed area policy</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.primary_objective_fn">
+<span class="sig-name descname"><span class="pre">primary_objective_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.primary_objective_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the function we want to minimize. 
+In RL, we want to maximize the expected return
+so we need to minimize the negative of the expected return.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.set_new_params">
+<span class="sig-name descname"><span class="pre">set_new_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.set_new_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of the agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_params</strong> – array of weights</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CMA-ES starting with a random initial policy parameterization</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Seldonian Experiments</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a><ul class="current">
+<li class="toctree-l5 current"><a class="current reference internal" href="#">experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__init__"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline.__init__()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__repr__"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline.__repr__()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.primary_objective_fn"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline.primary_objective_fn()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.set_new_params"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline.set_new_params()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train"><code class="docutils literal notranslate"><span class="pre">RLDiabetesUSAgentBaseline.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.linear_regression.html">experiments.baselines.linear_regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.logistic_regression.html">experiments.baselines.logistic_regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.random_classifiers.html">experiments.baselines.random_classifiers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.random_forest.html">experiments.baselines.random_forest</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.experiment_utils.html">experiments.experiment_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.experiments.html">experiments.experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.generate_plots.html">experiments.generate_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.headless_example.html">experiments.headless_example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiments.perf_eval_funcs.html">experiments.perf_eval_funcs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API</a><ul>
+  <li><a href="experiments.html">experiments</a><ul>
+  <li><a href="experiments.baselines.html">experiments.baselines</a><ul>
+  <li><a href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a><ul>
+      <li>Previous: <a href="experiments.baselines.diabetes_US_baseline.html" title="previous chapter">experiments.baselines.diabetes_US_baseline</a></li>
+      <li>Next: <a href="experiments.baselines.linear_regression.html" title="next chapter">experiments.baselines.linear_regression</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, University of Massachusetts.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/_autosummary/experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
