@@ -322,11 +322,11 @@ class BaselineExperiment(Experiment):
             baseline_model = copy.deepcopy(self.baseline_model)
             # train_kwargs = {}
             # pred_kwargs = {}
-            # try: 
-            solution = baseline_model.train(trial_dataset)
-            baseline_model.set_new_params(solution)
-            # except:
-            #     solution = "NSF"
+            try: 
+                solution = baseline_model.train(trial_dataset)
+                baseline_model.set_new_params(solution)
+            except:
+                solution = "NSF"
 
         #########################################################
         """" Calculate performance and safety on ground truth """

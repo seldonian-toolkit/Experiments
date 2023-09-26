@@ -79,6 +79,7 @@ def generate_behavior_policy_episodes(hyperparameter_and_setting_dict,n_trials,s
             regenerated_episodes
     :type save_dir: str
     """
+    os.makedirs(save_dir,exist_ok=True)
     try:
         n_workers_for_episode_generation = hyperparameter_and_setting_dict["n_workers_for_episode_generation"]
     except:
