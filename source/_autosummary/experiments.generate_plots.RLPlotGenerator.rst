@@ -22,6 +22,8 @@ experiments.generate\_plots.RLPlotGenerator
    ..
    ..    ~RLPlotGenerator.make_plots
    ..
+   ..    ~RLPlotGenerator.plot_importance_weights
+   ..
    ..    ~RLPlotGenerator.run_baseline_experiment
    ..
    ..    ~RLPlotGenerator.run_seldonian_experiment

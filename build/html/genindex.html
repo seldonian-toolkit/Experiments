@@ -40,8 +40,10 @@
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -56,6 +58,8 @@
       <li><a href="_autosummary/experiments.base_example.BaseExample.html#experiments.base_example.BaseExample.__init__">__init__() (BaseExample method)</a>
 
       <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.__init__">(BaseFittedQBaseline method)</a>
+</li>
         <li><a href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.__init__">(BaselineExperiment method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.html#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__">(BinaryLogisticRegressionBaseline method)</a>
@@ -84,6 +88,8 @@
 </li>
         <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.__init__">(SupervisedPlotGenerator method)</a>
 </li>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.__init__">(TabularFittedQBaseline method)</a>
+</li>
         <li><a href="_autosummary/experiments.baselines.random_classifiers.UniformRandomClassifierBaseline.html#experiments.baselines.random_classifiers.UniformRandomClassifierBaseline.__init__">(UniformRandomClassifierBaseline method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.html#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.__init__">(WeightedRandomClassifierBaseline method)</a>
@@ -94,6 +100,8 @@
       <li><a href="_autosummary/experiments.base_example.BaseExample.html#experiments.base_example.BaseExample.__repr__">__repr__() (BaseExample method)</a>
 
       <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.__repr__">(BaseFittedQBaseline method)</a>
+</li>
         <li><a href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment.__repr__">(BaselineExperiment method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.html#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__repr__">(BinaryLogisticRegressionBaseline method)</a>
@@ -121,6 +129,8 @@
         <li><a href="_autosummary/experiments.experiments.SeldonianExperiment.html#experiments.experiments.SeldonianExperiment.__repr__">(SeldonianExperiment method)</a>
 </li>
         <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.__repr__">(SupervisedPlotGenerator method)</a>
+</li>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.__repr__">(TabularFittedQBaseline method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.random_classifiers.UniformRandomClassifierBaseline.html#experiments.baselines.random_classifiers.UniformRandomClassifierBaseline.__repr__">(UniformRandomClassifierBaseline method)</a>
 </li>
@@ -152,6 +162,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.base_example.BaseExample.html#experiments.base_example.BaseExample">BaseExample (class in experiments.base_example)</a>
+</li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline">BaseFittedQBaseline (class in experiments.baselines.fitted_Q)</a>
 </li>
       <li><a href="_autosummary/experiments.experiments.BaselineExperiment.html#experiments.experiments.BaselineExperiment">BaselineExperiment (class in experiments.experiments)</a>
 </li>
@@ -236,14 +248,21 @@
 </li>
       </ul></li>
       <li>
+    experiments.baselines.fitted_Q
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.html#module-experiments.baselines.fitted_Q">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     experiments.baselines.linear_regression
 
       <ul>
         <li><a href="_autosummary/experiments.baselines.linear_regression.html#module-experiments.baselines.linear_regression">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     experiments.baselines.logistic_regression
 
@@ -332,14 +351,40 @@
 </li>
       <li><a href="_autosummary/experiments.experiment_utils.generate_resampled_datasets.html#experiments.experiment_utils.generate_resampled_datasets">generate_resampled_datasets() (in module experiments.experiment_utils)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.experiments.FairlearnExperiment.html#experiments.experiments.FairlearnExperiment.get_fairlearn_predictions">get_fairlearn_predictions() (FairlearnExperiment method)</a>
 </li>
       <li><a href="_autosummary/experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.html#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.get_jacobian">get_jacobian() (DecisionTreeClassifierLeafTuningBaseline method)</a>
 </li>
       <li><a href="_autosummary/experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.html#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.get_leaf_node_probs">get_leaf_node_probs() (DecisionTreeClassifierLeafTuningBaseline method)</a>
 </li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.get_max_q">get_max_q() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.get_max_q">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.get_next_obs">get_next_obs() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.get_next_obs">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.get_probs_from_observations_and_actions">get_probs_from_observations_and_actions() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.get_probs_from_observations_and_actions">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.get_regressor_weights">get_regressor_weights() (TabularFittedQBaseline method)</a>
+</li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.get_target">get_target() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.get_target">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -352,6 +397,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.headless_example.HeadlessExample.html#experiments.headless_example.HeadlessExample">HeadlessExample (class in experiments.headless_example)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.instantiate_regressor">instantiate_regressor() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.instantiate_regressor">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -384,6 +441,24 @@
         <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.make_plots">(SupervisedPlotGenerator method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_regression_dataset">make_regression_dataset() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.make_regression_dataset">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_X">make_X() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.make_X">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_y">make_y() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.make_y">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
       <li>
     module
 
@@ -399,6 +474,8 @@
         <li><a href="_autosummary/experiments.baselines.decision_tree_leaf_tuning.html#module-experiments.baselines.decision_tree_leaf_tuning">experiments.baselines.decision_tree_leaf_tuning</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.diabetes_US_baseline.html#module-experiments.baselines.diabetes_US_baseline">experiments.baselines.diabetes_US_baseline</a>
+</li>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.html#module-experiments.baselines.fitted_Q">experiments.baselines.fitted_Q</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.linear_regression.html#module-experiments.baselines.linear_regression">experiments.baselines.linear_regression</a>
 </li>
@@ -430,9 +507,19 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.one_hot_encode">one_hot_encode() (TabularFittedQBaseline method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator.plot_importance_weights">plot_importance_weights() (RLPlotGenerator method)</a>
+</li>
       <li><a href="_autosummary/experiments.generate_plots.PlotGenerator.html#experiments.generate_plots.PlotGenerator">PlotGenerator (class in experiments.generate_plots)</a>
 </li>
       <li><a href="_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.html#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.predict">predict() (BinaryLogisticRegressionBaseline method)</a>
@@ -519,9 +606,11 @@
 </li>
       <li><a href="_autosummary/experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.html#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.set_leaf_node_values">set_leaf_node_values() (DecisionTreeClassifierLeafTuningBaseline method)</a>
 </li>
+      <li><a href="_autosummary/experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.html#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.set_new_params">set_new_params() (RLDiabetesUSAgentBaseline method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.html#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.set_new_params">set_new_params() (RLDiabetesUSAgentBaseline method)</a>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.set_q_table">set_q_table() (TabularFittedQBaseline method)</a>
 </li>
       <li><a href="_autosummary/experiments.experiment_utils.setup_SA_spec_for_exp.html#experiments.experiment_utils.setup_SA_spec_for_exp">setup_SA_spec_for_exp() (in module experiments.experiment_utils)</a>
 </li>
@@ -533,9 +622,13 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.html#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.train">train() (BinaryLogisticRegressionBaseline method)</a>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline">TabularFittedQBaseline (class in experiments.baselines.fitted_Q)</a>
+</li>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.train">train() (BaseFittedQBaseline method)</a>
 
       <ul>
+        <li><a href="_autosummary/experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.html#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.train">(BinaryLogisticRegressionBaseline method)</a>
+</li>
         <li><a href="_autosummary/experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.html#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train">(DecisionTreeClassifierBaseline method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.html#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.train">(DecisionTreeClassifierLeafTuningBaseline method)</a>
@@ -543,6 +636,8 @@
         <li><a href="_autosummary/experiments.baselines.random_forest.RandomForestClassifierBaseline.html#experiments.baselines.random_forest.RandomForestClassifierBaseline.train">(RandomForestClassifierBaseline method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.html#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train">(RLDiabetesUSAgentBaseline method)</a>
+</li>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.train">(TabularFittedQBaseline method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -557,6 +652,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.baselines.random_classifiers.UniformRandomClassifierBaseline.html#experiments.baselines.random_classifiers.UniformRandomClassifierBaseline">UniformRandomClassifierBaseline (class in experiments.baselines.random_classifiers)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.update_Q_weights">update_Q_weights() (BaseFittedQBaseline method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.baselines.fitted_Q.TabularFittedQBaseline.html#experiments.baselines.fitted_Q.TabularFittedQBaseline.update_Q_weights">(TabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

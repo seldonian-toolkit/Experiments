@@ -136,6 +136,27 @@ will be saved on disk.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="experiments.generate_plots.RLPlotGenerator.plot_importance_weights">
+<span class="sig-name descname"><span class="pre">plot_importance_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.RLPlotGenerator.plot_importance_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the mean importance weights (over episodes) for 
+all trials in an experiment. Only uses the qsa_results/
+folder since that is the only experiment that is relevant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fontsize</strong> (<em>int</em>) – The font size to use for the axis labels</p></li>
+<li><p><strong>marker_size</strong> (<em>float</em>) – The size of the points in each plots</p></li>
+<li><p><strong>save_format</strong> (<em>str</em><em>, </em><em>defaults to &quot;pdf&quot;</em>) – The file type for the saved plot</p></li>
+<li><p><strong>show_title</strong> (<em>bool</em>) – Whether to show the title at the top of the figure</p></li>
+<li><p><strong>custom_title</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – A custom title</p></li>
+<li><p><strong>savename</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – If not None, the filename to which the figure
+will be saved on disk.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="experiments.generate_plots.RLPlotGenerator.run_baseline_experiment">
 <span class="sig-name descname"><span class="pre">run_baseline_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.RLPlotGenerator.run_baseline_experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a supervised Seldonian experiment using the spec attribute
@@ -197,6 +218,7 @@ while the Seldonian algorithms are running in each trial</p>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.__init__"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.__init__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.__repr__"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.make_plots"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.make_plots()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.plot_importance_weights"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.plot_importance_weights()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.run_baseline_experiment"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.run_baseline_experiment()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.generate_plots.RLPlotGenerator.run_seldonian_experiment"><code class="docutils literal notranslate"><span class="pre">RLPlotGenerator.run_seldonian_experiment()</span></code></a></li>
 </ul>
