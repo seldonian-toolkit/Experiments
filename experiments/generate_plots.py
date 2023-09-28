@@ -10,7 +10,7 @@ from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 from matplotlib import style
 
-from seldonian.utils.io_utils import save_pickle
+from seldonian.utils.io_utils import (load_pickle,save_pickle)
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .experiment_utils import (
@@ -1044,7 +1044,6 @@ class RLPlotGenerator(PlotGenerator):
         """
         from seldonian.RL.RL_runner import run_trial
 
-        print("Running experiment")
         dataset = self.spec.dataset
 
         if self.datagen_method == "generate_episodes":
@@ -1073,7 +1072,6 @@ class RLPlotGenerator(PlotGenerator):
         sd_exp = SeldonianExperiment(model_name="qsa", results_dir=self.results_dir)
 
         sd_exp.run_experiment(**run_seldonian_kwargs)
-
 
     def run_baseline_experiment(self, baseline_model, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute
@@ -1117,3 +1115,128 @@ class RLPlotGenerator(PlotGenerator):
 
         bl_exp.run_experiment(**run_baseline_kwargs)
         return
+
+    def plot_importance_weights(
+        self,
+        n_trials,
+        data_fracs,
+        fontsize=12,
+        title_fontsize=12,
+        marker_size=20,
+        save_format="pdf",
+        show_title=True,
+        custom_title=None,
+        savename=None,
+    ):
+        """Plot the mean importance weights (over episodes) for 
+        all trials in an experiment. Only uses the qsa_results/
+        folder since that is the only experiment that is relevant.
+
+        :param fontsize: The font size to use for the axis labels
+        :type fontsize: int
+        :param marker_size: The size of the points in each plots
+        :type marker_size: float
+        :param save_format: The file type for the saved plot
+        :type save_format: str, defaults to "pdf"
+        :param show_title: Whether to show the title at the top of the figure
+        :type show_title: bool
+        :param custom_title: A custom title 
+        :type custom_title: str, defaults to None
+        :param savename: If not None, the filename to which the figure
+                will be saved on disk.
+        :type savename: str, defaults to None
+        """
+        plt.style.use("bmh")
+        regime = self.spec.dataset.regime
+        if regime != "reinforcement_learning":
+            raise ValueError(
+                "Importance weights can only be plotted for reinforcement learning problems"
+            )
+
+        tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
+
+        # Figure out what experiments we have from subfolders in results_dir
+        is_parent_dir = os.path.join(self.results_dir,"qsa_results","importance_weights")
+        cs_weights_dir = os.path.join(is_parent_dir,"candidate_selection")
+        st_weights_dir = os.path.join(is_parent_dir,"safety_test")
+
+        ## PLOTTING SETUP
+        
+        figsize = (12, 6)
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(1,1,1)
+        locmaj = matplotlib.ticker.LogLocator(base=10, numticks=12)
+        locmin = matplotlib.ticker.LogLocator(
+            base=10.0,
+            subs=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+            numticks=12,
+        )
+
+        ax.minorticks_on()
+        ax.xaxis.set_major_locator(locmaj)
+        ax.xaxis.set_minor_locator(locmin)
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.set_xscale("log")
+        # SELDONIAN RESULTS SETUP
+        for branch in ["cs","st"]:
+            if branch == "cs":
+                color="blue"
+                label="Candidate selection"
+                weights_dir = cs_weights_dir
+            else: 
+                color="red"
+                label="Safety test"
+                weights_dir = st_weights_dir
+            
+            IS_weights_dict = {
+                data_frac:[] for data_frac in data_fracs
+            } # keys: data_fracs, values: lists of mean IS weights for all trials at that data_frac
+            for data_frac in data_fracs:
+                for trial_i in range(n_trials):
+                    filename = os.path.join(
+                        weights_dir, f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl"
+                    )
+                    importance_weights = load_pickle(filename)
+                    if importance_weights is not None:
+                        mean_IS = np.mean(importance_weights)
+                        IS_weights_dict[data_frac].append(mean_IS)
+
+            good_data_fracs = np.array([key for key in IS_weights_dict if len(IS_weights_dict[key])>1])
+            n_trials_good_list = np.array([len(IS_weights_dict[key]) for key in good_data_fracs])
+            mean_good_IS_weights = np.array([np.mean(IS_weights_dict[key]) for key in good_data_fracs])
+            ste_good_IS_weights = np.array([np.std(IS_weights_dict[good_data_fracs[ii]])/n_trials_good_list[ii] for ii in range(len(good_data_fracs))])
+            
+            ax.scatter(
+                good_data_fracs*tot_data_size,
+                mean_good_IS_weights,
+                s=marker_size,
+                color=color,
+                marker="o",
+                zorder=10,
+                label=label)
+            
+            ax.fill_between(
+                good_data_fracs*tot_data_size,
+                mean_good_IS_weights - ste_good_IS_weights,
+                mean_good_IS_weights + ste_good_IS_weights,
+                color=color,
+                alpha=0.5,
+                zorder=10
+            )
+        
+        ax.set_xlim(5,tot_data_size)
+        ax.set_xlabel("Amount of data", fontsize=fontsize)
+        ax.set_ylabel("Mean importance weight",fontsize=fontsize)
+        ax.legend()
+
+        if custom_title:
+            title = custom_title
+        else:
+            title = f"Importance weights vs. amount of data"
+        ax.set_title(title, y=1.05, fontsize=title_fontsize)
+
+        if savename:
+            plt.savefig(savename, format=save_format,bbox_inches="tight")
+            print(f"Saved {savename}")
+        else:
+            plt.show()
