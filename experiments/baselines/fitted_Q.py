@@ -10,6 +10,7 @@ class BaseFittedQBaseline(RLExperimentBaseline):
         policy,
         num_iters=100,
         env_kwargs={"gamma": 1.0},
+        regressor_kwargs={},
     ):
         """Base class for fitted-Q RL baselines. All methods that raise 
         NotImplementedError must be implemented in child classes. Any method
@@ -25,7 +26,9 @@ class BaseFittedQBaseline(RLExperimentBaseline):
         """
         super().__init__(model_name, policy, env_kwargs)
         self.regressor_class = regressor_class
+        self.regressor_kwargs = regressor_kwargs
         self.num_iters = num_iters
+        self.last_greedy_actions = []
 
     def get_probs_from_observations_and_actions(
         self, theta, observations, actions, behavior_action_probs
@@ -68,6 +71,8 @@ class BaseFittedQBaseline(RLExperimentBaseline):
             self.regressor.fit(X, y)
             # Update Q function using results of the regression
             self.update_Q_weights()
+            if self.stopping_criteria_met():
+                break
         return self.get_policy_params()
 
     def reset_policy_params():
@@ -159,10 +164,18 @@ class BaseFittedQBaseline(RLExperimentBaseline):
         """Update Q function weights given results of the regressor."""
         raise NotImplementedError("Implement this method in a child class")
 
+    def stopping_criteria_met(self):
+        """Define stopping criteria. Return True if stopping criteria are met.
+        If you want to run for self.num_iters and don't want any stopping criteria
+        just return False in your child-class implementation of this method.
+        """
+        raise NotImplementedError("Implement this method in a child class")
 
-class TabularFittedQBaseline(BaseFittedQBaseline):
+
+
+class ExactTabularFittedQBaseline(BaseFittedQBaseline):
     def __init__(
-        self, model_name, regressor_class, policy, num_iters=100, env_kwargs={}
+        self, model_name, regressor_class, policy, num_iters=100, env_kwargs={'gamma':1.0}, regressor_kwargs={}
     ):
         """Implements fitted-Q RL baseline where the policy is a Q table.
         Uses the regressor weights to update the Q table. Works for parametric
@@ -182,6 +195,7 @@ class TabularFittedQBaseline(BaseFittedQBaseline):
             policy=policy,
             num_iters=num_iters,
             env_kwargs=env_kwargs,
+            regressor_kwargs=regressor_kwargs,
         )
         self.num_observations = env_kwargs["num_observations"]
         self.num_actions = env_kwargs["num_actions"]
@@ -252,24 +266,58 @@ class TabularFittedQBaseline(BaseFittedQBaseline):
         """Set the Q table parameters"""
         self.set_new_params(weights)
 
+    def stopping_criteria_met(self):
+        """If the greedy actions in each observation
+        are not changing from iteration to iteration
+        then we can stop the algorithm and return the optimal solution.
+        Should keep track of last few greedy actions. 
+        """
+        current_greedy_actions = np.array([np.argmax(self.policy.get_params()[obs]) for obs in range(self.num_observations)])
+        if len(self.last_greedy_actions) == 0:
+            self.last_greedy_actions = current_greedy_actions
+            return False
+        if all([current_greedy_actions[ii] == self.last_greedy_actions[ii] for ii in range(len(current_greedy_actions))]):
+            self.last_greedy_actions = current_greedy_actions
+            return True
 
-class ApproximateTabularFittedQBaseline(TabularFittedQBaseline):
-    def __init__(self,regressor_class,policy,num_iters=100,env_kwargs={}):
+        self.last_greedy_actions = current_greedy_actions
+        return False
+
+class ApproximateTabularFittedQBaseline(ExactTabularFittedQBaseline):
+    def __init__(self,model_name,regressor_class,policy,num_iters=100,env_kwargs={'gamma':1.0},regressor_kwargs={}):
         """Implements fitted-Q RL baseline for a Q table, 
         but uses the fitted regressor to approximate the Q values.
-        Useful for nonparametric regressors. The features of the regression problem are the one-hot vectors
+        Useful for nonparametric regressors. The features of the 
+        regression problem are the one-hot vectors
         of the (observation,action) pairs. 
         """
-        super().__init__(regressor_class,policy,num_iters,env_kwargs)
+        super().__init__(
+            model_name=model_name,
+            regressor_class=regressor_class,
+            policy=policy,
+            num_iters=num_iters,
+            env_kwargs=env_kwargs,
+            regressor_kwargs=regressor_kwargs
+        )
 
+    def instantiate_regressor(self):
+        """Create the regressor object and return it.
+        This should be an instance of the self.regressor_class class, instantiated with
+        whatever parameters you need.
+
+        :return: Regressor object, ready to be trained.
+        """
+        regressor = self.regressor_class()
+        return regressor
+    
     def get_regressor_weights(self):
         """ Approximates Q table by passing each possible 
         one-hot encoding of (observation,action) pairs
         through the regressor's forward pass. """
         vecs = []
-        for i in range(num_observations*num_actions):
-            vec = np.zeros(num_observations*num_actions)
+        for i in range(self.num_observations*self.num_actions):
+            vec = np.zeros(self.num_observations*self.num_actions)
             vec[i] = 1
             vecs.append(vec)
         Q = self.regressor.predict(vecs)
-        return Q.reshape(num_observations,num_actions)
+        return Q.reshape(self.num_observations,self.num_actions)
