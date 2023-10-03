@@ -1,6 +1,7 @@
 import autograd.numpy as np
+from .baselines import 
 
-class BaseFittedQBaseline(object):
+class BaseFittedQBaseline(RLExperimentBaseline):
     def __init__(self,model_name,regressor_class,policy,num_iters=100,env_kwargs={"gamma":1.0}):
         """Base class for fitted-Q RL baselines
 
@@ -12,11 +13,8 @@ class BaseFittedQBaseline(object):
             Must contain a "gamma" key with a float value between 0 and 1. This is used
             for computing the Q target.
         """
-        self.model_name = model_name
+        super().__init__(model_name,policy,env_kwargs)
         self.regressor_class = regressor_class
-        self.policy = policy
-        self.env_kwargs = env_kwargs
-        self.gamma=env_kwargs["gamma"]
         self.num_iters = num_iters
     
     def get_probs_from_observations_and_actions(

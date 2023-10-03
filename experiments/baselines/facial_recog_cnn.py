@@ -1,10 +1,11 @@
-from seldonian.models.pytorch_model import SupervisedPytorchBaseModel
 import torch.nn as nn
 import torch
 from scipy.special import softmax
 
 from experiments.experiment_utils import batch_predictions
 
+from seldonian.models.pytorch_model import SupervisedPytorchBaseModel
+from .baselines import SupervisedExperimentBaseline
 
 class FacialRecogCNNModel(nn.Module):
     def __init__(self):
@@ -83,15 +84,15 @@ class FacialRecogCNNModel(nn.Module):
 
         return out
 
-class PytorchFacialRecogBaseline(SupervisedPytorchBaseModel):
+class PytorchFacialRecogBaseline(SupervisedPytorchBaseModel,SupervisedExperimentBaseline):
     def __init__(self, device, learning_rate, batch_epoch_dict={}):
         """Implements a CNN with PyTorch.
         CNN consists of four hidden layers followed
         by a linear + softmax output layer
 
         """
-        super().__init__(device)
-        self.model_name = "facial_recog_cnn"
+        SupervisedPytorchBaseModel.__init__(self,device)
+        SupervisedExperimentBaseline.__init__(self,model_name="facial_recog_cnn")
         self.eval_batch_size = 2000 # How many samples are evaluated in a single (batched) forward pass
         self.batch_epoch_dict = batch_epoch_dict
         self.criterion = nn.CrossEntropyLoss()
@@ -151,71 +152,3 @@ class PytorchFacialRecogBaseline(SupervisedPytorchBaseModel):
                 itot += 1
         solution = self.get_model_params()
         return solution
-
-
-# class PytorchFacialRecog(SupervisedPytorchBaseModel):
-#     def __init__(self, device):
-#         """Implements a CNN with PyTorch.
-#         CNN consists of two hidden layers followed
-#         by a linear + softmax output layer
-
-#         :param input_dim: Number of features
-#         :param output_dim: Size of output layer (number of label columns)
-#         """
-#         learning_rate = 0.001
-#         super().__init__(device)
-#         self.criterion = nn.CrossEntropyLoss()
-#         self.optimizer = torch.optim.Adam(
-#             self.pytorch_model.parameters(), lr=learning_rate
-#         )
-
-#     def create_model(self, **kwargs):
-#         """Create the pytorch model and return it
-#         Inputs are N,1,28,28 where N is the number of them,
-#         1 channel and 28x28 pixels.
-#         Do Conv2d,ReLU,maxpool twice then
-#         output in a fully connected layer to 10 output classes
-#         """
-#         return FacialRecogCNNModel()
-
-#     def predict(self, solution, X, **kwargs):
-#         y_pred_super = super().predict(solution, X, **kwargs)
-#         y_pred = softmax(y_pred_super, axis=-1)[:, 1]
-#         return y_pred
-
-#     def train(self, X_train, Y_train, batch_size, n_epochs):
-#         loss_list = []
-#         accuracy_list = []
-#         iter_list = []
-#         x_train_tensor = torch.from_numpy(X_train)
-#         y_train_label = torch.from_numpy(Y_train)
-#         train = torch.utils.data.TensorDataset(x_train_tensor, y_train_label)
-#         trainloader = torch.utils.data.DataLoader(
-#             train, batch_size=batch_size, shuffle=True
-#         )
-#         itot = 0
-#         for epoch in range(n_epochs):
-#             for i, (images, labels) in enumerate(trainloader):
-#                 # Load images
-#                 images = images.to(self.device)
-#                 labels = labels.to(self.device)
-#                 images = images.requires_grad_()
-
-#                 # Clear gradients w.r.t. parameters
-#                 self.optimizer.zero_grad()
-
-#                 # Forward pass to get output/logits
-#                 outputs = self.pytorch_model(images)
-
-#                 # Calculate Loss: softmax --> cross entropy loss
-#                 loss = self.criterion(outputs, labels)
-
-#                 # Getting gradients w.r.t. parameters
-#                 loss.backward()
-
-#                 # Updating parameters
-#                 self.optimizer.step()
-#                 if i % 100 == 0:
-#                     it = f"{i+1}/{len(trainloader)}"
-#                     print(f"Epoch, it, itot, loss: {epoch},{it},{itot},{loss}")
-#                 itot += 1

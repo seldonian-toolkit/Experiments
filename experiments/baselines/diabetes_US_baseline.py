@@ -68,7 +68,7 @@ class RLDiabetesUSAgentBaseline():
     def primary_objective_fn(self,theta):
         """ This is the function we want to minimize. 
         In RL, we want to maximize the expected return
-        so we need to minimize the negative of the expected return.
+        so we need to minimize the negative expected return.
         """
         crmin,crmax,cfmin,cfmax = self.policy.theta2crcf(theta)
         returns_inside_theta_box = []

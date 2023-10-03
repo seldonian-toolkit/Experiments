@@ -1,10 +1,11 @@
 from sklearn.ensemble import RandomForestClassifier
+from .baselines import SupervisedExperimentBaseline
 
-class RandomForestClassifierBaseline():
+class RandomForestClassifierBaseline(SupervisedExperimentBaseline):
     def __init__(self,**rf_kwargs):
         """Implements a random forest classifier baseline for 
         a binary classification task"""
-        self.model_name = "random_forest"
+        SupervisedExperimentBaseline.__init__(self,model_name="random_forest")
         self.rf_kwargs = rf_kwargs
 
     def train(self,X,Y):
@@ -17,7 +18,7 @@ class RandomForestClassifierBaseline():
         """
         self.trained_model = RandomForestClassifier(**self.rf_kwargs)
         self.trained_model.fit(X,Y) # parent method
-        return None 
+        return 
 
     def predict(self,theta,X):
         """Use the trained model to predict positive class probabilities

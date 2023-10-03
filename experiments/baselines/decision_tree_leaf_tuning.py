@@ -3,8 +3,10 @@ from autograd import grad
 import autograd.numpy as np
 from seldonian.models.trees.sktree_model import SeldonianDecisionTree, probs2theta
 from seldonian.warnings.custom_warnings import *
+from .baselines import SupervisedExperimentBaseline
 
-class DecisionTreeClassifierLeafTuningBaseline(SeldonianDecisionTree):
+
+class DecisionTreeClassifierLeafTuningBaseline(SeldonianDecisionTree,SupervisedExperimentBaseline):
     def __init__(self,primary_objective_fn,sub_regime,adam_kwargs,dt_kwargs={}):
         """Implements a decision classifier with leaf node tuning
         as a baseline for binary classification tasks
@@ -16,11 +18,12 @@ class DecisionTreeClassifierLeafTuningBaseline(SeldonianDecisionTree):
         :param dt_kwargs: Any keyword arguments that scikit-learn's
             DecisionTreeClassifier takes. 
         """
-        self.model_name = "decision_tree_leaf_tuning"
+        SeldonianDecisionTree.__init__(self,**dt_kwargs)
+        SupervisedExperimentBaseline.__init__(self,model_name="decision_tree_leaf_tuning")
         self.primary_objective_fn = primary_objective_fn 
         self.sub_regime = sub_regime
         self.adam_kwargs = adam_kwargs
-        super().__init__(**dt_kwargs)
+
 
     def train(self,X,Y):
         """Instantiate a new model instance and train (fit) 

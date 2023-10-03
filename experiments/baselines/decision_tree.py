@@ -1,6 +1,7 @@
 from sklearn.tree import DecisionTreeClassifier
+from .baselines import SupervisedExperimentBaseline
 
-class DecisionTreeClassifierBaseline():
+class DecisionTreeClassifierBaseline(SupervisedExperimentBaseline):
     def __init__(self,**dt_kwargs):
         """Implements a decision tree classifier baseline for 
         a binary classification task
@@ -8,7 +9,7 @@ class DecisionTreeClassifierBaseline():
         :param dt_kwargs: Any keyword arguments that scikit-learn's
         DecisionTreeClassifier takes. 
         """
-        self.model_name = "decision_tree"
+        SupervisedExperimentBaseline.__init__(self,model_name="decision_tree")
         self.dt_kwargs = dt_kwargs
 
     def train(self,X,Y):
