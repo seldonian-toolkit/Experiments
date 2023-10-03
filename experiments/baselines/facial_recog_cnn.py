@@ -7,6 +7,7 @@ from experiments.experiment_utils import batch_predictions
 from seldonian.models.pytorch_model import SupervisedPytorchBaseModel
 from .baselines import SupervisedExperimentBaseline
 
+
 class FacialRecogCNNModel(nn.Module):
     def __init__(self):
         super(FacialRecogCNNModel, self).__init__()
@@ -84,16 +85,21 @@ class FacialRecogCNNModel(nn.Module):
 
         return out
 
-class PytorchFacialRecogBaseline(SupervisedPytorchBaseModel,SupervisedExperimentBaseline):
+
+class PytorchFacialRecogBaseline(
+    SupervisedPytorchBaseModel, SupervisedExperimentBaseline
+):
     def __init__(self, device, learning_rate, batch_epoch_dict={}):
         """Implements a CNN with PyTorch.
         CNN consists of four hidden layers followed
         by a linear + softmax output layer
 
         """
-        SupervisedPytorchBaseModel.__init__(self,device)
-        SupervisedExperimentBaseline.__init__(self,model_name="facial_recog_cnn")
-        self.eval_batch_size = 2000 # How many samples are evaluated in a single (batched) forward pass
+        SupervisedPytorchBaseModel.__init__(self, device)
+        SupervisedExperimentBaseline.__init__(self, model_name="facial_recog_cnn")
+        self.eval_batch_size = (
+            2000  # How many samples are evaluated in a single (batched) forward pass
+        )
         self.batch_epoch_dict = batch_epoch_dict
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(
