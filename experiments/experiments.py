@@ -359,17 +359,16 @@ class BaselineExperiment(Experiment):
             if regime == "reinforcement_learning":
                 # Need to put the newly generated episodes into the new dataset
                 constraint_eval_kwargs["episodes_for_eval"] = episodes_for_eval
+                constraint_eval_kwargs["performance"] = performance
                 dataset_for_eval = RLDataSet(
                     episodes=episodes_for_eval,
                     meta=dataset.meta
                 )
 
-            if constraint_eval_fns == []:
-                constraint_eval_kwargs["solution"] = solution
-                constraint_eval_kwargs["baseline_model"] = baseline_model
-                constraint_eval_kwargs["dataset"] = dataset_for_eval
-                constraint_eval_kwargs["parse_trees"] = parse_trees
-                constraint_eval_kwargs["verbose"] = verbose
+            constraint_eval_kwargs["baseline_model"] = baseline_model
+            constraint_eval_kwargs["dataset"] = dataset_for_eval
+            constraint_eval_kwargs["parse_trees"] = parse_trees
+            constraint_eval_kwargs["verbose"] = verbose
 
             gvec = self.evaluate_constraint_functions(
                 solution=solution,
