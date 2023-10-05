@@ -36,11 +36,11 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.random_forest.RandomForestClassifierBaseline">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RandomForestClassifierBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">rf_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_forest.RandomForestClassifierBaseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline" title="experiments.baselines.baselines.SupervisedExperimentBaseline"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedExperimentBaseline</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.random_forest.RandomForestClassifierBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">rf_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_forest.RandomForestClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a random forest classifier baseline for 
+<dd><p>Implements a random forest classifier baseline for
 a binary classification task</p>
 </dd></dl>
 
@@ -59,8 +59,8 @@ a binary classification task</p>
 <dt class="sig sig-object py" id="experiments.baselines.random_forest.RandomForestClassifierBaseline.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_forest.RandomForestClassifierBaseline.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the trained model to predict positive class probabilities
-theta isn’t used here because there are no fitted parameters 
-in random forests. 
+theta isn’t used here because there are no fitted parameters
+in random forests.
 :param theta: Model weights, None in this case
 :param X: features
 :type X: 2D np.ndarray</p>
@@ -69,10 +69,10 @@ in random forests.
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.random_forest.RandomForestClassifierBaseline.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_forest.RandomForestClassifierBaseline.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate a new model instance and train (fit) 
+<dd><p>Instantiate a new model instance and train (fit)
 it to the training data, X,y
 :param X: features
-:type X: 2D np.ndarray 
+:type X: 2D np.ndarray
 :param y: labels
 :type y: 1D np.ndarray</p>
 </dd></dl>
@@ -104,6 +104,7 @@ it to the training data, X,y
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a></li>

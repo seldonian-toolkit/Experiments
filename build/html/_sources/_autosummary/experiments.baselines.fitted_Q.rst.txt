@@ -19,8 +19,9 @@ experiments.baselines.fitted\_Q
       :toctree:                                         
       :template: custom-class-template.rst              
    
+      ApproximateTabularFittedQBaseline
       BaseFittedQBaseline
-      TabularFittedQBaseline
+      ExactTabularFittedQBaseline
    
    
 

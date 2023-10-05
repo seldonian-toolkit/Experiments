@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>experiments.baselines.random_forest &#8212; Seldonian Experiments alpha documentation</title>
+    <title>experiments.baselines.baselines &#8212; Seldonian Experiments alpha documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=bc8d421b" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=3d6c492d"></script>
@@ -13,8 +13,8 @@
     <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.baselines.random_forest.RandomForestClassifierBaseline" href="experiments.baselines.random_forest.RandomForestClassifierBaseline.html" />
-    <link rel="prev" title="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline" href="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.html" />
+    <link rel="next" title="experiments.baselines.baselines.RLExperimentBaseline" href="experiments.baselines.baselines.RLExperimentBaseline.html" />
+    <link rel="prev" title="experiments.baselines" href="experiments.baselines.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -31,12 +31,15 @@
 
           <div class="body" role="main">
             
-  <section id="module-experiments.baselines.random_forest">
-<span id="experiments-baselines-random-forest"></span><h1>experiments.baselines.random_forest<a class="headerlink" href="#module-experiments.baselines.random_forest" title="Permalink to this heading">¶</a></h1>
+  <section id="module-experiments.baselines.baselines">
+<span id="experiments-baselines-baselines"></span><h1>experiments.baselines.baselines<a class="headerlink" href="#module-experiments.baselines.baselines" title="Permalink to this heading">¶</a></h1>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="experiments.baselines.random_forest.RandomForestClassifierBaseline.html#experiments.baselines.random_forest.RandomForestClassifierBaseline" title="experiments.baselines.random_forest.RandomForestClassifierBaseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RandomForestClassifierBaseline</span></code></a>(**rf_kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.baselines.baselines.RLExperimentBaseline.html#experiments.baselines.baselines.RLExperimentBaseline" title="experiments.baselines.baselines.RLExperimentBaseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RLExperimentBaseline</span></code></a>(model_name, policy[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline" title="experiments.baselines.baselines.SupervisedExperimentBaseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SupervisedExperimentBaseline</span></code></a>(model_name)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -66,7 +69,11 @@
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.baselines.baselines</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.baselines.RLExperimentBaseline.html">experiments.baselines.baselines.RLExperimentBaseline</a></li>
+<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html">experiments.baselines.baselines.SupervisedExperimentBaseline</a></li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a></li>
@@ -74,10 +81,7 @@
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.linear_regression.html">experiments.baselines.linear_regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.logistic_regression.html">experiments.baselines.logistic_regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.random_classifiers.html">experiments.baselines.random_classifiers</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">experiments.baselines.random_forest</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.random_forest.RandomForestClassifierBaseline.html">experiments.baselines.random_forest.RandomForestClassifierBaseline</a></li>
-</ul>
-</li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.random_forest.html">experiments.baselines.random_forest</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="experiments.experiment_utils.html">experiments.experiment_utils</a></li>
@@ -98,8 +102,8 @@
   <li><a href="../api.html">API</a><ul>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.baselines.html">experiments.baselines</a><ul>
-      <li>Previous: <a href="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.html" title="previous chapter">experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline</a></li>
-      <li>Next: <a href="experiments.baselines.random_forest.RandomForestClassifierBaseline.html" title="next chapter">experiments.baselines.random_forest.RandomForestClassifierBaseline</a></li>
+      <li>Previous: <a href="experiments.baselines.html" title="previous chapter">experiments.baselines</a></li>
+      <li>Next: <a href="experiments.baselines.baselines.RLExperimentBaseline.html" title="next chapter">experiments.baselines.baselines.RLExperimentBaseline</a></li>
   </ul></li>
   </ul></li>
   </ul></li>
@@ -136,7 +140,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
-      <a href="../_sources/_autosummary/experiments.baselines.random_forest.rst.txt"
+      <a href="../_sources/_autosummary/experiments.baselines.baselines.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

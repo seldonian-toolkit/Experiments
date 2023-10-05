@@ -44,6 +44,8 @@ experiments.baselines.fitted\_Q.BaseFittedQBaseline
    ..
    ..    ~BaseFittedQBaseline.set_new_params
    ..
+   ..    ~BaseFittedQBaseline.stopping_criteria_met
+   ..
    ..    ~BaseFittedQBaseline.train
    ..
    ..    ~BaseFittedQBaseline.update_Q_weights

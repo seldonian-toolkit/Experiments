@@ -29,6 +29,7 @@ experiments.baselines
    :recursive:
 
 
+   experiments.baselines.baselines
    experiments.baselines.decision_tree
    experiments.baselines.decision_tree_leaf_tuning
    experiments.baselines.diabetes_US_baseline

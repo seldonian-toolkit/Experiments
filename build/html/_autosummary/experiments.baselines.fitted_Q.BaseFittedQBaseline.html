@@ -13,8 +13,8 @@
     <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="experiments.baselines.fitted_Q.TabularFittedQBaseline" href="experiments.baselines.fitted_Q.TabularFittedQBaseline.html" />
-    <link rel="prev" title="experiments.baselines.fitted_Q" href="experiments.baselines.fitted_Q.html" />
+    <link rel="next" title="experiments.baselines.fitted_Q.ExactTabularFittedQBaseline" href="experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html" />
+    <link rel="prev" title="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline" href="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -35,16 +35,18 @@
 <h1>experiments.baselines.fitted_Q.BaseFittedQBaseline<a class="headerlink" href="#experiments-baselines-fitted-q-basefittedqbaseline" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BaseFittedQBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'gamma':</span> <span class="pre">1.0}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BaseFittedQBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'gamma':</span> <span class="pre">1.0}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="experiments.baselines.baselines.RLExperimentBaseline.html#experiments.baselines.baselines.RLExperimentBaseline" title="experiments.baselines.baselines.RLExperimentBaseline"><code class="xref py py-class docutils literal notranslate"><span class="pre">RLExperimentBaseline</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'gamma':</span> <span class="pre">1.0}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for fitted-Q RL baselines</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'gamma':</span> <span class="pre">1.0}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for fitted-Q RL baselines. All methods that raise 
+NotImplementedError must be implemented in child classes. Any method
+here can be overridden in a child class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>regressor_class</strong> – The class (not object) for the regressor. 
+<li><p><strong>regressor_class</strong> – The class (not object) for the regressor.
 Must have a fit() method which takes features and lables as first two args.</p></li>
 <li><p><strong>policy</strong> – A seldonian.RL.Agents.Policies.Policy object (or child of).</p></li>
 <li><p><strong>num_iters</strong> – The number of iterations to run fitted Q.</p></li>
@@ -70,7 +72,7 @@ for computing the Q target.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.get_max_q">
 <span class="sig-name descname"><span class="pre">get_max_q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.get_max_q" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the max of the q function  
+<dd><p>Get the max of the q function
 over all possible actions in a given observation.</p>
 <p>For evaluating the max_a’ { Q(s_t+1,a’) }
 term in the Q target.</p>
@@ -135,8 +137,8 @@ at each timestep in the episode</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.instantiate_regressor">
 <span class="sig-name descname"><span class="pre">instantiate_regressor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.instantiate_regressor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create the regressor object and return it. 
-This should be an instance of the self.regressor_class class, instantiated with 
+<dd><p>Create the regressor object and return it.
+This should be an instance of the self.regressor_class class, instantiated with
 whatever parameters you need.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -155,7 +157,7 @@ whatever parameters you need.</p>
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.make_regression_dataset">
 <span class="sig-name descname"><span class="pre">make_regression_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transitions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_regression_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make the features and labels for the regression algorithm to fit.
-We don’t need to remake X (s,a) every time because it never changes. y does 
+We don’t need to remake X (s,a) every time because it never changes. y does
 change upon each step, so we need to make a new y for each iteration of fitted Q.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -174,16 +176,25 @@ from the transition tuples.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.make_y">
 <span class="sig-name descname"><span class="pre">make_y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rewards</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_observations</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_y" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make the label array that will be used to train the regressor. 
-One could speed this up if their get_target() method can be 
-vectorized. That depends on if their get_max_q() method can be 
+<dd><p>Make the label array that will be used to train the regressor.
+One could speed this up if their get_target() method can be
+vectorized. That depends on if their get_max_q() method can be
 vectorized.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.train" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.set_new_params">
+<span class="sig-name descname"><span class="pre">set_new_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.set_new_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new policy parameters given model weights</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.stopping_criteria_met">
+<span class="sig-name descname"><span class="pre">stopping_criteria_met</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.stopping_criteria_met" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define stopping criteria. Return True if stopping criteria are met.
+If you want to run for self.num_iters and don’t want any stopping criteria
+just return False in your child-class implementation of this method.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.BaseFittedQBaseline.update_Q_weights">
@@ -218,10 +229,12 @@ vectorized.</p>
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="experiments.baselines.fitted_Q.html">experiments.baselines.fitted_Q</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html">experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline</a></li>
 <li class="toctree-l5 current"><a class="current reference internal" href="#">experiments.baselines.fitted_Q.BaseFittedQBaseline</a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline</span></code></a><ul>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.__init__"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.__init__()</span></code></a></li>
@@ -234,13 +247,14 @@ vectorized.</p>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_X"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.make_X()</span></code></a></li>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_regression_dataset"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.make_regression_dataset()</span></code></a></li>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.make_y"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.make_y()</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.train"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.train()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.set_new_params"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.set_new_params()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.stopping_criteria_met"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.stopping_criteria_met()</span></code></a></li>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.fitted_Q.BaseFittedQBaseline.update_Q_weights"><code class="docutils literal notranslate"><span class="pre">BaseFittedQBaseline.update_Q_weights()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.fitted_Q.TabularFittedQBaseline.html">experiments.baselines.fitted_Q.TabularFittedQBaseline</a></li>
+<li class="toctree-l5"><a class="reference internal" href="experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html">experiments.baselines.fitted_Q.ExactTabularFittedQBaseline</a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.linear_regression.html">experiments.baselines.linear_regression</a></li>
@@ -268,8 +282,8 @@ vectorized.</p>
   <li><a href="experiments.html">experiments</a><ul>
   <li><a href="experiments.baselines.html">experiments.baselines</a><ul>
   <li><a href="experiments.baselines.fitted_Q.html">experiments.baselines.fitted_Q</a><ul>
-      <li>Previous: <a href="experiments.baselines.fitted_Q.html" title="previous chapter">experiments.baselines.fitted_Q</a></li>
-      <li>Next: <a href="experiments.baselines.fitted_Q.TabularFittedQBaseline.html" title="next chapter">experiments.baselines.fitted_Q.TabularFittedQBaseline</a></li>
+      <li>Previous: <a href="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html" title="previous chapter">experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline</a></li>
+      <li>Next: <a href="experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html" title="next chapter">experiments.baselines.fitted_Q.ExactTabularFittedQBaseline</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -1,7 +1,7 @@
-experiments.baselines.fitted\_Q
+experiments.baselines.baselines
 ===============================
 
-.. automodule:: experiments.baselines.fitted_Q 
+.. automodule:: experiments.baselines.baselines 
   
    
    
@@ -19,9 +19,8 @@ experiments.baselines.fitted\_Q
       :toctree:                                         
       :template: custom-class-template.rst              
    
-      ApproximateTabularFittedQBaseline
-      BaseFittedQBaseline
-      ExactTabularFittedQBaseline
+      RLExperimentBaseline
+      SupervisedExperimentBaseline
    
    
 

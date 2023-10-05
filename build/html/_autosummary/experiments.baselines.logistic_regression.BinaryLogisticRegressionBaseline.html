@@ -36,7 +36,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BinaryLogisticRegressionBaseline</span></span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryLogisticRegressionModel</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryLogisticRegressionModel</span></code>, <a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline" title="experiments.baselines.baselines.SupervisedExperimentBaseline"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedExperimentBaseline</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.__init__" title="Permalink to this definition">¶</a></dt>
@@ -109,7 +109,7 @@ j = number of features (including bias term, if provied)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.logistic_regression.BinaryLogisticRegressionBaseline.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Train the model. Just a wrapper to parent fit() method.</p>
+<dd><p>Train the model. Just a wrapper to parent’s fit() method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -147,6 +147,7 @@ j = number of features (including bias term, if provied)</p>
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a></li>

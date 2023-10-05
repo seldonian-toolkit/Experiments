@@ -36,7 +36,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WeightedRandomClassifierBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RandomClassifierModel</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RandomClassifierModel</span></code>, <a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline" title="experiments.baselines.baselines.SupervisedExperimentBaseline"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedExperimentBaseline</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
@@ -59,7 +59,7 @@ regardless of input</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overrides child method. Predict the probability of
+<dd><p>Overrides parent method. Predict the probability of
 having the positive class label</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -75,6 +75,16 @@ having the positive class label</p>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model on the training data, X,y
+:param X: features
+:type X: 2D np.ndarray
+:param y: labels
+:type y: 1D np.ndarray</p>
 </dd></dl>
 
 </dd></dl>
@@ -104,6 +114,7 @@ having the positive class label</p>
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.decision_tree_leaf_tuning.html">experiments.baselines.decision_tree_leaf_tuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.baselines.diabetes_US_baseline.html">experiments.baselines.diabetes_US_baseline</a></li>
@@ -117,6 +128,7 @@ having the positive class label</p>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.__init__"><code class="docutils literal notranslate"><span class="pre">WeightedRandomClassifierBaseline.__init__()</span></code></a></li>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.__repr__"><code class="docutils literal notranslate"><span class="pre">WeightedRandomClassifierBaseline.__repr__()</span></code></a></li>
 <li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.predict"><code class="docutils literal notranslate"><span class="pre">WeightedRandomClassifierBaseline.predict()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="#experiments.baselines.random_classifiers.WeightedRandomClassifierBaseline.train"><code class="docutils literal notranslate"><span class="pre">WeightedRandomClassifierBaseline.train()</span></code></a></li>
 </ul>
 </li>
 </ul>

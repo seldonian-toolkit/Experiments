@@ -36,11 +36,11 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DecisionTreeClassifierBaseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dt_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline" title="experiments.baselines.baselines.SupervisedExperimentBaseline"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupervisedExperimentBaseline</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dt_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a decision tree classifier baseline for 
+<dd><p>Implements a decision tree classifier baseline for
 a binary classification task</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -65,8 +65,8 @@ a binary classification task</p>
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use the trained model to predict positive class probabilities
-theta isn’t used here because there are no fitted parameters 
-in decision trees. 
+theta isn’t used here because there are no fitted parameters
+in decision trees.
 :param theta: Model weights, None in this case
 :param X: features
 :type X: 2D np.ndarray</p>
@@ -75,10 +75,10 @@ in decision trees.
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate a new model instance and train (fit) 
+<dd><p>Instantiate a new model instance and train (fit)
 it to the training data, X,y
 :param X: features
-:type X: 2D np.ndarray 
+:type X: 2D np.ndarray
 :param y: labels
 :type y: 1D np.ndarray</p>
 </dd></dl>
@@ -110,6 +110,7 @@ it to the training data, X,y
 <li class="toctree-l2 current"><a class="reference internal" href="experiments.html">experiments</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="experiments.base_example.html">experiments.base_example</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="experiments.baselines.baselines.html">experiments.baselines.baselines</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="experiments.baselines.decision_tree.html">experiments.baselines.decision_tree</a><ul class="current">
 <li class="toctree-l5 current"><a class="current reference internal" href="#">experiments.baselines.decision_tree.DecisionTreeClassifierBaseline</a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline"><code class="docutils literal notranslate"><span class="pre">DecisionTreeClassifierBaseline</span></code></a><ul>
