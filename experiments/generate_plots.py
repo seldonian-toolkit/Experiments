@@ -7,10 +7,12 @@ import autograd.numpy as np  # Thinly-wrapped version of Numpy
 import pandas as pd
 import matplotlib
 from matplotlib.ticker import FormatStrFormatter
+import scipy
 import matplotlib.pyplot as plt
 from matplotlib import style
 
 from seldonian.utils.io_utils import save_pickle, load_pickle
+from seldonian.utils.stats_utils import tinv
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .utils import generate_resampled_datasets
@@ -18,6 +20,8 @@ from .utils import generate_resampled_datasets
 seldonian_model_set = set(["qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")
 marker_list = ["s", "p", "d", "*", "x", "h", "+"]
+
+np.seterr(invalid='ignore')
 
 
 class PlotGenerator:
@@ -30,6 +34,7 @@ class PlotGenerator:
         perf_eval_fn,
         results_dir,
         n_workers,
+        n_bootstrap_trials=None,
         hyperparam_select_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
@@ -103,6 +108,7 @@ class PlotGenerator:
         self.perf_eval_fn = perf_eval_fn
         self.results_dir = results_dir
         self.n_workers = n_workers
+        self.n_bootstrap_trials = n_bootstrap_trials
         self.hyperparam_select_spec = hyperparam_select_spec
         self.constraint_eval_fns = constraint_eval_fns
         self.perf_eval_kwargs = perf_eval_kwargs
@@ -558,13 +564,17 @@ class PlotGenerator:
         else:
             plt.show()
 
+
     def get_selected_frac_data_in_safety(
-            self
+            self,
     ):
         """
         For each trial and datafrac, gets information about the selected safety_frac used.
+
+        :return: selected_rho_dict, maps data_frac to a list of selected rhos for each trial
+        :rtype: dict
         """
-        selected_rho_dict = dict()
+        selected_rho_dict = {}
 
         for data_frac in self.data_fracs:
             selected_rho_dict[data_frac] = []
@@ -573,13 +583,221 @@ class PlotGenerator:
                         self.results_dir, "all_bootstrap_info", 
                         f"bootstrap_info_{trial_i}_{data_frac:.4f}", "all_bootstrap_est.csv")
                 bootstrap_est_df = pd.read_csv(all_bootstrap_est_path)
-                selected_rho_dict[data_frac].append(
-                        min(bootstrap_est_df["frac_data_in_safety"]))
+                if bootstrap_est_df.empty:
+                    selected_rho_dict[data_frac].append(0)
+                else:
+                    selected_rho_dict[data_frac].append(
+                            min(bootstrap_est_df["frac_data_in_safety"]))
 
         return selected_rho_dict
 
 
-    def make_selectedsafetyfrac_plot(
+    def get_all_bootstrap_trial_info(
+            self,
+            all_safety_frac
+    ):
+        """
+        Load information from all bootstrap trials, i.e. for all datafracs, for all
+            safety_frac and predicted future_safety frac, get result from every bootstrap
+            trial ran.
+
+
+        Returns all_bootstrap_trial_info, a dictionary such that
+            all_bootstrap_trial_info[safety_frac][future_safety_frac] is a 
+            (self.n_trials, len(self.datafracs), self.n_bootstrap_trials) array storing
+            the results from each bootstrap trial for each trial.
+        """
+        tot_data_size = self.spec.dataset.num_datapoints
+        all_safety_frac.sort(reverse=True) # Sort largest to smallest.
+
+        all_bootstrap_trial_info = {safety_frac: {} for safety_frac in all_safety_frac}
+
+        for safety_frac in all_safety_frac:
+            for future_safety_frac in all_safety_frac:
+                if (future_safety_frac > safety_frac): continue
+                all_bootstrap_trial_info[safety_frac][future_safety_frac] = \
+                        np.zeros((self.n_trials, len(self.data_fracs), self.n_bootstrap_trials))
+
+                for trial_i in range(self.n_trials):
+                    for data_frac_i, data_frac in enumerate(self.data_fracs):
+                        future_safety_frac_csv_path = os.path.join(
+                                self.results_dir, "all_bootstrap_info", 
+                                f"bootstrap_info_{trial_i}_{data_frac:.4f}",
+                                f"bootstrap_safety_frac_{safety_frac:.2f}",
+                                f"future_safety_frac_{future_safety_frac:.2f}",
+                                "all_bs_trials_results.csv")
+
+                        if os.path.exists(future_safety_frac_csv_path):
+                            future_safety_frac_csv = pd.read_csv(future_safety_frac_csv_path)
+
+                            all_bootstrap_trial_info[safety_frac][future_safety_frac][
+                                    trial_i, data_frac_i, :] = future_safety_frac_csv["passed_safety"]
+
+                            """
+                            all_probpass_est[safety_frac][future_safety_frac][trial_i,
+                                data_frac_i] = np.nanmean(future_safety_frac_csv["passed_safety"])
+                            all_trial_std[safety_frac][future_safety_frac][trial_i, data_frac_i] = np.nanstd(future_safety_frac_csv["passed_safety"])
+                            all_pass_count[safety_frac][future_safety_frac][trial_i, data_frac_i] = np.sum(future_safety_frac_csv["passed_safety"])
+                            """
+                        else: # not run for this data_frac, safety_frac and future_safety_frac
+                            all_bootstrap_trial_info[safety_frac][future_safety_frac][
+                                    trial_i, data_frac_i, :] = np.nan
+
+        return all_bootstrap_trial_info
+
+
+    def clopper_pearson_bound(
+            self,
+            pass_count, 
+            num_bootstrap_samples,
+            alpha=0.05, # Acceptable error
+    ):
+        """
+        Computes a 1-alpha clopper pearson bound on the probability of passing. 
+
+        :param pass_count: array of containing an entry for each corresponding 
+            datafrac, containing the count of number of 
+        :type pass_count: np.array
+        :param num_bootstrap_samples: number of bootstrap samples used to compute estimates
+            of passing (number of draws from the binomial in bound)
+        :type num_bootstrap_samples: int
+        :param alpha: confidence parameter
+        :type num_bootstrap_samples: float
+        """
+        lower_bound = scipy.stats.beta.ppf(alpha/2, pass_count, num_bootstrap_samples - 
+                pass_count + 1)
+        upper_bound = scipy.stats.beta.ppf(1 - alpha/2, pass_count+ 1, 
+                num_bootstrap_samples - pass_count)
+
+        return lower_bound, upper_bound
+
+
+    def ttest_bound(
+            self,
+            bootstrap_trial_data,
+            delta=0.1
+    ):
+        """
+        Computes upper and lower ttest bounds for the probability of passing across
+            bootstrap trials. Variance is across bootstrap trials, not pool.
+
+        :param bootstrap_trial_data: (len(self.data_fracs), self.n_bootstrap_trials) array
+            containing the result for each bootstrap trial for the given data_frac
+        :type bootstrap_trial_data: np.array
+        :param delta: confidence level, i.e. 0.05
+        :type delta: float
+        """
+        # Compute mea and standard deviation across bootstrap trials
+        bootstrap_data_mean = np.nanmean(bootstrap_trial_data, axis=1)
+        bootstrap_data_stddev = np.nanstd(bootstrap_trial_data, axis=1)
+
+        lower_bound = bootstrap_data_mean - bootstrap_data_stddev / np.sqrt(
+                self.n_bootstrap_trials) * tinv(1.0 - delta, self.n_bootstrap_trials - 1)
+        upper_bound = bootstrap_data_mean + bootstrap_data_stddev / np.sqrt(
+                self.n_bootstrap_trials) * tinv(1.0 - delta, self.n_bootstrap_trials- 1)
+
+        return lower_bound, upper_bound
+
+
+    def make_probpass_est_plot(
+        self,
+        all_safety_frac,
+        bound_type="",
+    ):
+        """
+        Creates plot for each safety_frac value in all_safety_frac, of the estimated probability
+            of passing for each considered future_safety_frac. Estimates are computed across trial.
+
+        :param all_safety_frac: array of containing all values of safety frac being considered
+        :type pass_count: np.array
+        :param bound_type: indicates what time of confidence bound to put around
+        :type bound_type: string
+        """
+        tot_data_size = self.spec.dataset.num_datapoints
+        all_data_size = np.array(self.data_fracs) * tot_data_size
+        all_bootstrap_trial_info = self.get_all_bootstrap_trial_info(all_safety_frac)
+
+        for safety_frac in all_safety_frac:
+
+            # Make plot across average prob pass for each rho, averaged across each trial.
+            plt.figure()
+            for future_safety_frac in all_safety_frac:
+                if (future_safety_frac > safety_frac): continue # Only estimate smaller safety_frac
+
+                # Compute the probability estimates computed for each trial.
+                all_trial_probpass_est = np.nanmean(all_bootstrap_trial_info[
+                    safety_frac][future_safety_frac], axis=2) # Average over bootstrap trials.
+
+                # Note: this is computing mean and std over experiment trials, not bootstrap trials.
+                mean_probpass_est = np.nanmean(all_trial_probpass_est, axis=0)
+                ste_probpass_est = np.nanstd(all_trial_probpass_est, axis=0) / np.sqrt(self.n_trials)
+
+                plt.plot(all_data_size, mean_probpass_est, label=future_safety_frac)
+                plt.fill_between(all_data_size, mean_probpass_est - ste_probpass_est, 
+                        mean_probpass_est + ste_probpass_est, alpha=0.1)
+
+            plt.xscale("log")
+            plt.title(f"rho {safety_frac:.2f}, mean")
+            plt.legend(title="future safety rho")
+
+
+    def make_trial_probpass_est_plot(
+        self,
+        all_safety_frac,
+        bound_type,
+    ):
+        """
+        Creates plot of the estimated probability of passing for each future_safety_frac
+            for the given safety_frac
+
+        :param all_safety_frac: array of containing all values of safety frac being considered
+        :type pass_count: np.array
+        :param bound_type: indicates what time of confidence bound to put around
+        :type bound_type: string
+        """
+        tot_data_size = self.spec.dataset.num_datapoints
+        all_data_size = np.array(self.data_fracs) * tot_data_size
+        all_bootstrap_trial_info = self.get_all_bootstrap_trial_info(all_safety_frac)
+
+        for safety_frac in all_safety_frac:
+            for trial_i in range(self.n_trials):
+
+                plt.figure()
+                for future_safety_frac in all_safety_frac:
+                    if (future_safety_frac > safety_frac): continue # Only estimate smaller safety_frac
+
+                    # Average over bootstrap trials, to get the estimate for trial_i.
+                    trial_probpass_est = np.nanmean(all_bootstrap_trial_info[
+                        safety_frac][future_safety_frac][trial_i], axis=1) 
+                    plt.plot(all_data_size, trial_probpass_est, label=future_safety_frac)
+
+
+                    if bound_type == "ste": 
+                        # Get the standard error of the Bernoulli of the bootstrap trials.
+                        bootstrap_trial_ste = np.nanstd(all_bootstrap_trial_info[
+                            safety_frac][future_safety_frac][trial_i], axis=1) / np.sqrt(self.n_bootstrap_trials)
+                        plt.fill_between(all_data_size, trial_probpass_est - bootstrap_trial_ste, 
+                                trial_probpass_est + bootstrap_trial_ste, alpha=0.1)
+
+                    elif bound_type == "clopper-pearson":
+                        trial_pass_count = np.nansum(all_bootstrap_trial_info[
+                            safety_frac][future_safety_frac][trial_i], axis=1)
+                        lower_bound, upper_bound = self.clopper_pearson_bound(
+                                trial_pass_count, num_bootstrap_trials)
+                        lower_bound = np.nan_to_num(lower_bound) # If lower bound nan, set to 0.
+                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=0.1)
+
+                    elif bound_type == "ttest":
+                        lower_bound, upper_bound = self.ttest_bound(all_bootstrap_trial_info[
+                            safety_frac][future_safety_frac][trial_i])
+                        plt.fill_between(all_data_size, lower_bound, upper_bound, alpha=0.1)
+
+                plt.xscale("log")
+                plt.title(f"rho {safety_frac:.2f}, trial {trial_i}")
+                plt.legend(title="future safety rho")
+
+
+    def make_selected_safety_frac_plot(
         self,
         model_label_dict={},
         fontsize=12,
@@ -599,32 +817,41 @@ class PlotGenerator:
         """
         Plot the selected rho values across dataset size.
         """
-        plt.style.use("bmh")
-        # plt.style.use('grayscale')
-        regime = self.spec.dataset.regime
         tot_data_size = self.spec.dataset.num_datapoints
 
-        # Read in constraints
-        parse_trees = self.spec.parse_trees
-
-        constraint_dict = {}
-        for pt_ii, pt in enumerate(parse_trees):
-            delta = pt.delta
-            constraint_str = pt.constraint_str
-            constraint_dict[f"constraint_{pt_ii}"] = {
-                "delta": delta,
-                "constraint_str": constraint_str,
-            }
-
-        constraints = list(constraint_dict.keys())
-
+        # Get all the rhos selected across trials.
         selected_rho_dict = self.get_selected_frac_data_in_safety()
+        all_data_frac = list(selected_rho_dict.keys())
+        print(all_data_frac)
+        all_data_size = np.array(all_data_frac) * tot_data_size
+
+        # Convert to scatter data and average data.
+        scatter_data_frac, scatter_rho = [], []
+        mean_rho = []
+        ste_rho = []
+        for data_frac in selected_rho_dict.keys():
+            for trial in range(len(selected_rho_dict[data_frac])):
+                scatter_data_frac.append(data_frac * tot_data_size)
+                scatter_rho.append(selected_rho_dict[data_frac][trial])
+            mean_rho.append(np.mean(selected_rho_dict[data_frac]))
+            std_rho = np.std(selected_rho_dict[data_frac])
+            ste_rho.append(std_rho/ np.sqrt(self.n_trials))
+        mean_rho = np.array(mean_rho)
+        ste_rho = np.array(ste_rho)
+
+
+        plt.scatter(scatter_data_frac, scatter_rho, alpha=0.2)
+        plt.plot(all_data_size, mean_rho)
+        plt.fill_between(all_data_size, mean_rho - ste_rho, mean_rho + std_rho, alpha=0.1)
+        plt.xscale("log")
+        plt.ylim(0, 1.0)
+
         print(selected_rho_dict)
 
 
-    def make_allsafetyfrac_probpass_plots(
+
+    def make_all_safety_frac_probpass_plots(
         self,
-        all_fixed_rho_plot_data_path=None,
         model_label_dict={},
         fontsize=12,
         legend_fontsize=8,
@@ -674,9 +901,9 @@ class PlotGenerator:
             return
 
         # Load data for plotting fixed rho performance plots.
-        if all_fixed_rho_plot_data_path is not None:
-            safetyfrac_dict = load_pickle(all_fixed_rho_plot_data_path)
-            all_safetyfrac = safetyfrac_dict.keys()
+        safety_frac_dict = load_pickle(os.path.join(self.results_dir, "fixed_rho_plot_data.csv"))
+        print(safety_frac_dict)
+        all_safety_frac = safety_frac_dict.keys()
 
         # SELECT SAFETY FRAC RESULTS SETUP
         seldonian_dict = {}
@@ -689,7 +916,6 @@ class PlotGenerator:
             )
 
             df_seldonian = pd.read_csv(savename_seldonian)
-            print(df_seldonian)
             passed_mask = df_seldonian["passed_safety"] == True
             df_seldonian_passed = df_seldonian[passed_mask]
             # Get the list of all data_fracs
@@ -726,47 +952,45 @@ class PlotGenerator:
             ##########################
             ### SOLUTION RATE PLOT ###
             ##########################
-            if all_fixed_rho_plot_data_path is not None:
-                for safetyfrac_i, safetyfrac in enumerate(all_safetyfrac):
+            for safety_frac_i, safety_frac in enumerate(all_safety_frac):
 
-                    # Fixed rho plots.
-                    this_safetyfrac_dict = safetyfrac_dict[safetyfrac]
-                    safetyfrac_color = plot_colormap(safetyfrac_i)
-                    df_safetyfrac = this_safetyfrac_dict["df_safetyfrac"]
-                    n_trials = df_safetyfrac["trial_i"].max() + 1
-                    mean_sr = df_safetyfrac.groupby("data_frac").mean()["passed_safety"]
-                    std_sr = df_safetyfrac.groupby("data_frac").std()["passed_safety"]
-                    ste_sr = std_sr / np.sqrt(n_trials)
+                # Fixed rho plots.
+                this_safety_frac_dict = safety_frac_dict[safety_frac]
+                safety_frac_color = plot_colormap(safety_frac_i)
+                df_safety_frac = this_safety_frac_dict["df_safetyfrac"]
+                n_trials = df_safety_frac["trial_i"].max() + 1
+                mean_sr = df_safety_frac.groupby("data_frac").mean()["passed_safety"]
+                std_sr = df_safety_frac.groupby("data_frac").std()["passed_safety"]
+                ste_sr = std_sr / np.sqrt(n_trials)
 
-                    X_all_safetyfrac = this_safetyfrac_dict["X_all"]
+                X_all_safety_frac = this_safety_frac_dict["X_all"]
 
-                    ax_sr.plot(
-                        X_all_safetyfrac,
-                        mean_sr,
-                        color=safetyfrac_color,
-                        linestyle="--",
-                        label=f"{safetyfrac:.1f}",
-                    )
-                    ax_sr.scatter(
-                        X_all_safetyfrac,
-                        mean_sr,
-                        color=safetyfrac_color,
-                        s=marker_size,
-                        marker="o",
-                    )
-                    ax_sr.fill_between(
-                        X_all_safetyfrac,
-                        mean_sr - ste_sr,
-                        mean_sr + ste_sr,
-                        color=safetyfrac_color,
-                        alpha=0.2,
-                    )
+                ax_sr.plot(
+                    X_all_safety_frac,
+                    mean_sr,
+                    color=safety_frac_color,
+                    linestyle="--",
+                    label=f"{safety_frac:.1f}",
+                )
+                ax_sr.scatter(
+                    X_all_safety_frac,
+                    mean_sr,
+                    color=safety_frac_color,
+                    s=marker_size,
+                    marker="o",
+                )
+                ax_sr.fill_between(
+                    X_all_safety_frac,
+                    mean_sr - ste_sr,
+                    mean_sr + ste_sr,
+                    color=safety_frac_color,
+                    alpha=0.2,
+                )
 
             # These are the selected models
-            color_start = len(all_safetyfrac) if all_fixed_rho_plot_data_path is not None else 0
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
-                seldonian_color = plot_colormap(seldonian_i + color_start)
+                seldonian_color = plot_colormap(seldonian_i + len(all_safety_frac))
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
                 mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"]
@@ -826,6 +1050,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         perf_eval_fn,
         results_dir,
         n_workers,
+        n_bootstrap_trials=None,
         hyperparam_select_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
@@ -897,6 +1122,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             perf_eval_fn=perf_eval_fn,
             results_dir=results_dir,
             n_workers=n_workers,
+            n_bootstrap_trials=n_bootstrap_trials,
             hyperparam_select_spec=hyperparam_select_spec,
             constraint_eval_fns=constraint_eval_fns,
             perf_eval_kwargs=perf_eval_kwargs,

@@ -227,6 +227,7 @@ class SelectionPlots:
                         mean_probpass_est + ste_probpass_est, alpha=0.1)
 
             plt.xscale("log")
+            plt.ylim(0, 1.0)
             plt.title(f"rho {safety_frac:.2f}, mean")
             plt.legend(title="future safety rho")
             plt.xlabel("Dataset Size")
