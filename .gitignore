@@ -15,3 +15,5 @@ qsa*
 dist
 docs/source/_autosummary
 htmlcov
+old_experiment_scripts/
+examples/for_faact_conference/

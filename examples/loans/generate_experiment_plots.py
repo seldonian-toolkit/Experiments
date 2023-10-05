@@ -12,9 +12,11 @@ import numpy as np
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
-from experiments.utils import probabilistic_accuracy
 from seldonian.utils.io_utils import load_pickle
-from sklearn.metrics import log_loss
+from experiments.perf_eval_funcs import (probabilistic_accuracy, binary_logistic_loss)
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
+from experiments.baselines.random_classifiers import (
+    UniformRandomClassifierBaseline)
 
 def perf_eval_fn(y_pred,y,**kwargs):    
     return log_loss(y,y_pred)
@@ -29,7 +31,7 @@ def loans_example(
     ],
     n_trials=50,
     data_fracs=np.logspace(-3, 0, 15),
-    baselines=["random_classifier", "logistic_regression"],
+    baselines=[UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     include_fairlearn_models=True,
     performance_metric="log_loss",
     n_workers=1,
@@ -39,6 +41,7 @@ def loans_example(
         raise NotImplementedError(
             "Performance metric must be 'log_loss' for this example"
         )
+    perf_eval_fn = binary_logistic_loss
 
     for constraint in constraints:
         if constraint in ["disparate_impact", "disparate_impact_fairlearndef"]:
@@ -203,8 +206,10 @@ if __name__ == "__main__":
     include_fairlearn_models = args.include_fairlearn_models
     verbose = args.verbose
 
+    data_fracs = np.logspace(-3, 0, 15)
+
     if include_baselines:
-        baselines = ["random_classifier", "logistic_regression"]
+        baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
     else:
         baselines = []
 
@@ -214,14 +219,15 @@ if __name__ == "__main__":
     elif constraint in ["equalized_odds"]:
         epsilon = 0.8
 
-    results_base_dir = f"./results"
+    # results_base_dir = f"./results"
+    results_base_dir = "./results_newbaselines"
 
     loans_example(
         spec_rootdir="data/spec",
         results_base_dir=results_base_dir,
         constraints=[constraint],
         n_trials=n_trials,
-        data_fracs=np.logspace(-3, 0, 15),
+        data_fracs=data_fracs,
         baselines=baselines,
         include_fairlearn_models=include_fairlearn_models,
         performance_metric="log_loss",

@@ -9,7 +9,7 @@ from seldonian.models.models import (
     BinaryLogisticRegressionModel as LogisticRegressionModel,
 )
 from seldonian.models import objectives
-from seldonian.dataset import SupervisedDataSet
+from seldonian.dataset import SupervisedDataSet,SupervisedMetaData
 
 
 save_dir = "data/spec"
@@ -117,10 +117,16 @@ label = data.loc[:, label_attr].values.squeeze().astype(int)
 
 # Construct meta data
 meta_information = {}
-meta_information["feature_col_names"] = feature_attr
-meta_information["label_col_names"] = label_attr
-meta_information["sensitive_col_names"] = sensitive_attr
-meta_information["sub_regime"] = sub_regime
+meta = SupervisedMetaData(
+        sub_regime, 
+        all_col_names=feature_attr+sensitive_attr+label_attr, 
+        feature_col_names=feature_attr,
+        label_col_names=label_attr,
+        sensitive_col_names=sensitive_attr)
+# meta_information["feature_col_names"] = feature_attr
+# meta_information["label_col_names"] = label_attr
+# meta_information["sensitive_col_names"] = sensitive_attr
+# meta_information["sub_regime"] = sub_regime
 
 # Create dataset object
 dataset = SupervisedDataSet(
@@ -128,7 +134,7 @@ dataset = SupervisedDataSet(
     labels=label,
     sensitive_attrs=sensitive,
     num_datapoints=features.shape[0],
-    meta_information=meta_information,
+    meta=meta,
 )
 
 # Set the primary objective to be log loss

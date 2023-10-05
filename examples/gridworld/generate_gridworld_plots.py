@@ -43,7 +43,7 @@ def generate_episodes_and_calc_J(**kwargs):
 	
 if __name__ == "__main__":
 	# Parameter setup
-	run_experiments = True
+	run_experiments = False
 	make_plots = True
 	save_plot = False
 	performance_metric = 'J(pi_new)'

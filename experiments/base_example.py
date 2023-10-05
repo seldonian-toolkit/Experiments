@@ -20,12 +20,15 @@ class BaseExample:
         hyperparam_select_spec=None,
         verbose=False,
         baselines=[],
+        model_label_dict = {},
         include_fairlearn_models=False,
         fairlearn_kwargs={},
         performance_label="performance",
         performance_yscale="linear",
         make_plot=True,
         plot_savename=None,
+        plot_save_format="pdf",
+        include_legend=True,
         plot_fontsize=12,
         legend_fontsize=8,
     ):
@@ -60,7 +63,7 @@ class BaseExample:
         # Baselines first
         for baseline_model in baselines:
             plot_generator.run_baseline_experiment(
-                model_name=baseline_model, verbose=verbose
+                baseline_model=baseline_model, verbose=verbose
             )
         # Check if fairlearn requested
         if include_fairlearn_models:
@@ -106,9 +109,12 @@ class BaseExample:
 
         if make_plot:
             plot_generator.make_plots(
+                model_label_dict=model_label_dict,
                 fontsize=plot_fontsize,
+                include_legend=include_legend,
                 legend_fontsize=legend_fontsize,
                 performance_label=performance_label,
                 performance_yscale=performance_yscale,
+                save_format=plot_save_format,
                 savename=plot_savename,
             )

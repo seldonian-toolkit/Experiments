@@ -3,7 +3,8 @@ import pytest
 from experiments.experiments import (
 	BaselineExperiment,SeldonianExperiment)
 
-from experiments.utils import MSE
+from experiments.perf_eval_funcs import MSE
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
 
 def test_create_seldonian_experiment():
 	sd_exp = SeldonianExperiment(model_name='qsa',results_dir="./results")
@@ -17,7 +18,8 @@ def test_create_seldonian_experiment():
 	assert str(excinfo.value) == error_str
 
 def test_create_baseline_experiment():
-	bl_exp = BaselineExperiment(model_name='logistic_regression',results_dir="./results")
+	bl_model = BinaryLogisticRegressionBaseline()
+	bl_exp = BaselineExperiment(baseline_model=bl_model,results_dir="./results")
 	assert bl_exp.model_name == 'logistic_regression'
 
 

@@ -87,7 +87,6 @@ if __name__ == "__main__":
 		batch_epoch_dict=batch_epoch_dict
 		)
 
-	# # Baseline models
 	if run_experiments:
 		# Seldonian experiment
 		plot_generator.run_seldonian_experiment(verbose=verbose)

@@ -12,7 +12,7 @@ from seldonian.models import objectives
 from seldonian.utils.io_utils import (load_json,
 	load_pickle)
 from seldonian.dataset import (DataSetLoader,RLDataSet,
-	load_supervised_metadata)
+	load_supervised_metadata, RLMetaData)
 from seldonian.parse_tree.parse_tree import (ParseTree,
 	make_parse_trees_from_constraints)
 from seldonian.spec import createSupervisedSpec,createRLSpec
@@ -26,14 +26,11 @@ def gpa_regression_spec():
 		data_pth = 'static/datasets/supervised/GPA/gpa_regression_dataset_1000points.csv'
 		metadata_pth = 'static/datasets/supervised/GPA/metadata_regression.json'
 
-		(regime, sub_regime, all_col_names, feature_col_names,
-			label_col_names, sensitive_col_names) = load_supervised_metadata(
-				metadata_pth)
-					
+		meta = load_supervised_metadata(metadata_pth)			
 
 		# Load dataset from file
 		loader = DataSetLoader(
-			regime=regime)
+			regime=meta.regime)
 
 		dataset = loader.load_supervised_dataset(
 			filename=data_pth,
@@ -122,8 +119,10 @@ def gridworld_spec():
 
 		episodes_file = 'static/datasets/RL/gridworld/gridworld_100episodes.pkl'
 		episodes = load_pickle(episodes_file)
-		dataset = RLDataSet(episodes=episodes)
-
+		meta = RLMetaData(
+	        all_col_names=["episode_index", "O", "A", "R", "pi_b"]
+	    )
+		dataset = RLDataSet(episodes=episodes,meta=meta)
 		# Initialize policy
 		num_states = 9
 		observation_space = Discrete_Space(0, num_states-1)

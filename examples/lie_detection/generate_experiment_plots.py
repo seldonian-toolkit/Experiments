@@ -15,7 +15,11 @@ import numpy as np
 import os
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.base_example import BaseExample
-from experiments.utils import probabilistic_accuracy
+from experiments.perf_eval_funcs import probabilistic_accuracy
+from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
+from experiments.baselines.random_forest import RandomForestClassifierBaseline
+from experiments.baselines.random_classifiers import (
+    UniformRandomClassifierBaseline)
 from seldonian.utils.io_utils import load_pickle
 
 
@@ -31,7 +35,7 @@ def lie_detection_example(
     epsilons=[0.2,0.1,0.05],
     n_trials=50,
     data_fracs=np.logspace(-3,0,15),
-    baselines = ["random_classifier","logistic_regression"],
+    baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     performance_metric="accuracy",
     n_workers=1,
     hyperparam_select_spec=None,
@@ -158,7 +162,11 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     if include_baselines:
-        baselines = ["random_classifier","logistic_regression"]
+        baselines = [
+            UniformRandomClassifierBaseline(),
+            BinaryLogisticRegressionBaseline(),
+            RandomForestClassifierBaseline()
+        ]
     else:
         baselines = []
 
@@ -172,6 +180,8 @@ if __name__ == "__main__":
         constraints = [constraint],
         epsilons=[epsilon],
         n_trials=n_trials,
-        performance_metric=performance_metric
+        baselines=baselines,
+        performance_metric=performance_metric,
+        n_workers=n_workers
     )
     
