@@ -39,7 +39,7 @@ class PlotGenerator:
         results_dir,
         n_workers,
         n_bootstrap_trials=None,
-        hyperparam_select_spec=None,
+        hyperparam_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
         constraint_eval_kwargs={},
@@ -83,9 +83,9 @@ class PlotGenerator:
                 using multiprocessing
         :type n_workers: int
 
-        :param hyperparam_select_spec: Specification object for doing hyperparameter
+        :param hyperparam_spec: Specification object for doing hyperparameter
                 selection
-        :type hyperparam_select_spec: seldonian.spec.HyperparameterSelectionSpec object
+        :type hyperparam_spec: seldonian.spec.HyperparameterSelectionSpec object
 
         :param constraint_eval_fns: List of functions used to evaluate
                 the constraints on ground truth. If an empty list is provided,
@@ -113,7 +113,7 @@ class PlotGenerator:
         self.results_dir = results_dir
         self.n_workers = n_workers
         self.n_bootstrap_trials = n_bootstrap_trials
-        self.hyperparam_select_spec = hyperparam_select_spec
+        self.hyperparam_spec = hyperparam_spec
         self.constraint_eval_fns = constraint_eval_fns
         self.perf_eval_kwargs = perf_eval_kwargs
         self.constraint_eval_kwargs = constraint_eval_kwargs
@@ -1160,7 +1160,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         results_dir,
         n_workers,
         n_bootstrap_trials=None,
-        hyperparam_select_spec=None,
+        hyperparam_spec=None,
         constraint_eval_fns=[],
         perf_eval_kwargs={},
         constraint_eval_kwargs={},
@@ -1200,9 +1200,9 @@ class SupervisedPlotGenerator(PlotGenerator):
                 using multiprocessing
         :type n_workers: int
 
-        :param hyperparam_select_spec: Specification object for doing hyperparameter
+        :param hyperparam_spec: Specification object for doing hyperparameter
                 selection
-        :type hyperparam_select_spec: seldonian.spec.HyperparameterSelectionSpec object
+        :type hyperparam_spec: seldonian.spec.HyperparameterSelectionSpec object
 
         :param constraint_eval_fns: List of functions used to evaluate
                 the constraints on ground truth. If an empty list is provided,
@@ -1232,7 +1232,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             results_dir=results_dir,
             n_workers=n_workers,
             n_bootstrap_trials=n_bootstrap_trials,
-            hyperparam_select_spec=hyperparam_select_spec,
+            hyperparam_spec=hyperparam_spec,
             constraint_eval_fns=constraint_eval_fns,
             perf_eval_kwargs=perf_eval_kwargs,
             constraint_eval_kwargs=constraint_eval_kwargs,
@@ -1264,7 +1264,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             n_workers=self.n_workers,
-            hyperparam_select_spec=self.hyperparam_select_spec,
+            hyperparam_spec=self.hyperparam_spec,
             datagen_method=self.datagen_method,
             perf_eval_fn=self.perf_eval_fn,
             perf_eval_kwargs=self.perf_eval_kwargs,
@@ -1373,7 +1373,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             datagen_method=self.datagen_method,
             perf_eval_fn=self.perf_eval_fn,
             perf_eval_kwargs=self.perf_eval_kwargs,
-            hyperparam_select_spec=self.hyperparam_select_spec,
+            hyperparam_spec=self.hyperparam_spec,
             constraint_eval_fns=self.constraint_eval_fns,
             constraint_eval_kwargs=self.constraint_eval_kwargs,
             batch_epoch_dict=self.batch_epoch_dict,

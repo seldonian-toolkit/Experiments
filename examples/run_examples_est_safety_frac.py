@@ -3,10 +3,13 @@
 # Comment out examples you don't want to run
 
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+
 import time
 import numpy as np
 from datetime import timedelta
 from seldonian.spec import HyperparameterSelectionSpec
+from seldonian.hyperparam_search import HyperSchema
 from lie_detection.generate_experiment_plots import lie_detection_example
 from loans.generate_experiment_plots import loans_example
 from gpa_science_classification.generate_experiment_plots import gpa_example
@@ -16,29 +19,41 @@ from gpa_science_classification.generate_experiment_plots import gpa_example
 ## Comment out any examples you don't want to run
 examples_to_run = [
 	"loans",
-	# "gpa_science_classification",
+	 # "gpa_science_classification",
 	# "lie_detection",
 ]
 
 ## The path on your machine that will serve as the 
 ## parent directory containing all of the experiment results
-results_root_dir = "./results/example_select_results"
+results_root_dir = "/data/cjyuan/results/example_select_results"
 os.makedirs(results_root_dir, exist_ok=True)
 
 ## Set some shared hyperparamers.
-N_TRIALS = 5
+N_TRIALS = 10
 N_WORKERS = 1
-N_BOOTSTRAP_TRIALS = 50
+N_BOOTSTRAP_TRIALS = 100
 N_BOOTSTRAP_WORKERS = 60
-# ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-# CONFIDENCE_INTERVAL_TYPE = "clopper-pearson"
+ALL_FRAC_DATA_IN_SAFETY = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+USE_BS_POOLS = False
+CONFIDENCE_INTERVAL_TYPE = "ttest"
+
+
+## Create HyperSchema
+hyper_schema = HyperSchema(
+        {
+            "frac_data_in_safety": {
+                "values": ALL_FRAC_DATA_IN_SAFETY,
+                "hyper_type": "SA"
+                },
+            }
+        )
 
 ## Create HyperparameterSelectionSpec.
-hyperparam_select_spec = HyperparameterSelectionSpec(
+hyperparam_spec = HyperparameterSelectionSpec(
+        hyper_schema=hyper_schema,
         n_bootstrap_trials=N_BOOTSTRAP_TRIALS,
-        all_frac_data_in_safety=ALL_FRAC_DATA_IN_SAFETY,
         n_bootstrap_workers=N_BOOTSTRAP_WORKERS,
+        use_bs_pools=USE_BS_POOLS,
         confidence_interval_type=CONFIDENCE_INTERVAL_TYPE
 )
 
@@ -51,17 +66,17 @@ example_setup_dict = {
 		'n_workers':N_WORKERS, # Number of CPUs to use 
 		'constraints':[
 		    "disparate_impact",
-		    # "disparate_impact_fairlearndef",
-		    # "equalized_odds",
+		    "disparate_impact_fairlearndef",
+		    "equalized_odds",
 		],
-		'hyperparam_select_spec': hyperparam_select_spec,
+		'hyperparam_spec': hyperparam_spec,
 	},
 	'lie_detection':{
 		'spec_rootdir':'lie_detection/data/spec', 
 		'n_trials':N_TRIALS, # Number of trials per data fraction
 		'n_workers':N_WORKERS, # Number of CPUs to use 
                 'constraints':[
-                    "disparate_impact",
+                    # "disparate_impact",
                     "predictive_equality",
                     "equal_opportunity",
                     "overall_accuracy_equality",
@@ -71,7 +86,7 @@ example_setup_dict = {
                     0.1,
                     0.05,
                     ],
-		'hyperparam_select_spec': hyperparam_select_spec,
+		'hyperparam_spec': hyperparam_spec,
 
 	},
 	'gpa_science_classification':{
@@ -80,12 +95,12 @@ example_setup_dict = {
 		'n_workers':N_WORKERS, # Number of CPUs to use 
 		'constraints':[
 		    "disparate_impact",
-		    # "demographic_parity",
-		    # "equalized_odds",
-		    # "equal_opportunity",
-		    # "predictive_equality"
+		    "demographic_parity",
+		    "equalized_odds",
+		    "equal_opportunity",
+		    "predictive_equality"
 		],
-		'hyperparam_select_spec': hyperparam_select_spec,
+		'hyperparam_spec': hyperparam_spec,
 	},
 
 }
@@ -110,12 +125,12 @@ if __name__ == "__main__":
                         include_fairlearn_models=False,
                         performance_metric="log_loss",
                         n_workers=example_setup_dict[example]['n_workers'],
-                        hyperparam_select_spec=example_setup_dict[example]['hyperparam_select_spec'],
+                        hyperparam_spec=example_setup_dict[example]['hyperparam_spec'],
                     )
 
             if example == 'lie_detection':	
                     lie_detection_example(
-                            spec_rootdggir=spec_rootdir,
+                            spec_rootdir=spec_rootdir,
                             results_base_dir=results_example_basedir,
                         constraints = example_setup_dict[example]['constraints'],
                         n_trials=example_setup_dict[example]['n_trials'],
@@ -124,7 +139,7 @@ if __name__ == "__main__":
                         epsilons=example_setup_dict[example]['epsilons'],
                         performance_metric="accuracy",
                         n_workers=example_setup_dict[example]['n_workers'],
-                        hyperparam_select_spec=example_setup_dict[example]['hyperparam_select_spec'],
+                        hyperparam_spec=example_setup_dict[example]['hyperparam_spec'],
                     )
 
             if example == 'gpa_science_classification':
@@ -138,7 +153,7 @@ if __name__ == "__main__":
                         include_fairlearn_models=False,
                         performance_metric="accuracy",
                         n_workers=example_setup_dict[example]['n_workers'],
-                        hyperparam_select_spec=example_setup_dict[example]['hyperparam_select_spec'],
+                        hyperparam_spec=example_setup_dict[example]['hyperparam_spec'],
                     )
 
     end_time = time.time()

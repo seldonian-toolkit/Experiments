@@ -527,7 +527,7 @@ class SeldonianExperiment(Experiment):
         :type trial_i: int
         """
         spec = kwargs["spec"]
-        hyperparam_select_spec = kwargs["hyperparam_select_spec"]
+        hyperparam_spec = kwargs["hyperparam_spec"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
         perf_eval_fn = kwargs["perf_eval_fn"]
@@ -579,11 +579,12 @@ class SeldonianExperiment(Experiment):
             batch_epoch_dict=batch_epoch_dict,
             kwargs=kwargs,
             perf_eval_kwargs=perf_eval_kwargs,
+            hyperparam_spec=hyperparam_spec,
         )
 
         if os.path.exists(savename): # Previous results exist.
             # If no changes to hyperparameters, then no need to update result.
-            if (hyperparam_select_spec is None) or not updated_hyperparams: 
+            if (hyperparam_spec is None) or not updated_hyperparams: 
                 if verbose:
                     print(
                         f"Trial {trial_i} already run for "

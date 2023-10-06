@@ -7,6 +7,7 @@ from seldonian.RL.RL_runner import run_trial, create_agent_fromdict, run_trial_g
 from seldonian.utils.stats_utils import weighted_sum_gamma
 from seldonian.dataset import SupervisedDataSet, RLDataSet
 from seldonian.utils.io_utils import load_pickle, save_pickle
+from seldonian.hyperparam_search import HyperparamSearch
 
 
 def generate_resampled_datasets(dataset, n_trials, save_dir):
@@ -203,7 +204,8 @@ def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
 
     return features, labels
 
-def update_spec_with_best_hyperparams(spec_for_exp, hyperparam_spec, results_dir):
+def update_spec_with_best_hyperparams(trial_i, data_frac, spec_for_exp, hyperparam_spec, 
+        results_dir):
     bootstrap_dir = os.path.join(
             results_dir, "all_bootstrap_info",
             f"bootstrap_info_{trial_i}_{data_frac:.4f}")
@@ -271,8 +273,10 @@ def setup_SA_spec_for_exp(
         """ If hyperparam_spec is specified, do hyperparameter selection"""
         if hyperparam_spec is not None: # Run selection.
             spec_for_exp, updated_hyperparams = update_spec_with_best_hyperparams(
+                    trial_i,
+                    data_frac,
                     spec_for_exp,
-                    hyperparma_spec,
+                    hyperparam_spec,
                     results_dir
                     )
 
