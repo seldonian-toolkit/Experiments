@@ -212,15 +212,12 @@ def update_spec_with_best_hyperparams(trial_i, data_frac, spec_for_exp, hyperpar
     os.makedirs(bootstrap_dir, exist_ok=True)
 
     # Estimate the best frac_data_in_safety.
-    # TODO: Currently only update spec with safety_frac, update to all hyperparameters.
     HS = HyperparamSearch(
             spec_for_exp,
             hyperparam_spec,
             bootstrap_dir,
             )
-    (best_frac_data_in_safety, _, _, ran_new_bs_trials) = HS.find_best_hyperparams(
-            n_bootstrap_trials=hyperparam_spec.n_bootstrap_trials,
-            n_workers=hyperparam_spec.n_bootstrap_workers)
+    (best_frac_data_in_safety, _, _, ran_new_bs_trials) = HS.find_best_frac_data_in_safety()
 
     # Update the spec with the new selected best fraction in safety.
     spec_for_exp.frac_data_in_safety = best_frac_data_in_safety
