@@ -46,7 +46,7 @@ def gpa_example(
     include_legend=True,
     model_label_dict={},
     n_workers=1,
-    hyperparam_select_spec=None,
+    hyperparam_spec=None,
 ):
     if performance_metric == "accuracy":
         perf_eval_fn = deterministic_accuracy
@@ -98,7 +98,7 @@ def gpa_example(
             perf_eval_fn=perf_eval_fn,
             n_workers=n_workers,
             datagen_method="resample",
-            hyperparam_select_spec=hyperparam_select_spec,
+            hyperparam_spec=hyperparam_spec,
             verbose=False,
             model_label_dict=model_label_dict,
             baselines=baselines,

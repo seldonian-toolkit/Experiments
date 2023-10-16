@@ -38,7 +38,7 @@ def lie_detection_example(
     baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
     performance_metric="accuracy",
     n_workers=1,
-    hyperparam_select_spec=None,
+    hyperparam_spec=None,
 ):  
     if performance_metric == "accuracy":
         perf_eval_fn = probabilistic_accuracy
@@ -68,7 +68,7 @@ def lie_detection_example(
                 perf_eval_fn=perf_eval_fn,
                 n_workers=n_workers,
                 datagen_method="resample",
-                hyperparam_select_spec=hyperparam_select_spec,
+                hyperparam_spec=hyperparam_spec,
                 verbose=False,
                 baselines=baselines,
                 performance_label=performance_metric,

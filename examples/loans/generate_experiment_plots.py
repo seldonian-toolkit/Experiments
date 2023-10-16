@@ -35,7 +35,7 @@ def loans_example(
     include_fairlearn_models=True,
     performance_metric="log_loss",
     n_workers=1,
-    hyperparam_select_spec=None,
+    hyperparam_spec=None,
 ):
     if performance_metric != "log_loss":
         raise NotImplementedError(
@@ -61,6 +61,8 @@ def loans_example(
 
         specfile = os.path.join(spec_rootdir, f"loans_{constraint}_{epsilon}_spec.pkl")
         spec = load_pickle(specfile)
+        spec.verbose = False
+        spec.debug = False
 
         plot_savename = os.path.join(
             results_dir, f"{constraint}_{epsilon}_{performance_metric}.pdf"
@@ -95,7 +97,7 @@ def loans_example(
             perf_eval_fn=perf_eval_fn,
             n_workers=n_workers,
             datagen_method="resample",
-            hyperparam_select_spec=hyperparam_select_spec,
+            hyperparam_spec=hyperparam_spec,
             verbose=False,
             baselines=baselines,
             include_fairlearn_models=include_fairlearn_models,
