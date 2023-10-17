@@ -634,7 +634,7 @@ class SeldonianExperiment(Experiment):
                     perf_eval_kwargs[
                         "hyperparameter_and_setting_dict"
                     ] = kwargs["hyperparameter_and_setting_dict"]
-                    episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
+                    episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs)
 
                 if verbose:
                     print(f"Performance = {performance}")
@@ -655,7 +655,9 @@ class SeldonianExperiment(Experiment):
                     constraint_eval_kwargs["verbose"] = verbose
 
                 if regime == "reinforcement_learning":
-                    constraint_eval_kwargs["episodes_for_eval"] = episodes_for_eval
+                    constraint_eval_kwargs["episodes_new_policy"] = episodes_new_policy
+                    if "on_policy" not in constraint_eval_kwargs:
+                        constraint_eval_kwargs["on_policy"] = True
 
                 gvec = self.evaluate_constraint_functions(
                     solution=solution,
@@ -692,7 +694,7 @@ class SeldonianExperiment(Experiment):
     def evaluate_constraint_functions(
         self, solution, constraint_eval_fns, constraint_eval_kwargs
     ):
-        """Helper function for QSA() to evaluate
+        """Helper function for run_QSA_trial() to evaluate
         the constraint functions to determine
         whether solution was safe on ground truth
 
@@ -732,8 +734,15 @@ class SeldonianExperiment(Experiment):
                 constraint_eval_kwargs["dataset"] = spec_orig.dataset
 
             elif regime == "reinforcement_learning":
-                episodes_for_eval = constraint_eval_kwargs["episodes_for_eval"]
+                
 
+                # Are we doing on policy or off policy evaluation?
+                on_policy = constraint_eval_kwargs["on_policy"]
+                if on_policy:
+                    episodes_for_eval = constraint_eval_kwargs["episodes_new_policy"]
+                else:
+                    episodes_for_eval = spec_orig.dataset.episodes
+                    
                 dataset_for_eval = RLDataSet(
                     episodes=episodes_for_eval,
                     meta=spec_for_exp.dataset.meta,
@@ -754,6 +763,7 @@ class SeldonianExperiment(Experiment):
 
         else:
             # User provided functions to evaluate constraints
+            assert len(constraint_eval_fns) == len(spec_for_exp.parse_trees)
             for eval_fn in constraint_eval_fns:
                 g = eval_fn(solution, **constraint_eval_kwargs)
                 gvals.append(g)
