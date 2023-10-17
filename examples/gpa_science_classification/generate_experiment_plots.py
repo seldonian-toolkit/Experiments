@@ -24,8 +24,7 @@ from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline)
 from experiments.perf_eval_funcs import deterministic_accuracy
 
-def initial_solution_fn(model,X,Y):
-    return model.fit(X,Y)
+
 
 def gpa_example(
     spec_rootdir,
@@ -47,6 +46,8 @@ def gpa_example(
     model_label_dict={},
     n_workers=1,
 ):
+    def initial_solution_fn(model,X,Y):
+        return model.fit(X,Y)
     if performance_metric == "accuracy":
         perf_eval_fn = deterministic_accuracy
     else:
