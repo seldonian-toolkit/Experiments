@@ -60,6 +60,7 @@ from seldonian.warnings.custom_warnings import *
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+context = mp.get_context("spawn" if os.name == 'nt' else "fork")
 
 class Experiment:
     def __init__(self, model_name, results_dir):
@@ -177,7 +178,7 @@ class BaselineExperiment(Experiment):
         elif n_workers > 1:
             # run trials asynchronously
             with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=mp.get_context("fork")
+                max_workers=n_workers, mp_context=context
             ) as ex:
                 results = tqdm(
                     ex.map(helper, data_fracs_vec, trials_vec),
@@ -496,7 +497,7 @@ class SeldonianExperiment(Experiment):
             import itertools
             chunked_arg_list = trial_arg_chunker(data_fracs,n_trials,n_workers)
             with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=mp.get_context("fork")
+                max_workers=n_workers, mp_context=context
             ) as ex:
                 results = tqdm(
                     ex.map(self.run_trials_par,chunked_arg_list,itertools.repeat(shared_namespace)),
@@ -812,7 +813,7 @@ class FairlearnExperiment(Experiment):
                 helper(data_frac, trial_i)
         elif n_workers > 1:
             with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=mp.get_context("fork")
+                max_workers=n_workers, mp_context=context
             ) as ex:
                 results = tqdm(
                     ex.map(helper, data_fracs_vector, trials_vector),
