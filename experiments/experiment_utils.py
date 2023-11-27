@@ -44,7 +44,7 @@ def generate_resampled_datasets(dataset, n_trials, save_dir):
             )
             # features can be list of arrays or a single array
             if type(dataset.features) == list:
-                resamp_features = [x[ix_resamp] for x in flist]
+                resamp_features = [x[ix_resamp] for x in dataset.features]
             else:
                 resamp_features = dataset.features[ix_resamp]
 

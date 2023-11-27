@@ -10,6 +10,9 @@ from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline)
 from experiments.baselines.random_forest import RandomForestClassifierBaseline
 
+def perf_eval_fn(y_pred,y,**kwargs):
+	return log_loss(y,y_pred)
+
 if __name__ == "__main__":
 	# Parameter setup
 	run_experiments = True
@@ -54,8 +57,7 @@ if __name__ == "__main__":
 	# Setup performance evaluation function and kwargs 
 	# of the performance evaluation function
 
-	def perf_eval_fn(y_pred,y,**kwargs):
-			return log_loss(y,y_pred)
+	
 
 	perf_eval_kwargs = {
 		'X':test_features,
