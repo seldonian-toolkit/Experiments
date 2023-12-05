@@ -421,6 +421,7 @@ class BaselineExperiment(Experiment):
         if constraint_eval_fns == []:
             parse_trees = constraint_eval_kwargs["parse_trees"]
             dataset_for_eval = constraint_eval_kwargs["dataset"]
+            tree_dataset_dict = {"all": dataset_for_eval}
             baseline_model = constraint_eval_kwargs["baseline_model"]
             if hasattr(baseline_model,"eval_batch_size"):
                 batch_size_safety = getattr(baseline_model,"eval_batch_size")
@@ -431,9 +432,10 @@ class BaselineExperiment(Experiment):
                 parse_tree.reset_base_node_dict(reset_data=True)
                 parse_tree.evaluate_constraint(
                     theta=solution,
-                    dataset=dataset_for_eval,
+                    tree_dataset_dict=tree_dataset_dict,
                     model=baseline_model,
                     regime=dataset_for_eval.regime,
+                    sub_regime=dataset_for_eval.meta.sub_regime,
                     branch="safety_test",
                     batch_size_safety=batch_size_safety,
                 )
@@ -725,6 +727,7 @@ class SeldonianExperiment(Experiment):
             constraint_eval_kwargs["theta"] = solution
             spec_orig = constraint_eval_kwargs["spec_orig"]
             spec_for_exp = constraint_eval_kwargs["spec_for_exp"]
+
             regime = constraint_eval_kwargs["regime"]
             if "eval_batch_size" in constraint_eval_kwargs:
                 constraint_eval_kwargs["batch_size_safety"] = constraint_eval_kwargs[
@@ -732,10 +735,11 @@ class SeldonianExperiment(Experiment):
                 ]
             if regime == "supervised_learning":
                 # Use the original dataset as ground truth
-                constraint_eval_kwargs["dataset"] = spec_orig.dataset
+                constraint_eval_kwargs["tree_dataset_dict"] = {"all":spec_orig.dataset}
+                constraint_eval_kwargs["sub_regime"] = spec_orig.dataset.meta.sub_regime
 
             elif regime == "reinforcement_learning":
-                
+                constraint_eval_kwargs["sub_regime"] = "all"                
 
                 # Are we doing on policy or off policy evaluation?
                 on_policy = constraint_eval_kwargs["on_policy"]
@@ -750,7 +754,8 @@ class SeldonianExperiment(Experiment):
                     regime=regime,
                 )
 
-                constraint_eval_kwargs["dataset"] = dataset_for_eval
+                constraint_eval_kwargs["tree_dataset_dict"] = {"all":dataset_for_eval}
+
 
             for parse_tree in spec_for_exp.parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
