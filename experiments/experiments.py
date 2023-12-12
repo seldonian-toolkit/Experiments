@@ -31,7 +31,7 @@ from .experiment_utils import (
     load_regenerated_episodes,
     prep_feat_labels,
     setup_SA_spec_for_exp,
-    trial_arg_chunker
+    trial_arg_chunker,
 )
 
 try:
@@ -60,7 +60,8 @@ from seldonian.warnings.custom_warnings import *
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-context = mp.get_context("spawn" if os.name == 'nt' else "fork")
+context = mp.get_context("spawn" if os.name == "nt" else "fork")
+
 
 class Experiment:
     def __init__(self, model_name, results_dir):
@@ -177,9 +178,7 @@ class BaselineExperiment(Experiment):
 
         elif n_workers > 1:
             # run trials asynchronously
-            with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=context
-            ) as ex:
+            with ProcessPoolExecutor(max_workers=n_workers, mp_context=context) as ex:
                 results = tqdm(
                     ex.map(helper, data_fracs_vec, trials_vec),
                     total=len(data_fracs_vec),
@@ -204,7 +203,7 @@ class BaselineExperiment(Experiment):
         """
 
         spec = copy.deepcopy(kwargs["spec"])
-        
+
         dataset = spec.dataset
         regime = dataset.regime
         parse_trees = spec.parse_trees
@@ -224,7 +223,9 @@ class BaselineExperiment(Experiment):
             "batch_epoch_dict",
             "constraint_eval_fns",
             "constraint_eval_kwargs",
-        )(kwargs)
+        )(
+            kwargs
+        )
 
         if (
             batch_epoch_dict == {}
@@ -280,17 +281,21 @@ class BaselineExperiment(Experiment):
             train_kwargs = {}
             pred_kwargs = {}
             try:
-                if hasattr(baseline_model,"batch_epoch_dict"):
+                if hasattr(baseline_model, "batch_epoch_dict"):
                     batch_size, n_epochs = baseline_model.batch_epoch_dict[data_frac]
                     train_kwargs["batch_size"] = batch_size
                     train_kwargs["n_epochs"] = n_epochs
                 solution = baseline_model.train(features, labels, **train_kwargs)
-                
-                # predict the probabilities (e.g. 0.85) not the labels (e.g., 1) 
-                if hasattr(baseline_model,"eval_batch_size"):
-                    pred_kwargs["eval_batch_size"] = getattr(baseline_model,"eval_batch_size")
-                    if hasattr(baseline_model,"N_output_classes"):
-                        pred_kwargs["N_output_classes"] = getattr(baseline_model,"N_output_classes")
+
+                # predict the probabilities (e.g. 0.85) not the labels (e.g., 1)
+                if hasattr(baseline_model, "eval_batch_size"):
+                    pred_kwargs["eval_batch_size"] = getattr(
+                        baseline_model, "eval_batch_size"
+                    )
+                    if hasattr(baseline_model, "N_output_classes"):
+                        pred_kwargs["N_output_classes"] = getattr(
+                            baseline_model, "N_output_classes"
+                        )
 
                     y_pred = batch_predictions(
                         model=baseline_model,
@@ -300,16 +305,20 @@ class BaselineExperiment(Experiment):
                     )
                 else:
                     y_pred = baseline_model.predict(
-                        solution, 
-                        X_test_baseline, 
-                        **pred_kwargs)
+                        solution, X_test_baseline, **pred_kwargs
+                    )
             except:
-                if verbose: print("Error training baseline model. Returning NSF\n")
+                if verbose:
+                    print("Error training baseline model. Returning NSF\n")
                 solution = "NSF"
         elif regime == "reinforcement_learning":
             if datagen_method == "generate_episodes":
                 trial_dataset = load_regenerated_episodes(
-                    self.results_dir, trial_i, data_frac, spec.dataset.meta, verbose=verbose
+                    self.results_dir,
+                    trial_i,
+                    data_frac,
+                    spec.dataset.meta,
+                    verbose=verbose,
                 )
             else:
                 raise NotImplementedError(
@@ -323,7 +332,7 @@ class BaselineExperiment(Experiment):
             baseline_model = copy.deepcopy(self.baseline_model)
             # train_kwargs = {}
             # pred_kwargs = {}
-            try: 
+            try:
                 solution = baseline_model.train(trial_dataset)
                 baseline_model.set_new_params(solution)
             except:
@@ -338,14 +347,15 @@ class BaselineExperiment(Experiment):
             solution_found = False
 
         if solution_found:
-            if verbose: print("Solution was found. Calculating performance.\n")
+            if verbose:
+                print("Solution was found. Calculating performance.\n")
             if regime == "supervised_learning":
                 performance = perf_eval_fn(y_pred, **perf_eval_kwargs)
             elif regime == "reinforcement_learning":
                 perf_eval_kwargs["model"] = baseline_model
-                perf_eval_kwargs[
+                perf_eval_kwargs["hyperparameter_and_setting_dict"] = kwargs[
                     "hyperparameter_and_setting_dict"
-                ] = kwargs["hyperparameter_and_setting_dict"]
+                ]
                 episodes_for_eval, performance = perf_eval_fn(**perf_eval_kwargs)
 
             if verbose:
@@ -354,16 +364,15 @@ class BaselineExperiment(Experiment):
             # Determine whether this solution
             # violates any of the constraints
             # on the test dataset, which is the dataset from spec
-            
+
             if regime == "supervised_learning":
-                dataset_for_eval = dataset # the original one
+                dataset_for_eval = dataset  # the original one
             if regime == "reinforcement_learning":
                 # Need to put the newly generated episodes into the new dataset
                 constraint_eval_kwargs["episodes_for_eval"] = episodes_for_eval
                 constraint_eval_kwargs["performance"] = performance
                 dataset_for_eval = RLDataSet(
-                    episodes=episodes_for_eval,
-                    meta=dataset.meta
+                    episodes=episodes_for_eval, meta=dataset.meta
                 )
 
             constraint_eval_kwargs["baseline_model"] = baseline_model
@@ -377,12 +386,11 @@ class BaselineExperiment(Experiment):
                 constraint_eval_kwargs=constraint_eval_kwargs,
             )
         else:
-            if verbose: print("NSF\n")
+            if verbose:
+                print("NSF\n")
             # NSF is safe, so set g=-inf for all constraints
             n_constraints = len(spec.parse_trees)
-            gvec = -np.inf * np.ones(
-                n_constraints
-            )  
+            gvec = -np.inf * np.ones(n_constraints)
             performance = np.nan
 
         # Write out file for this data_frac,trial_i combo
@@ -423,11 +431,11 @@ class BaselineExperiment(Experiment):
             dataset_for_eval = constraint_eval_kwargs["dataset"]
             tree_dataset_dict = {"all": dataset_for_eval}
             baseline_model = constraint_eval_kwargs["baseline_model"]
-            if hasattr(baseline_model,"eval_batch_size"):
-                batch_size_safety = getattr(baseline_model,"eval_batch_size")
+            if hasattr(baseline_model, "eval_batch_size"):
+                batch_size_safety = getattr(baseline_model, "eval_batch_size")
             else:
                 batch_size_safety = None
-                
+
             for parse_tree in parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
                 parse_tree.evaluate_constraint(
@@ -497,12 +505,15 @@ class SeldonianExperiment(Experiment):
 
         elif n_workers > 1:
             import itertools
-            chunked_arg_list = trial_arg_chunker(data_fracs,n_trials,n_workers)
-            with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=context
-            ) as ex:
+
+            chunked_arg_list = trial_arg_chunker(data_fracs, n_trials, n_workers)
+            with ProcessPoolExecutor(max_workers=n_workers, mp_context=context) as ex:
                 results = tqdm(
-                    ex.map(self.run_trials_par,chunked_arg_list,itertools.repeat(shared_namespace)),
+                    ex.map(
+                        self.run_trials_par,
+                        chunked_arg_list,
+                        itertools.repeat(shared_namespace),
+                    ),
                     total=len(chunked_arg_list),
                 )
                 for exc in results:
@@ -515,8 +526,8 @@ class SeldonianExperiment(Experiment):
 
     def run_trials_par(self, args_list, shared_namespace):
         for args in args_list:
-            data_frac,trial_i = args
-            self.run_QSA_trial(data_frac,trial_i,**shared_namespace.trial_kwargs)
+            data_frac, trial_i = args
+            self.run_QSA_trial(data_frac, trial_i, **shared_namespace.trial_kwargs)
 
     def run_QSA_trial(self, data_frac, trial_i, **kwargs):
         """Run a trial of the quasi-Seldonian algorithm
@@ -592,7 +603,6 @@ class SeldonianExperiment(Experiment):
         if verbose:
             print(f"Solution from running seldonian algorithm: {solution}\n")
 
-
         # Handle whether solution was found
         solution_found = True
         if type(solution) == str and solution == "NSF":
@@ -634,9 +644,9 @@ class SeldonianExperiment(Experiment):
                     model = copy.deepcopy(SA.model)
                     model.policy.set_new_params(solution)
                     perf_eval_kwargs["model"] = model
-                    perf_eval_kwargs[
+                    perf_eval_kwargs["hyperparameter_and_setting_dict"] = kwargs[
                         "hyperparameter_and_setting_dict"
-                    ] = kwargs["hyperparameter_and_setting_dict"]
+                    ]
                     episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs)
 
                 if verbose:
@@ -648,14 +658,12 @@ class SeldonianExperiment(Experiment):
                 ########################################
                 """ Calculate safety on ground truth """
                 ########################################
-
-                if constraint_eval_fns == []:
-                    constraint_eval_kwargs["model"] = model
-                    constraint_eval_kwargs["spec_orig"] = spec
-                    constraint_eval_kwargs["spec_for_exp"] = spec_for_exp
-                    constraint_eval_kwargs["regime"] = regime
-                    constraint_eval_kwargs["branch"] = "safety_test"
-                    constraint_eval_kwargs["verbose"] = verbose
+                constraint_eval_kwargs["model"] = model
+                constraint_eval_kwargs["spec_orig"] = spec
+                constraint_eval_kwargs["spec_for_exp"] = spec_for_exp
+                constraint_eval_kwargs["regime"] = regime
+                constraint_eval_kwargs["branch"] = "safety_test"
+                constraint_eval_kwargs["verbose"] = verbose
 
                 if regime == "reinforcement_learning":
                     constraint_eval_kwargs["episodes_new_policy"] = episodes_new_policy
@@ -724,22 +732,33 @@ class SeldonianExperiment(Experiment):
             to evaluate the constraints. Use the default:
             the parse tree has a built-in way to evaluate constraints.
             """
-            constraint_eval_kwargs["theta"] = solution
+
             spec_orig = constraint_eval_kwargs["spec_orig"]
             spec_for_exp = constraint_eval_kwargs["spec_for_exp"]
-
+            model = constraint_eval_kwargs["model"]
             regime = constraint_eval_kwargs["regime"]
+
             if "eval_batch_size" in constraint_eval_kwargs:
-                constraint_eval_kwargs["batch_size_safety"] = constraint_eval_kwargs[
-                    "eval_batch_size"
-                ]
+                batch_size_safety = constraint_eval_kwargs["eval_batch_size"]
+            else:
+                batch_size_safety = None
+
+            have_additional_datasets = False
+            if (
+                spec_for_exp.additional_datasets != {}
+                and constraint_eval_kwargs["additional_datasets"] != {}
+            ):
+                have_additional_datasets = True
+                held_out_addl_datasets = constraint_eval_kwargs["additional_datasets"]
+
             if regime == "supervised_learning":
                 # Use the original dataset as ground truth
-                constraint_eval_kwargs["tree_dataset_dict"] = {"all":spec_orig.dataset}
-                constraint_eval_kwargs["sub_regime"] = spec_orig.dataset.meta.sub_regime
+
+                sub_regime = spec_orig.dataset.meta.sub_regime
+                backup_dataset_for_eval = spec_orig.dataset
 
             elif regime == "reinforcement_learning":
-                constraint_eval_kwargs["sub_regime"] = "all"                
+                sub_regime = "all"
 
                 # Are we doing on policy or off policy evaluation?
                 on_policy = constraint_eval_kwargs["on_policy"]
@@ -747,19 +766,35 @@ class SeldonianExperiment(Experiment):
                     episodes_for_eval = constraint_eval_kwargs["episodes_new_policy"]
                 else:
                     episodes_for_eval = spec_orig.dataset.episodes
-                    
-                dataset_for_eval = RLDataSet(
+
+                backup_dataset_for_eval = RLDataSet(
                     episodes=episodes_for_eval,
                     meta=spec_for_exp.dataset.meta,
                     regime=regime,
                 )
 
-                constraint_eval_kwargs["tree_dataset_dict"] = {"all":dataset_for_eval}
-
 
             for parse_tree in spec_for_exp.parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
-                parse_tree.evaluate_constraint(**constraint_eval_kwargs)
+
+                # handle additional datasets
+                if have_additional_datasets:
+                    cstr = parse_tree.constraint_str
+
+                    tree_dataset_dict = {bn:held_out_addl_datasets[cstr][bn]["dataset"] for bn in held_out_addl_datasets[cstr]}
+                else:
+                    tree_dataset_dict = {"all": backup_dataset_for_eval}
+                
+                # parse_tree.evaluate_constraint(**constraint_eval_kwargs)
+                parse_tree.evaluate_constraint(
+                    theta=solution,
+                    tree_dataset_dict=tree_dataset_dict,
+                    model=model,
+                    regime=regime,
+                    sub_regime=sub_regime,
+                    branch="safety_test",
+                    batch_size_safety=batch_size_safety,
+                )
 
                 g = parse_tree.root.value
                 gvals.append(g)
@@ -817,9 +852,7 @@ class FairlearnExperiment(Experiment):
                 trial_i = trials_vector[ii]
                 helper(data_frac, trial_i)
         elif n_workers > 1:
-            with ProcessPoolExecutor(
-                max_workers=n_workers, mp_context=context
-            ) as ex:
+            with ProcessPoolExecutor(max_workers=n_workers, mp_context=context) as ex:
                 results = tqdm(
                     ex.map(helper, data_fracs_vector, trials_vector),
                     total=len(data_fracs_vector),

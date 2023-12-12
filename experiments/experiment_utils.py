@@ -433,3 +433,7 @@ def trial_arg_chunker(data_fracs,n_trials,n_workers):
         start_ix += chunk_size
     return chunked_list
 
+def supervised_initial_solution_fn():
+    def initial_solution_fn(m, x, y):
+        return m.fit(x, y)
+    return initial_solution_fn

@@ -10,16 +10,17 @@ from matplotlib.ticker import FormatStrFormatter
 import matplotlib.pyplot as plt
 from matplotlib import style
 
-from seldonian.utils.io_utils import (load_pickle,save_pickle)
+from seldonian.utils.io_utils import load_pickle, save_pickle
+from seldonian.dataset import DataSet
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .experiment_utils import (
-    generate_resampled_datasets, 
-    generate_behavior_policy_episodes, 
-    has_failed
+    generate_resampled_datasets,
+    generate_behavior_policy_episodes,
+    has_failed,
 )
 
-seldonian_model_set = set(["qsa","headless_qsa", "sa"])
+seldonian_model_set = set(["qsa", "headless_qsa", "sa"])
 plot_colormap = matplotlib.cm.get_cmap("tab10")
 marker_list = ["s", "p", "d", "*", "x", "h", "+"]
 
@@ -34,8 +35,8 @@ class PlotGenerator:
         perf_eval_fn,
         results_dir,
         n_workers,
-        constraint_eval_fns=[],
         perf_eval_kwargs={},
+        constraint_eval_fns=[],
         constraint_eval_kwargs={},
         batch_epoch_dict={},
     ):
@@ -49,44 +50,34 @@ class PlotGenerator:
         :param spec: Specification object for running the
                 Seldonian algorithm
         :type spec: seldonian.spec.Spec object
-
         :param n_trials: The number of times the
                 Seldonian algorithm is run for each data fraction.
                 Used for generating error bars
         :type n_trials: int
-
         :param data_fracs: Proportions of the overall size
                 of the dataset to use
-                (the horizontal axis on the three plots).
+                (used to make the horizontal axis on the three plots).
         :type data_fracs: List(float)
-
         :param datagen_method: Method for generating data that is used
-                to run the Seldonian algorithm for each trial
-        :type datagen_method: str, e.g. "resample"
-
+                to run the Seldonian algorithm for each trial, e.g., "resample"
+        :type datagen_method: str
         :param perf_eval_fn: Function used to evaluate the performance
-                of the model obtained in each trial, with signature:
-                func(theta,**kwargs), where theta is the solution
-                from candidate selection
+                of the model obtained in each trial, with signature varies
+                depending on regime. See tutorials: https://seldonian.cs.umass.edu/Tutorials/tutorials/
         :type perf_eval_fn: function or class method
-
         :param results_dir: The directory in which to save the results
         :type results_dir: str
-
         :param n_workers: The number of workers to use if
                 using multiprocessing
         :type n_workers: int
-
-        :param constraint_eval_fns: List of functions used to evaluate
-                the constraints on ground truth. If an empty list is provided,
-                the constraints are evaluated using the parse tree
-        :type constraint_eval_fns: List(function or class method),
-                defaults to []
-
         :param perf_eval_kwargs: Extra keyword arguments to pass to
                 perf_eval_fn
         :type perf_eval_kwargs: dict
-
+        :param constraint_eval_fns: List of custom functions used to evaluate
+                the constraints on ground truth. If an empty list is provided,
+                the constraints are evaluated using the parse tree.
+        :type constraint_eval_fns: List(function or class method),
+                defaults to []
         :param constraint_eval_kwargs: Extra keyword arguments to pass to
                 the constraint_eval_fns
         :type constraint_eval_kwargs: dict
@@ -104,7 +95,9 @@ class PlotGenerator:
         self.n_workers = n_workers
         self.constraint_eval_fns = constraint_eval_fns
         self.perf_eval_kwargs = perf_eval_kwargs
-        self.constraint_eval_kwargs = constraint_eval_kwargs
+        self.constraint_eval_kwargs = self.validate_constraint_eval_kwargs(
+            constraint_eval_kwargs
+        )
         self.batch_epoch_dict = batch_epoch_dict
 
     def make_plots(
@@ -130,17 +123,17 @@ class PlotGenerator:
         savename=None,
     ):
         """Make the three plots of the experiment. Looks up any
-        experiments run in self.results_dir and plots them on the 
-        same three plots. 
+        experiments run in self.results_dir and plots them on the
+        same three plots.
 
         :param model_label_dict: An optional dictionary where keys
                 are model names and values are the names you want
-                shown in the legend. Note that if you specify this 
-                dict, then only the models in this dictionary 
+                shown in the legend. Note that if you specify this
+                dict, then only the models in this dictionary
                 will appear in the legend, and they will show up in the legend
                 in the order that you specify them in the dict.
         :type model_label_dict: int
-        :param ignore_models: Do not plot any models that appear in this list. 
+        :param ignore_models: Do not plot any models that appear in this list.
         :type ignore_models: List
         :param fontsize: The font size to use for the axis labels
         :type fontsize: int
@@ -152,14 +145,14 @@ class PlotGenerator:
         :param performance_label: The y axis label on the performance
                 plot (left plot) you want to use.
         :type performance_label: str, defaults to "accuracy"
-        :param sr_label: The y axis label on the solution rate 
+        :param sr_label: The y axis label on the solution rate
                 plot (middle plot) you want to use.
         :type sr_label: str, defaults to "Prob. of solution"
-        :param fr_label: The y axis label on the failure rate 
+        :param fr_label: The y axis label on the failure rate
                 plot (right plot) you want to use.
         :type fr_label: str, defaults to "Prob. of violation"
         :param performance_yscale: The y axis scaling, "log" or "linear"
-        :param performance_ylims: The y limits of the performance plot. 
+        :param performance_ylims: The y limits of the performance plot.
             Default is to use matplotlib's automatic determination.
         :param hoz_axis_label: What you want to show as the horizontal axis
             label for all plots
@@ -173,7 +166,7 @@ class PlotGenerator:
         :type save_format: str, defaults to "pdf"
         :param show_title: Whether to show the title at the top of the figure
         :type show_title: bool
-        :param custom_title: A custom title 
+        :param custom_title: A custom title
         :type custom_title: str, defaults to None
         :param include_legend: Whether to include the legend
         :type include_legend: bool, defaults to True
@@ -186,7 +179,7 @@ class PlotGenerator:
         if regime == "supervised_learning":
             tot_data_size = self.spec.dataset.num_datapoints
         elif regime == "reinforcement_learning":
-            tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
+            tot_data_size = self.hyperparameter_and_setting_dict["num_episodes"]
 
         # Read in constraints
         parse_trees = self.spec.parse_trees
@@ -220,12 +213,16 @@ class PlotGenerator:
             df_baseline["solution_returned"] = df_baseline["performance"].apply(
                 lambda x: ~np.isnan(x)
             )
-            df_baseline['gvec'] = df_baseline['gvec'].apply(lambda t: np.fromstring(t[1:-1],sep=' '))
-            new_colnames = ['g' + str(ii) + '_failed' for ii in range(1,n_constraints+1)]
+            df_baseline["gvec"] = df_baseline["gvec"].apply(
+                lambda t: np.fromstring(t[1:-1], sep=" ")
+            )
+            new_colnames = [
+                "g" + str(ii) + "_failed" for ii in range(1, n_constraints + 1)
+            ]
             for ii in range(len(new_colnames)):
                 colname = new_colnames[ii]
-                df_baseline[colname] = df_baseline['gvec'].str[ii].apply(has_failed)
-            df_baseline = df_baseline.drop('gvec', axis=1)
+                df_baseline[colname] = df_baseline["gvec"].str[ii].apply(has_failed)
+            df_baseline = df_baseline.drop("gvec", axis=1)
 
             valid_mask = ~np.isnan(df_baseline["performance"])
             df_baseline_valid = df_baseline[valid_mask]
@@ -252,12 +249,16 @@ class PlotGenerator:
             )
 
             df_seldonian = pd.read_csv(savename_seldonian)
-            df_seldonian['gvec'] = df_seldonian['gvec'].apply(lambda t: np.fromstring(t[1:-1],sep=' '))
-            new_colnames = ['g' + str(ii) + '_failed' for ii in range(1,n_constraints+1)]
+            df_seldonian["gvec"] = df_seldonian["gvec"].apply(
+                lambda t: np.fromstring(t[1:-1], sep=" ")
+            )
+            new_colnames = [
+                "g" + str(ii) + "_failed" for ii in range(1, n_constraints + 1)
+            ]
             for ii in range(len(new_colnames)):
                 colname = new_colnames[ii]
-                df_seldonian[colname] = df_seldonian['gvec'].str[ii].apply(has_failed)
-            df_seldonian = df_seldonian.drop('gvec', axis=1)
+                df_seldonian[colname] = df_seldonian["gvec"].str[ii].apply(has_failed)
+            df_seldonian = df_seldonian.drop("gvec", axis=1)
 
             passed_mask = df_seldonian["passed_safety"] == True
             df_seldonian_passed = df_seldonian[passed_mask]
@@ -277,7 +278,7 @@ class PlotGenerator:
         ## PLOTTING SETUP
         vert_size = 3 + n_constraints
         if include_legend:
-            vert_size+=0.5
+            vert_size += 0.5
             figsize = (14, vert_size)
         else:
             figsize = (14, vert_size)
@@ -290,7 +291,7 @@ class PlotGenerator:
 
         # One row per constraint
         for constraint_index, constraint_str in enumerate(constraint_strs):
-            constraint_num = constraint_index+1
+            constraint_num = constraint_index + 1
             delta = deltas[constraint_index]
 
             # SETUP FOR PLOTTING
@@ -343,22 +344,27 @@ class PlotGenerator:
             ### PERFORMANCE PLOT ###
             ########################
 
-
             # Seldonian performance
             for seldonian_i, seldonian_model in enumerate(seldonian_models):
                 this_seldonian_dict = seldonian_dict[seldonian_model]
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian_passed = this_seldonian_dict["df_seldonian_passed"]
-                mean_performance = df_seldonian_passed.groupby("data_frac").mean()[
-                    "performance"
-                ].to_numpy()
-                std_performance = df_seldonian_passed.groupby("data_frac").std()[
-                    "performance"
-                ].to_numpy()
+                mean_performance = (
+                    df_seldonian_passed.groupby("data_frac")
+                    .mean()["performance"]
+                    .to_numpy()
+                )
+                std_performance = (
+                    df_seldonian_passed.groupby("data_frac")
+                    .std()["performance"]
+                    .to_numpy()
+                )
 
-                n_passed = df_seldonian_passed.groupby("data_frac").count()[
-                    "performance"
-                ].to_numpy()
+                n_passed = (
+                    df_seldonian_passed.groupby("data_frac")
+                    .count()["performance"]
+                    .to_numpy()
+                )
                 ste_performance = std_performance / np.sqrt(n_passed)
                 # Only show if 2 or more passed. Otherwise std is not defined.
                 gt1_mask = n_passed > 1
@@ -388,7 +394,7 @@ class PlotGenerator:
                     color=seldonian_color,
                     s=marker_size,
                     marker="o",
-                    zorder=10
+                    zorder=10,
                 )
                 ax_performance.fill_between(
                     X_passed_seldonian_masked,
@@ -396,9 +402,9 @@ class PlotGenerator:
                     mean_performance_masked + ste_performance_masked,
                     color=seldonian_color,
                     alpha=0.5,
-                    zorder=10
+                    zorder=10,
                 )
-            
+
             # Baseline performance
             for baseline_i, baseline in enumerate(baselines):
                 baseline_color = plot_colormap(
@@ -417,9 +423,11 @@ class PlotGenerator:
                 ]
                 baseline_ste_performance = baseline_std_performance / np.sqrt(n_trials)
                 X_valid_baseline = this_baseline_dict["X_valid"]
-                n_valid = df_baseline_valid.groupby("data_frac").count()[
-                     "performance"
-                 ].to_numpy()
+                n_valid = (
+                    df_baseline_valid.groupby("data_frac")
+                    .count()["performance"]
+                    .to_numpy()
+                )
                 # Only show if 2 or more passed. Otherwise std is not defined.
                 gt1_mask = n_valid > 1
                 baseline_mean_performance_masked = baseline_mean_performance[gt1_mask]
@@ -452,7 +460,7 @@ class PlotGenerator:
                     color=baseline_color,
                     alpha=0.5,
                 )
-           
+
             if performance_ylims:
                 ax_performance.set_ylim(*performance_ylims)
             ##########################
@@ -465,8 +473,12 @@ class PlotGenerator:
                 seldonian_color = plot_colormap(seldonian_i)
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
-                mean_sr = df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
-                std_sr = df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
+                mean_sr = (
+                    df_seldonian.groupby("data_frac").mean()["passed_safety"].to_numpy()
+                )
+                std_sr = (
+                    df_seldonian.groupby("data_frac").std()["passed_safety"].to_numpy()
+                )
                 ste_sr = std_sr / np.sqrt(n_trials)
 
                 X_all_seldonian = this_seldonian_dict["X_all"].to_numpy()
@@ -478,7 +490,7 @@ class PlotGenerator:
                     # linestyle="--",
                     linestyle="-",
                     label="QSA",
-                    zorder=10
+                    zorder=10,
                 )
                 ax_sr.scatter(
                     X_all_seldonian,
@@ -486,7 +498,7 @@ class PlotGenerator:
                     color=seldonian_color,
                     s=marker_size,
                     marker="o",
-                    zorder=10
+                    zorder=10,
                 )
                 ax_sr.fill_between(
                     X_all_seldonian,
@@ -494,7 +506,7 @@ class PlotGenerator:
                     mean_sr + ste_sr,
                     color=seldonian_color,
                     alpha=0.5,
-                    zorder=10
+                    zorder=10,
                 )
 
             # Plot baseline solution rate
@@ -505,8 +517,16 @@ class PlotGenerator:
                 baseline_color = plot_colormap(baseline_i + len(seldonian_models))
                 df_baseline = this_baseline_dict["df_baseline"]
                 n_trials = df_baseline["trial_i"].max() + 1
-                mean_sr = df_baseline.groupby("data_frac").mean()["solution_returned"].to_numpy()
-                std_sr = df_baseline.groupby("data_frac").std()["solution_returned"].to_numpy()
+                mean_sr = (
+                    df_baseline.groupby("data_frac")
+                    .mean()["solution_returned"]
+                    .to_numpy()
+                )
+                std_sr = (
+                    df_baseline.groupby("data_frac")
+                    .std()["solution_returned"]
+                    .to_numpy()
+                )
                 ste_sr = std_sr / np.sqrt(n_trials)
 
                 X_all_baseline = this_baseline_dict["X_all"].to_numpy()
@@ -542,13 +562,13 @@ class PlotGenerator:
                 df_seldonian = this_seldonian_dict["df_seldonian"]
                 n_trials = df_seldonian["trial_i"].max() + 1
 
-                gstr_failed = 'g' + str(constraint_num) + '_failed'
+                gstr_failed = "g" + str(constraint_num) + "_failed"
 
-                mean_fr = df_seldonian.groupby("data_frac").mean()[
-                    gstr_failed].to_numpy()
+                mean_fr = (
+                    df_seldonian.groupby("data_frac").mean()[gstr_failed].to_numpy()
+                )
                 # Need to groupby data frac
-                std_fr = df_seldonian.groupby("data_frac").std()[
-                    gstr_failed].to_numpy()
+                std_fr = df_seldonian.groupby("data_frac").std()[gstr_failed].to_numpy()
 
                 ste_fr = std_fr / np.sqrt(n_trials)
 
@@ -561,7 +581,7 @@ class PlotGenerator:
                     # linestyle="--",
                     linestyle="-",
                     label="QSA",
-                    zorder=10
+                    zorder=10,
                 )
                 ax_fr.fill_between(
                     X_all_seldonian,
@@ -569,7 +589,7 @@ class PlotGenerator:
                     mean_fr + ste_fr,
                     color=seldonian_color,
                     alpha=0.5,
-                    zorder=10
+                    zorder=10,
                 )
                 ax_fr.scatter(
                     X_all_seldonian,
@@ -577,7 +597,7 @@ class PlotGenerator:
                     color=seldonian_color,
                     s=marker_size,
                     marker="o",
-                    zorder=10
+                    zorder=10,
                 )
 
             # Baseline failure rate
@@ -592,13 +612,15 @@ class PlotGenerator:
                 #     "failed"
                 # ].to_numpy()
                 # baseline_std_fr = df_baseline_valid.groupby("data_frac").std()["failed"].to_numpy()
-                gstr_failed = 'g' + str(constraint_num) + '_failed'
+                gstr_failed = "g" + str(constraint_num) + "_failed"
 
-                baseline_mean_fr = df_baseline.groupby("data_frac").mean()[
-                    gstr_failed].to_numpy()
+                baseline_mean_fr = (
+                    df_baseline.groupby("data_frac").mean()[gstr_failed].to_numpy()
+                )
                 # Need to groupby data frac
-                baseline_std_fr = df_baseline.groupby("data_frac").std()[
-                    gstr_failed].to_numpy()
+                baseline_std_fr = (
+                    df_baseline.groupby("data_frac").std()[gstr_failed].to_numpy()
+                )
                 baseline_ste_fr = baseline_std_fr / np.sqrt(n_trials)
 
                 X_all_baseline = this_baseline_dict["X_all"].to_numpy()
@@ -656,11 +678,54 @@ class PlotGenerator:
             )
 
         if savename:
-            plt.savefig(savename, format=save_format,bbox_inches="tight")
+            plt.savefig(savename, format=save_format, bbox_inches="tight")
             print(f"Saved {savename}")
         else:
             plt.show()
 
+    def validate_constraint_eval_kwargs(self, constraint_eval_kwargs):
+        """Ensure that if additional datasets are contained within the spec
+        object that there are held out datasets in constraint_eval_kwargs
+        for each additional dataset"""
+        addl_datasets_spec = self.spec.additional_datasets
+        if not addl_datasets_spec:
+            return constraint_eval_kwargs
+
+        if "additional_datasets" not in constraint_eval_kwargs:
+            raise RuntimeError(
+                "The 'additional_datasets' kwarg in 'constraint_eval_kwargs' is missing. "
+                "This is needed because the spec object used to run this experiment "
+                "contains additional datasets, and for each of those datasets, "
+                "you need to provide a ground truth dataset so that the safety plot (right plot) can be evaluated."
+            )
+
+        addl_datasets_held_out = constraint_eval_kwargs["additional_datasets"]
+        for constraint_str in addl_datasets_spec:
+            if constraint_str not in addl_datasets_held_out:
+                raise RuntimeError(
+                    f"Constraint: '{constraint_str}' is missing from held out additional datasets."
+                )
+            for bn in addl_datasets_spec[constraint_str]:
+                if bn not in addl_datasets_held_out[constraint_str]:
+                    raise RuntimeError(
+                        f"Base node: '{bn}' in parse tree: '{constraint_str}' is missing "
+                        "from held out additional datasets dict."
+                    )
+                if "dataset" not in addl_datasets_held_out[constraint_str][bn]:
+                    raise RuntimeError(
+                        f"'dataset' key missing from held out additional datasets dict entry for "
+                        f"parse tree: '{constraint_str}' and base node '{bn}'"
+                    )
+
+                if not isinstance(
+                    addl_datasets_held_out[constraint_str][bn]["dataset"], DataSet
+                ):
+                    raise RuntimeError(
+                        f"The dataset provided for parse tree: '{constraint_str}' and base node '{bn}' "
+                        "is not a seldonian.DataSet object."
+                    )
+
+        return constraint_eval_kwargs
 
 class SupervisedPlotGenerator(PlotGenerator):
     def __init__(
@@ -744,7 +809,7 @@ class SupervisedPlotGenerator(PlotGenerator):
             batch_epoch_dict=batch_epoch_dict,
         )
         self.regime = "supervised_learning"
-    
+
     def run_seldonian_experiment(self, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute
         assigned to the class in __init__().
@@ -785,10 +850,10 @@ class SupervisedPlotGenerator(PlotGenerator):
         return
 
     def run_headless_seldonian_experiment(
-        self, 
+        self,
         full_pretraining_model,
-        initial_state_dict, 
-        headless_pretraining_model, 
+        initial_state_dict,
+        headless_pretraining_model,
         head_layer_names,
         latent_feature_shape,
         loss_func_pretraining,
@@ -796,7 +861,8 @@ class SupervisedPlotGenerator(PlotGenerator):
         pretraining_device,
         batch_epoch_dict_pretraining={},
         safety_batch_size_pretraining=1000,
-        verbose=False):
+        verbose=False,
+    ):
         """Run a headless supervised Seldonian experiment using the spec attribute
         assigned to the class in __init__().
 
@@ -816,7 +882,8 @@ class SupervisedPlotGenerator(PlotGenerator):
             print()
         else:
             raise NotImplementedError(
-                f"datagen_method {datagen_method} not supported for headless experiments")
+                f"datagen_method {datagen_method} not supported for headless experiments"
+            )
 
         run_kwargs = dict(
             spec=self.spec,
@@ -842,10 +909,11 @@ class SupervisedPlotGenerator(PlotGenerator):
             verbose=verbose,
         )
         from .headless_experiments import HeadlessSeldonianExperiment
+
         ## Run experiment
         sd_exp = HeadlessSeldonianExperiment(
-            model_name="headless_qsa",
-            results_dir=self.results_dir)
+            model_name="headless_qsa", results_dir=self.results_dir
+        )
 
         sd_exp.run_experiment(**run_kwargs)
         return
@@ -884,7 +952,9 @@ class SupervisedPlotGenerator(PlotGenerator):
         )
 
         ## Run experiment
-        bl_exp = BaselineExperiment(baseline_model=baseline_model, results_dir=self.results_dir)
+        bl_exp = BaselineExperiment(
+            baseline_model=baseline_model, results_dir=self.results_dir
+        )
 
         bl_exp.run_experiment(**run_baseline_kwargs)
         return
@@ -1051,7 +1121,9 @@ class RLPlotGenerator(PlotGenerator):
             # we can reference them for each data_frac
             save_dir = os.path.join(self.results_dir, "regenerated_datasets")
             os.makedirs(save_dir, exist_ok=True)
-            generate_behavior_policy_episodes(self.hyperparameter_and_setting_dict,self.n_trials,save_dir)
+            generate_behavior_policy_episodes(
+                self.hyperparameter_and_setting_dict, self.n_trials, save_dir
+            )
 
         run_seldonian_kwargs = dict(
             spec=self.spec,
@@ -1087,13 +1159,18 @@ class RLPlotGenerator(PlotGenerator):
         if self.datagen_method == "generate_episodes":
             # Generate n_trials resampled datasets of full length
             # These will be cropped to data_frac fractional size
-            if verbose: print("checking for regenerated episodes")
+            if verbose:
+                print("checking for regenerated episodes")
             save_dir = os.path.join(self.results_dir, "regenerated_datasets")
-            generate_behavior_policy_episodes(self.hyperparameter_and_setting_dict,self.n_trials,save_dir)
-            if verbose:  print("Done checking for regenerated episodes\n")
+            generate_behavior_policy_episodes(
+                self.hyperparameter_and_setting_dict, self.n_trials, save_dir
+            )
+            if verbose:
+                print("Done checking for regenerated episodes\n")
         else:
             raise NotImplementedError(
-                f"datagen_method {datagen_method} not supported for RL experiments")
+                f"datagen_method {datagen_method} not supported for RL experiments"
+            )
 
         run_baseline_kwargs = dict(
             spec=self.spec,
@@ -1111,7 +1188,9 @@ class RLPlotGenerator(PlotGenerator):
         )
 
         ## Run experiment
-        bl_exp = BaselineExperiment(baseline_model=baseline_model, results_dir=self.results_dir)
+        bl_exp = BaselineExperiment(
+            baseline_model=baseline_model, results_dir=self.results_dir
+        )
 
         bl_exp.run_experiment(**run_baseline_kwargs)
         return
@@ -1128,7 +1207,7 @@ class RLPlotGenerator(PlotGenerator):
         custom_title=None,
         savename=None,
     ):
-        """Plot the mean importance weights (over episodes) for 
+        """Plot the mean importance weights (over episodes) for
         all trials in an experiment. Only uses the qsa_results/
         folder since that is the only experiment that is relevant.
 
@@ -1140,7 +1219,7 @@ class RLPlotGenerator(PlotGenerator):
         :type save_format: str, defaults to "pdf"
         :param show_title: Whether to show the title at the top of the figure
         :type show_title: bool
-        :param custom_title: A custom title 
+        :param custom_title: A custom title
         :type custom_title: str, defaults to None
         :param savename: If not None, the filename to which the figure
                 will be saved on disk.
@@ -1153,18 +1232,20 @@ class RLPlotGenerator(PlotGenerator):
                 "Importance weights can only be plotted for reinforcement learning problems"
             )
 
-        tot_data_size = self.hyperparameter_and_setting_dict['num_episodes']
+        tot_data_size = self.hyperparameter_and_setting_dict["num_episodes"]
 
         # Figure out what experiments we have from subfolders in results_dir
-        is_parent_dir = os.path.join(self.results_dir,"qsa_results","importance_weights")
-        cs_weights_dir = os.path.join(is_parent_dir,"candidate_selection")
-        st_weights_dir = os.path.join(is_parent_dir,"safety_test")
+        is_parent_dir = os.path.join(
+            self.results_dir, "qsa_results", "importance_weights"
+        )
+        cs_weights_dir = os.path.join(is_parent_dir, "candidate_selection")
+        st_weights_dir = os.path.join(is_parent_dir, "safety_test")
 
         ## PLOTTING SETUP
-        
+
         figsize = (12, 6)
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1,1,1)
+        ax = fig.add_subplot(1, 1, 1)
         locmaj = matplotlib.ticker.LogLocator(base=10, numticks=12)
         locmin = matplotlib.ticker.LogLocator(
             base=10.0,
@@ -1178,55 +1259,69 @@ class RLPlotGenerator(PlotGenerator):
         ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         ax.set_xscale("log")
         # SELDONIAN RESULTS SETUP
-        for branch in ["cs","st"]:
+        for branch in ["cs", "st"]:
             if branch == "cs":
-                color="blue"
-                label="Candidate selection"
+                color = "blue"
+                label = "Candidate selection"
                 weights_dir = cs_weights_dir
-            else: 
-                color="red"
-                label="Safety test"
+            else:
+                color = "red"
+                label = "Safety test"
                 weights_dir = st_weights_dir
-            
+
             IS_weights_dict = {
-                data_frac:[] for data_frac in data_fracs
-            } # keys: data_fracs, values: lists of mean IS weights for all trials at that data_frac
+                data_frac: [] for data_frac in data_fracs
+            }  # keys: data_fracs, values: lists of mean IS weights for all trials at that data_frac
             for data_frac in data_fracs:
                 for trial_i in range(n_trials):
                     filename = os.path.join(
-                        weights_dir, f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl"
+                        weights_dir,
+                        f"importance_weights_frac_{data_frac:.4f}_trial_{trial_i}.pkl",
                     )
                     importance_weights = load_pickle(filename)
                     if importance_weights is not None:
                         mean_IS = np.mean(importance_weights)
                         IS_weights_dict[data_frac].append(mean_IS)
 
-            good_data_fracs = np.array([key for key in IS_weights_dict if len(IS_weights_dict[key])>1])
-            n_trials_good_list = np.array([len(IS_weights_dict[key]) for key in good_data_fracs])
-            mean_good_IS_weights = np.array([np.mean(IS_weights_dict[key]) for key in good_data_fracs])
-            ste_good_IS_weights = np.array([np.std(IS_weights_dict[good_data_fracs[ii]])/n_trials_good_list[ii] for ii in range(len(good_data_fracs))])
-            
+            good_data_fracs = np.array(
+                [key for key in IS_weights_dict if len(IS_weights_dict[key]) > 1]
+            )
+            n_trials_good_list = np.array(
+                [len(IS_weights_dict[key]) for key in good_data_fracs]
+            )
+            mean_good_IS_weights = np.array(
+                [np.mean(IS_weights_dict[key]) for key in good_data_fracs]
+            )
+            ste_good_IS_weights = np.array(
+                [
+                    np.std(IS_weights_dict[good_data_fracs[ii]])
+                    / n_trials_good_list[ii]
+                    for ii in range(len(good_data_fracs))
+                ]
+            )
+
             ax.scatter(
-                good_data_fracs*tot_data_size,
+                good_data_fracs * tot_data_size,
                 mean_good_IS_weights,
                 s=marker_size,
                 color=color,
                 marker="o",
                 zorder=10,
-                label=label)
-            
+                label=label,
+            )
+
             ax.fill_between(
-                good_data_fracs*tot_data_size,
+                good_data_fracs * tot_data_size,
                 mean_good_IS_weights - ste_good_IS_weights,
                 mean_good_IS_weights + ste_good_IS_weights,
                 color=color,
                 alpha=0.5,
-                zorder=10
+                zorder=10,
             )
-        
-        ax.set_xlim(5,tot_data_size)
+
+        ax.set_xlim(5, tot_data_size)
         ax.set_xlabel("Amount of data", fontsize=fontsize)
-        ax.set_ylabel("Mean importance weight",fontsize=fontsize)
+        ax.set_ylabel("Mean importance weight", fontsize=fontsize)
         ax.legend()
 
         if custom_title:
@@ -1236,7 +1331,7 @@ class RLPlotGenerator(PlotGenerator):
         ax.set_title(title, y=1.05, fontsize=title_fontsize)
 
         if savename:
-            plt.savefig(savename, format=save_format,bbox_inches="tight")
+            plt.savefig(savename, format=save_format, bbox_inches="tight")
             print(f"Saved {savename}")
         else:
             plt.show()
