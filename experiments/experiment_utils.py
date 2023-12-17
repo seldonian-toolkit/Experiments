@@ -9,64 +9,6 @@ from seldonian.dataset import SupervisedDataSet, RLDataSet
 from seldonian.utils.io_utils import load_pickle, save_pickle
 
 
-def generate_resampled_datasets(dataset, n_trials, save_dir):
-    """Utility function for supervised learning to generate the
-    resampled datasets to use in each trial. Resamples (with replacement)
-    features, labels and sensitive attributes to create n_trials versions of these
-    of the same shape as the inputs
-
-    :param dataset: The original dataset from which to resample
-    :type dataset: pandas DataFrame
-
-    :param n_trials: The number of trials, i.e. the number of
-            resampled datasets to make
-    :type n_trials: int
-
-    :param save_dir: The parent directory in which to save the
-            resampled datasets
-    :type save_dir: str
-
-    :param file_format: The format of the saved datasets, options are
-            "csv" and "pkl"
-    :type file_format: str
-
-    """
-    save_subdir = os.path.join(save_dir, "resampled_dataframes")
-    os.makedirs(save_subdir, exist_ok=True)
-    num_datapoints = dataset.num_datapoints
-
-    for trial_i in range(n_trials):
-        savename = os.path.join(save_subdir, f"trial_{trial_i}.pkl")
-
-        if not os.path.exists(savename):
-            ix_resamp = np.random.choice(
-                range(num_datapoints), num_datapoints, replace=True
-            )
-            # features can be list of arrays or a single array
-            if type(dataset.features) == list:
-                resamp_features = [x[ix_resamp] for x in dataset.features]
-            else:
-                resamp_features = dataset.features[ix_resamp]
-
-            # labels and sensitive attributes must be arrays
-            resamp_labels = dataset.labels[ix_resamp]
-            if isinstance(dataset.sensitive_attrs, np.ndarray):
-                resamp_sensitive_attrs = dataset.sensitive_attrs[ix_resamp]
-            else:
-                resamp_sensitive_attrs = []
-
-            resampled_dataset = SupervisedDataSet(
-                features=resamp_features,
-                labels=resamp_labels,
-                sensitive_attrs=resamp_sensitive_attrs,
-                num_datapoints=num_datapoints,
-                meta=dataset.meta,
-            )
-
-            with open(savename, "wb") as outfile:
-                pickle.dump(resampled_dataset, outfile)
-            print(f"Saved {savename}")
-
 def generate_behavior_policy_episodes(hyperparameter_and_setting_dict,n_trials,save_dir,verbose=False):
     """Utility function for reinforcement learning to generate new episodes
     using the behavior policy to use in each trial. 
@@ -124,7 +66,7 @@ def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
     :param verbose: boolean verbosity flag
     """
     resampled_filename = os.path.join(
-        results_dir, "resampled_dataframes", f"trial_{trial_i}.pkl"
+        results_dir, "resampled_datasets", f"trial_{trial_i}.pkl"
     )
     resampled_dataset = load_pickle(resampled_filename)
     num_datapoints_tot = resampled_dataset.num_datapoints

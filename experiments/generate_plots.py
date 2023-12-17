@@ -11,11 +11,10 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 
 from seldonian.utils.io_utils import load_pickle, save_pickle
-from seldonian.dataset import DataSet
+from seldonian.dataset import *
 
 from .experiments import BaselineExperiment, SeldonianExperiment, FairlearnExperiment
 from .experiment_utils import (
-    generate_resampled_datasets,
     generate_behavior_policy_episodes,
     has_failed,
 )
@@ -727,6 +726,7 @@ class PlotGenerator:
 
         return constraint_eval_kwargs
 
+
 class SupervisedPlotGenerator(PlotGenerator):
     def __init__(
         self,
@@ -809,6 +809,65 @@ class SupervisedPlotGenerator(PlotGenerator):
             batch_epoch_dict=batch_epoch_dict,
         )
         self.regime = "supervised_learning"
+    
+
+    def generate_trial_datasets(self,verbose=False):
+        """Generate the datasets to be used in each trial. """
+        if self.datagen_method == "resample":
+            self.generate_resampled_datasets(verbose=verbose)
+        else:
+            raise NotImplementedError(
+                f"datagen_method: {self.datagen_method} not supported for supervised learning."
+            )
+
+    def generate_resampled_datasets(self,verbose=False):
+        """Generate resampled datasets to use in each trial. Resamples (with replacement)
+        features, labels and sensitive attributes to create n_trials versions of these
+        of the same shape as the inputs. Saves them in self.results_dir/resampled_datasets
+        """
+       
+        if verbose:
+            print("Checking for resampled datasets")
+        
+        save_dir = os.path.join(self.results_dir, "resampled_datasets")
+        os.makedirs(save_dir, exist_ok=True)
+
+        orig_dataset = self.spec.dataset
+        num_datapoints = orig_dataset.num_datapoints
+
+        for trial_i in range(self.n_trials):
+            savename = os.path.join(save_dir, f"trial_{trial_i}.pkl")
+            if not os.path.exists(savename):
+                ix_resamp = np.random.choice(
+                    range(num_datapoints), num_datapoints, replace=True
+                )
+                # features can be list of arrays or a single array
+                if type(orig_dataset.features) == list:
+                    resamp_features = [x[ix_resamp] for x in orig_dataset.features]
+                else:
+                    resamp_features = orig_dataset.features[ix_resamp]
+
+                # labels and sensitive attributes must be arrays
+                resamp_labels = orig_dataset.labels[ix_resamp]
+                if isinstance(orig_dataset.sensitive_attrs, np.ndarray):
+                    resamp_sensitive_attrs = orig_dataset.sensitive_attrs[ix_resamp]
+                else:
+                    resamp_sensitive_attrs = []
+
+                resampled_dataset = SupervisedDataSet(
+                    features=resamp_features,
+                    labels=resamp_labels,
+                    sensitive_attrs=resamp_sensitive_attrs,
+                    num_datapoints=num_datapoints,
+                    meta=orig_dataset.meta,
+                )
+
+                save_pickle(savename,resampled_dataset,verbose=verbose)
+        
+        if verbose:
+            print("Done checking for resampled datasets")
+            print()
+        
 
     def run_seldonian_experiment(self, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute
@@ -821,14 +880,8 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         dataset = self.spec.dataset
 
-        if self.datagen_method == "resample":
-            # Generate n_trials resampled datasets of full length
-            # These will be cropped to data_frac fractional size
-            print("generating resampled datasets")
-            generate_resampled_datasets(dataset, self.n_trials, self.results_dir)
-            print("Done generating resampled datasets")
-            print()
-
+        self.generate_trial_datasets(verbose=verbose)
+        
         run_seldonian_kwargs = dict(
             spec=self.spec,
             data_fracs=self.data_fracs,
@@ -873,17 +926,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         dataset = self.spec.dataset
 
-        if self.datagen_method == "resample":
-            # Generate n_trials resampled datasets of full length
-            # These will be cropped to data_frac fractional size
-            print("generating resampled datasets")
-            generate_resampled_datasets(dataset, self.n_trials, self.results_dir)
-            print("Done generating resampled datasets")
-            print()
-        else:
-            raise NotImplementedError(
-                f"datagen_method {datagen_method} not supported for headless experiments"
-            )
+        self.generate_trial_datasets(verbose=verbose)
 
         run_kwargs = dict(
             spec=self.spec,
@@ -929,13 +972,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         dataset = self.spec.dataset
 
-        if self.datagen_method == "resample":
-            # Generate n_trials resampled datasets of full length
-            # These will be cropped to data_frac fractional size
-            print("checking for resampled datasets")
-            generate_resampled_datasets(dataset, self.n_trials, self.results_dir)
-            print("Done checking for resampled datasets")
-            print()
+        self.generate_trial_datasets(verbose=verbose)
 
         run_baseline_kwargs = dict(
             spec=self.spec,
@@ -978,17 +1015,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         dataset = self.spec.dataset
 
-        if self.datagen_method == "resample":
-            # Generate n_trials resampled datasets of full length
-            # These will be cropped to data_frac fractional size
-            print("Checking for resampled datasets")
-            generate_resampled_datasets(
-                dataset,
-                self.n_trials,
-                self.results_dir,
-            )
-            print("Done generating resampled datasets")
-            print()
+        self.generate_trial_datasets(verbose=verbose)
 
         run_fairlearn_kwargs = dict(
             spec=self.spec,

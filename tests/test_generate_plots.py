@@ -104,6 +104,56 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
     assert len(df_trial0) == 1
 
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
+def test_bad_datagen_method(gpa_regression_spec,experiment):
+    np.random.seed(42)
+    constraint_strs = ['Mean_Squared_Error - 3.0','2.0 - Mean_Squared_Error']
+    deltas = [0.05,0.1]
+    spec = gpa_regression_spec(constraint_strs,deltas)
+    n_trials = 2
+    data_fracs = [0.01,0.1]
+    datagen_method="bad_method"
+    perf_eval_fn = MSE
+    results_dir = "./tests/static/results"
+    n_workers = 1
+    # Get performance evaluation kwargs set up
+    # Use entire original dataset as ground truth for test set
+    dataset = spec.dataset
+
+    test_features = dataset.features
+    test_labels = dataset.labels
+
+    # Define any additional keyword arguments (besides theta)
+    # of the performance evaluation function,
+    # which in our case is accuracy
+    perf_eval_kwargs = {
+        'X':test_features,
+        'y':test_labels,
+        }
+    
+    spg = SupervisedPlotGenerator(
+        spec=spec,
+        n_trials=n_trials,
+        data_fracs=data_fracs,
+        datagen_method=datagen_method,
+        perf_eval_fn=perf_eval_fn,
+        results_dir=results_dir,
+        n_workers=n_workers,
+        constraint_eval_fns=[],
+        perf_eval_kwargs=perf_eval_kwargs,
+        constraint_eval_kwargs={})
+    
+    assert spg.n_trials == n_trials
+    assert spg.regime == 'supervised_learning'
+
+    # Seldonian experiment
+    with pytest.raises(NotImplementedError) as excinfo:
+        spg.run_seldonian_experiment(verbose=True)
+
+    error_str = "datagen_method: bad_method not supported for supervised learning."
+    assert str(excinfo.value)
+
+
+@pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_too_few_datapoints(gpa_regression_spec,experiment):
     """ Test that too small of a data_frac resulting in < 1
     data points in a trial raises an error """
