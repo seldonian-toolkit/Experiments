@@ -28,6 +28,8 @@ experiments.generate\_plots.RLPlotGenerator
    ..
    ..    ~RLPlotGenerator.run_seldonian_experiment
    ..
+   ..    ~RLPlotGenerator.validate_constraint_eval_kwargs
+   ..
    
    
 

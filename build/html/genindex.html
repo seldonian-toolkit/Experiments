@@ -49,6 +49,7 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
@@ -374,7 +375,9 @@
 </li>
       <li><a href="_autosummary/experiments.experiment_utils.generate_episodes_and_calc_J.html#experiments.experiment_utils.generate_episodes_and_calc_J">generate_episodes_and_calc_J() (in module experiments.experiment_utils)</a>
 </li>
-      <li><a href="_autosummary/experiments.experiment_utils.generate_resampled_datasets.html#experiments.experiment_utils.generate_resampled_datasets">generate_resampled_datasets() (in module experiments.experiment_utils)</a>
+      <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.generate_resampled_datasets">generate_resampled_datasets() (SupervisedPlotGenerator method)</a>
+</li>
+      <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.generate_trial_datasets">generate_trial_datasets() (SupervisedPlotGenerator method)</a>
 </li>
       <li><a href="_autosummary/experiments.experiments.FairlearnExperiment.html#experiments.experiments.FairlearnExperiment.get_fairlearn_predictions">get_fairlearn_predictions() (FairlearnExperiment method)</a>
 </li>
@@ -390,6 +393,8 @@
         <li><a href="_autosummary/experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.get_max_q">(ExactTabularFittedQBaseline method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.get_next_obs">get_next_obs() (ApproximateTabularFittedQBaseline method)</a>
 
       <ul>
@@ -398,8 +403,6 @@
         <li><a href="_autosummary/experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.get_next_obs">(ExactTabularFittedQBaseline method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.get_probs_from_observations_and_actions">get_probs_from_observations_and_actions() (ApproximateTabularFittedQBaseline method)</a>
 
       <ul>
@@ -460,7 +463,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.experiment_utils.load_regenerated_episodes.html#experiments.experiment_utils.load_regenerated_episodes">load_regenerated_episodes() (in module experiments.experiment_utils)</a>
 </li>
-      <li><a href="_autosummary/experiments.experiment_utils.load_resampled_dataset.html#experiments.experiment_utils.load_resampled_dataset">load_resampled_dataset() (in module experiments.experiment_utils)</a>
+      <li><a href="_autosummary/experiments.experiment_utils.load_resampled_datasets.html#experiments.experiment_utils.load_resampled_datasets">load_resampled_datasets() (in module experiments.experiment_utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -673,14 +676,14 @@
         <li><a href="_autosummary/experiments.baselines.baselines.RLExperimentBaseline.html#experiments.baselines.baselines.RLExperimentBaseline.set_new_params">(RLExperimentBaseline method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.set_q_table">set_q_table() (ApproximateTabularFittedQBaseline method)</a>
 
       <ul>
         <li><a href="_autosummary/experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.set_q_table">(ExactTabularFittedQBaseline method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/experiments.experiment_utils.setup_SA_spec_for_exp.html#experiments.experiment_utils.setup_SA_spec_for_exp">setup_SA_spec_for_exp() (in module experiments.experiment_utils)</a>
 </li>
       <li><a href="_autosummary/experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.stopping_criteria_met">stopping_criteria_met() (ApproximateTabularFittedQBaseline method)</a>
@@ -691,6 +694,8 @@
         <li><a href="_autosummary/experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.stopping_criteria_met">(ExactTabularFittedQBaseline method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/experiments.experiment_utils.supervised_initial_solution_fn.html#experiments.experiment_utils.supervised_initial_solution_fn">supervised_initial_solution_fn() (in module experiments.experiment_utils)</a>
+</li>
       <li><a href="_autosummary/experiments.baselines.baselines.SupervisedExperimentBaseline.html#experiments.baselines.baselines.SupervisedExperimentBaseline">SupervisedExperimentBaseline (class in experiments.baselines.baselines)</a>
 </li>
       <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator">SupervisedPlotGenerator (class in experiments.generate_plots)</a>
@@ -741,6 +746,20 @@
         <li><a href="_autosummary/experiments.baselines.fitted_Q.BaseFittedQBaseline.html#experiments.baselines.fitted_Q.BaseFittedQBaseline.update_Q_weights">(BaseFittedQBaseline method)</a>
 </li>
         <li><a href="_autosummary/experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.html#experiments.baselines.fitted_Q.ExactTabularFittedQBaseline.update_Q_weights">(ExactTabularFittedQBaseline method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/experiments.generate_plots.PlotGenerator.html#experiments.generate_plots.PlotGenerator.validate_constraint_eval_kwargs">validate_constraint_eval_kwargs() (PlotGenerator method)</a>
+
+      <ul>
+        <li><a href="_autosummary/experiments.generate_plots.RLPlotGenerator.html#experiments.generate_plots.RLPlotGenerator.validate_constraint_eval_kwargs">(RLPlotGenerator method)</a>
+</li>
+        <li><a href="_autosummary/experiments.generate_plots.SupervisedPlotGenerator.html#experiments.generate_plots.SupervisedPlotGenerator.validate_constraint_eval_kwargs">(SupervisedPlotGenerator method)</a>
 </li>
       </ul></li>
   </ul></td>

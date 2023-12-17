@@ -22,6 +22,8 @@ experiments.generate\_plots.PlotGenerator
    ..
    ..    ~PlotGenerator.make_plots
    ..
+   ..    ~PlotGenerator.validate_constraint_eval_kwargs
+   ..
    
    
 
