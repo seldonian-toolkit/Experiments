@@ -27,7 +27,7 @@ from seldonian.models.models import (
 
 from .experiment_utils import (
     batch_predictions,
-    load_resampled_dataset,
+    load_resampled_datasets,
     load_regenerated_episodes,
     prep_feat_labels,
     setup_SA_spec_for_exp,
@@ -262,8 +262,8 @@ class BaselineExperiment(Experiment):
         ##############################################
         if regime == "supervised_learning":
             if datagen_method == "resample":
-                trial_dataset, n_points = load_resampled_dataset(
-                    self.results_dir, trial_i, data_frac, verbose=verbose
+                trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
+                    spec, self.results_dir, trial_i, data_frac, verbose=verbose
                 )
             else:
                 raise NotImplementedError(
@@ -915,8 +915,8 @@ class FairlearnExperiment(Experiment):
         ##############################################
 
         if datagen_method == "resample":
-            trial_dataset, n_points = load_resampled_dataset(
-                self.results_dir, trial_i, data_frac
+            trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
+                    spec, self.results_dir, trial_i, data_frac, verbose=verbose
             )
         else:
             raise NotImplementedError(

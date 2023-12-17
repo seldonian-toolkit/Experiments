@@ -152,7 +152,6 @@ def test_bad_datagen_method(gpa_regression_spec,experiment):
     error_str = "datagen_method: bad_method not supported for supervised learning."
     assert str(excinfo.value)
 
-
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_too_few_datapoints(gpa_regression_spec,experiment):
     """ Test that too small of a data_frac resulting in < 1
@@ -402,6 +401,13 @@ def test_addl_datasets_with_hold_out(gpa_regression_addl_datasets_spec,experimen
     assert spg.regime == 'supervised_learning'
 
     spg.run_seldonian_experiment(verbose=True)
+
+    # Check that resampled primary and additional datasets files were created
+    primary_resampled_file = os.path.join(results_dir,"resampled_datasets/trial_0.pkl")
+    assert os.path.exists(primary_resampled_file)
+
+    addl_resampled_file = os.path.join(results_dir,"resampled_datasets/trial_0_addl_datasets.pkl")
+    assert os.path.exists(addl_resampled_file)
 
 @pytest.mark.parametrize('experiment', ["./tests/static/gridworld_results"], indirect=True)
 def test_too_few_episodes(gridworld_spec,experiment):

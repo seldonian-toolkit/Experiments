@@ -168,8 +168,6 @@ def gpa_regression_addl_datasets_spec():
                 }
         frac_data_in_safety = 0.6
 
-        
-
         # Create spec object
         spec = SupervisedSpec(
             dataset=primary_dataset,
@@ -198,13 +196,6 @@ def gpa_regression_addl_datasets_spec():
         )
         
         return spec
-
-
-      
-        
-
-
-        
     
     yield spec_maker
     print("Teardown gpa_regression_addl_datasets_spec")

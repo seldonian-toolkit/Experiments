@@ -810,7 +810,6 @@ class SupervisedPlotGenerator(PlotGenerator):
         )
         self.regime = "supervised_learning"
     
-
     def generate_trial_datasets(self,verbose=False):
         """Generate the datasets to be used in each trial. """
         if self.datagen_method == "resample":
@@ -834,6 +833,11 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         orig_dataset = self.spec.dataset
         num_datapoints = orig_dataset.num_datapoints
+
+        # Check for additional datasets which also need to be resampled.
+        have_addl_datasets = False
+        if self.spec.additional_datasets != {}:
+            have_addl_datasets = True
 
         for trial_i in range(self.n_trials):
             savename = os.path.join(save_dir, f"trial_{trial_i}.pkl")
@@ -863,11 +867,50 @@ class SupervisedPlotGenerator(PlotGenerator):
                 )
 
                 save_pickle(savename,resampled_dataset,verbose=verbose)
+
+            if have_addl_datasets:
+                savename_addl = os.path.join(save_dir, f"trial_{trial_i}_addl_datasets.pkl")
+                if not os.path.exists(savename_addl):
+                    resampled_addl_datasets = {}
+                    addl_datasets = self.spec.additional_datasets
+                    for constraint_str in addl_datasets:
+                        resampled_addl_datasets[constraint_str] = {}
+                        for bn in addl_datasets[constraint_str]:
+                            addl_dataset = addl_datasets[constraint_str][bn]['dataset']
+                            addl_batch_size = addl_datasets[constraint_str][bn].get("batch_size")
+                            num_datapoints_addl = addl_dataset.num_datapoints
+                            ix_resamp_addl = np.random.choice(
+                                range(num_datapoints_addl), num_datapoints_addl, replace=True
+                            )
+                            # features can be list of arrays or a single array
+                            if type(addl_dataset.features) == list:
+                                resamp_features_addl = [x[ix_resamp_addl] for x in addl_dataset.features]
+                            else:
+                                resamp_features_addl = addl_dataset.features[ix_resamp_addl]
+
+                            # labels and sensitive attributes must be arrays
+                            resamp_labels_addl = addl_dataset.labels[ix_resamp_addl]
+                            if isinstance(addl_dataset.sensitive_attrs, np.ndarray):
+                                resamp_sensitive_attrs_addl = addl_dataset.sensitive_attrs[ix_resamp_addl]
+                            else:
+                                resamp_sensitive_attrs_addl = []
+
+                            resampled_dataset = SupervisedDataSet(
+                                features=resamp_features_addl,
+                                labels=resamp_labels_addl,
+                                sensitive_attrs=resamp_sensitive_attrs_addl,
+                                num_datapoints=num_datapoints_addl,
+                                meta=addl_dataset.meta,
+                            )
+                            resampled_addl_datasets[constraint_str][bn] = {'dataset':resampled_dataset}
+                            if addl_batch_size:
+                                resampled_addl_datasets[constraint_str][bn]['batch_size'] = addl_batch_size
+
+                    save_pickle(savename_addl,resampled_addl_datasets,verbose=verbose)
         
         if verbose:
             print("Done checking for resampled datasets")
             print()
-        
 
     def run_seldonian_experiment(self, verbose=False):
         """Run a supervised Seldonian experiment using the spec attribute

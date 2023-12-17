@@ -48,12 +48,13 @@ def generate_behavior_policy_episodes(hyperparameter_and_setting_dict,n_trials,s
             if verbose: print(f"{savename} already created")
     return
 
-def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
+def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False):
     """Utility function for supervised learning to generate the
     resampled datasets to use in each trial. Resamples (with replacement)
     features, labels and sensitive attributes to create n_trials versions of these
     of the same shape as the inputs
 
+    :param spec: A seldonian.spec.Spec object. 
     :param results_dir: The directory in which results are saved for this trial
     :type results_dir: str
 
@@ -65,6 +66,8 @@ def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
 
     :param verbose: boolean verbosity flag
     """
+
+    # Primary dataset
     resampled_filename = os.path.join(
         results_dir, "resampled_datasets", f"trial_{trial_i}.pkl"
     )
@@ -84,7 +87,16 @@ def load_resampled_dataset(results_dir, trial_i, data_frac, verbose=False):
             f"results in {n_points} data points. "
             "Must have at least 1 data point to run a trial."
         )
-    return resampled_dataset, n_points
+
+    if spec.additional_datasets:
+        addl_resampled_filename = os.path.join(
+            results_dir, "resampled_datasets", f"trial_{trial_i}_addl_datasets.pkl"
+        )
+        additional_datasets = load_pickle(addl_resampled_filename)
+    else:
+        additional_datasets = {}
+
+    return resampled_dataset, n_points, additional_datasets
 
 def load_regenerated_episodes(results_dir, trial_i, data_frac, orig_meta, verbose=False):
     save_dir = os.path.join(results_dir, "regenerated_datasets")
@@ -120,7 +132,7 @@ def load_regenerated_episodes(results_dir, trial_i, data_frac, orig_meta, verbos
 
 def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
     """Utility function for preparing features and labels
-    for a given trial
+    for a given trial with n_points (given data frac)
 
     :param trial_dataset: The Seldonian dataset object containing trial data
     :param n_points: Number of points in this trial
@@ -145,7 +157,6 @@ def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
 
     return features, labels
 
-
 def setup_SA_spec_for_exp(
     spec,
     regime,
@@ -159,8 +170,8 @@ def setup_SA_spec_for_exp(
 ):
     if regime == "supervised_learning":
         if datagen_method == "resample":
-            trial_dataset, n_points = load_resampled_dataset(
-                results_dir, trial_i, data_frac
+            trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
+                spec, results_dir, trial_i, data_frac
             )
 
         else:
@@ -168,6 +179,10 @@ def setup_SA_spec_for_exp(
                 f"Eval method {datagen_method} " f"not supported for regime={regime}"
             )
 
+        # Make a new spec object which we will modify
+        spec_for_exp = copy.deepcopy(spec)
+
+        # Primary dataset first
         features, labels, sensitive_attrs = prep_feat_labels(
             trial_dataset, n_points, include_sensitive_attrs=True
         )
@@ -180,9 +195,36 @@ def setup_SA_spec_for_exp(
             meta=trial_dataset.meta,
         )
 
-        # Make a new spec object and update its dataset
-        spec_for_exp = copy.deepcopy(spec)
+        # Update primary dataset
         spec_for_exp.dataset = dataset_for_exp
+
+        # Check for addl datasets
+        if trial_addl_datasets != {}:
+            additional_datasets_for_exp = {}
+            for constraint_str in trial_addl_datasets:
+                additional_datasets_for_exp[constraint_str] = {}
+                for bn in trial_addl_datasets[constraint_str]:
+                    this_dict = trial_addl_datasets[constraint_str][bn]
+                    addl_trial_dataset = this_dict["dataset"]
+                    addl_batch_size = this_dict.get("batch_size")
+                    num_datapoints_addl = addl_trial_dataset.num_datapoints
+                    addl_n_points = int(round(data_frac * num_datapoints_addl))
+                    # Primary dataset first
+                    addl_features, addl_labels, addl_sensitive_attrs = prep_feat_labels(
+                        addl_trial_dataset, addl_n_points, include_sensitive_attrs=True
+                    )
+
+                    addl_dataset_for_exp = SupervisedDataSet(
+                        features=addl_features,
+                        labels=addl_labels,
+                        sensitive_attrs=addl_sensitive_attrs,
+                        num_datapoints=addl_n_points,
+                        meta=addl_trial_dataset.meta,
+                    )
+                    additional_datasets_for_exp[constraint_str][bn] = {"dataset": addl_dataset_for_exp}
+                    if addl_batch_size:
+                        additional_datasets_for_exp[constraint_str][bn]["batch_size"] = addl_batch_size
+            spec_for_exp.additional_datasets = additional_datasets_for_exp
 
     elif regime == "reinforcement_learning":
         hyperparameter_and_setting_dict = kwargs["hyperparameter_and_setting_dict"]
@@ -211,6 +253,7 @@ def setup_SA_spec_for_exp(
         batch_size, n_epochs = batch_epoch_dict[data_frac]
         spec_for_exp.optimization_hyperparams["batch_size"] = batch_size
         spec_for_exp.optimization_hyperparams["n_epochs"] = n_epochs
+    
     return spec_for_exp
 
 
@@ -294,8 +337,6 @@ def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     )  # number of points used in candidate selection in each data frac
     n_batches = data_sizes / batch_size  # number of batches in each data frac
     n_batches = np.array([math.ceil(x) for x in n_batches])
-    print("n_batches:")
-    print(n_batches)
     n_epochs_arr = (
         niter / n_batches
     )  # number of epochs needed to get to niter iterations in each data frac
@@ -361,7 +402,6 @@ def trial_arg_chunker(data_fracs,n_trials,n_workers):
             chunk_sizes.append(n_tot-i)
         else:
             chunk_sizes.append(chunk_size)
-    print(f"chunk_sizes: {chunk_sizes}")
     assert sum(chunk_sizes) == n_tot
     # flatten data fracs and trials so we can make chunked tuples ((data_frac,trial_index),...) 
     data_fracs_vector = np.array([x for x in data_fracs for y in range(n_trials)])
@@ -375,7 +415,5 @@ def trial_arg_chunker(data_fracs,n_trials,n_workers):
         start_ix += chunk_size
     return chunked_list
 
-def supervised_initial_solution_fn():
-    def initial_solution_fn(m, x, y):
-        return m.fit(x, y)
-    return initial_solution_fn
+def supervised_initial_solution_fn(m, x, y):
+    return m.fit(x, y)
