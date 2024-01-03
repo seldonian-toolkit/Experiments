@@ -101,6 +101,7 @@ class PlotGenerator:
 
     def make_plots(
         self,
+        tot_data_size=None,
         model_label_dict={},
         ignore_models=[],
         fontsize=12,
@@ -124,7 +125,10 @@ class PlotGenerator:
         """Make the three plots of the experiment. Looks up any
         experiments run in self.results_dir and plots them on the
         same three plots.
-
+        :param tot_data_size: The total number of datapoints in the experiment. 
+            This is used, alongside the data_fracs array to construct the 
+            horizontal axes of the three plots. If None, assumes a value from the dataset.
+        :type tot_data_size: int
         :param model_label_dict: An optional dictionary where keys
                 are model names and values are the names you want
                 shown in the legend. Note that if you specify this
@@ -174,12 +178,13 @@ class PlotGenerator:
         :type savename: str, defaults to None
         """
         plt.style.use("bmh")
-        regime = self.spec.dataset.regime
-        if regime == "supervised_learning":
-            tot_data_size = self.spec.dataset.num_datapoints
-        elif regime == "reinforcement_learning":
-            tot_data_size = self.hyperparameter_and_setting_dict["num_episodes"]
+        regime = self.regime
 
+        if tot_data_size is None:
+            if regime in ["supervised_learning","custom"]:
+                tot_data_size = self.spec.dataset.num_datapoints
+            elif regime == "reinforcement_learning":
+                tot_data_size = self.hyperparameter_and_setting_dict["num_episodes"]
         # Read in constraints
         parse_trees = self.spec.parse_trees
         n_constraints = len(parse_trees)
@@ -711,12 +716,20 @@ class PlotGenerator:
                         "from held out additional datasets dict."
                     )
                 if "dataset" not in addl_datasets_held_out[constraint_str][bn]:
-                    raise RuntimeError(
-                        f"'dataset' key missing from held out additional datasets dict entry for "
-                        f"parse tree: '{constraint_str}' and base node '{bn}'"
-                    )
-
-                if not isinstance(
+                    if "candidate_dataset" not in addl_datasets_held_out[constraint_str][bn]:
+                        raise RuntimeError(
+                            f"'dataset' key missing from held out additional datasets dict entry for "
+                            f"parse tree: '{constraint_str}' and base node '{bn}'"
+                        )
+                    else:
+                        if not isinstance(
+                            addl_datasets_held_out[constraint_str][bn]["candidate_dataset"], DataSet
+                        ):                        
+                            raise RuntimeError(
+                                f"The candidate dataset provided for parse tree: '{constraint_str}' and base node '{bn}' "
+                                "is not a seldonian.DataSet object."
+                            )
+                elif not isinstance(
                     addl_datasets_held_out[constraint_str][bn]["dataset"], DataSet
                 ):
                     raise RuntimeError(
@@ -831,8 +844,20 @@ class SupervisedPlotGenerator(PlotGenerator):
         save_dir = os.path.join(self.results_dir, "resampled_datasets")
         os.makedirs(save_dir, exist_ok=True)
 
-        orig_dataset = self.spec.dataset
-        num_datapoints = orig_dataset.num_datapoints
+        # Check to see if we have forced candidate/safety data
+        if self.spec.candidate_dataset is not None:
+            orig_cand_dataset = self.spec.candidate_dataset
+            orig_safety_dataset = self.spec.safety_dataset
+            orig_datasets = {
+                "candidate_dataset": orig_cand_dataset,
+                "safety_dataset": orig_safety_dataset
+            }
+        else:
+            orig_dataset = self.spec.dataset
+            orig_datasets = {
+                "dataset": orig_dataset
+            }
+        
 
         # Check for additional datasets which also need to be resampled.
         have_addl_datasets = False
@@ -840,33 +865,39 @@ class SupervisedPlotGenerator(PlotGenerator):
             have_addl_datasets = True
 
         for trial_i in range(self.n_trials):
-            savename = os.path.join(save_dir, f"trial_{trial_i}.pkl")
-            if not os.path.exists(savename):
-                ix_resamp = np.random.choice(
-                    range(num_datapoints), num_datapoints, replace=True
-                )
-                # features can be list of arrays or a single array
-                if type(orig_dataset.features) == list:
-                    resamp_features = [x[ix_resamp] for x in orig_dataset.features]
+            for key in orig_datasets:
+                if key == "dataset":
+                    savename = os.path.join(save_dir, f"trial_{trial_i}.pkl")
                 else:
-                    resamp_features = orig_dataset.features[ix_resamp]
+                    savename = os.path.join(save_dir, f"trial_{trial_i}_{key}.pkl")
+                dataset = orig_datasets[key]
+                num_datapoints = dataset.num_datapoints
+                if not os.path.exists(savename):
+                    ix_resamp = np.random.choice(
+                        range(num_datapoints), num_datapoints, replace=True
+                    )
+                    # features can be list of arrays or a single array
+                    if type(dataset.features) == list:
+                        resamp_features = [x[ix_resamp] for x in dataset.features]
+                    else:
+                        resamp_features = dataset.features[ix_resamp]
 
-                # labels and sensitive attributes must be arrays
-                resamp_labels = orig_dataset.labels[ix_resamp]
-                if isinstance(orig_dataset.sensitive_attrs, np.ndarray):
-                    resamp_sensitive_attrs = orig_dataset.sensitive_attrs[ix_resamp]
-                else:
-                    resamp_sensitive_attrs = []
+                    # labels and sensitive attributes must be arrays
+                    resamp_labels = dataset.labels[ix_resamp]
+                    if isinstance(dataset.sensitive_attrs, np.ndarray):
+                        resamp_sensitive_attrs = dataset.sensitive_attrs[ix_resamp]
+                    else:
+                        resamp_sensitive_attrs = []
 
-                resampled_dataset = SupervisedDataSet(
-                    features=resamp_features,
-                    labels=resamp_labels,
-                    sensitive_attrs=resamp_sensitive_attrs,
-                    num_datapoints=num_datapoints,
-                    meta=orig_dataset.meta,
-                )
+                    resampled_dataset = SupervisedDataSet(
+                        features=resamp_features,
+                        labels=resamp_labels,
+                        sensitive_attrs=resamp_sensitive_attrs,
+                        num_datapoints=num_datapoints,
+                        meta=dataset.meta,
+                    )
 
-                save_pickle(savename,resampled_dataset,verbose=verbose)
+                    save_pickle(savename,resampled_dataset,verbose=verbose)
 
             if have_addl_datasets:
                 savename_addl = os.path.join(save_dir, f"trial_{trial_i}_addl_datasets.pkl")
@@ -876,36 +907,48 @@ class SupervisedPlotGenerator(PlotGenerator):
                     for constraint_str in addl_datasets:
                         resampled_addl_datasets[constraint_str] = {}
                         for bn in addl_datasets[constraint_str]:
-                            addl_dataset = addl_datasets[constraint_str][bn]['dataset']
-                            addl_batch_size = addl_datasets[constraint_str][bn].get("batch_size")
-                            num_datapoints_addl = addl_dataset.num_datapoints
-                            ix_resamp_addl = np.random.choice(
-                                range(num_datapoints_addl), num_datapoints_addl, replace=True
-                            )
-                            # features can be list of arrays or a single array
-                            if type(addl_dataset.features) == list:
-                                resamp_features_addl = [x[ix_resamp_addl] for x in addl_dataset.features]
-                            else:
-                                resamp_features_addl = addl_dataset.features[ix_resamp_addl]
+                            resampled_addl_datasets[constraint_str][bn] = {}
+                            # Check if explicit candidate/safety datasets or just "dataset" key
 
-                            # labels and sensitive attributes must be arrays
-                            resamp_labels_addl = addl_dataset.labels[ix_resamp_addl]
-                            if isinstance(addl_dataset.sensitive_attrs, np.ndarray):
-                                resamp_sensitive_attrs_addl = addl_dataset.sensitive_attrs[ix_resamp_addl]
-                            else:
-                                resamp_sensitive_attrs_addl = []
+                            this_dict = addl_datasets[constraint_str][bn]
+                            addl_batch_size = this_dict.get("batch_size")
 
-                            resampled_dataset = SupervisedDataSet(
-                                features=resamp_features_addl,
-                                labels=resamp_labels_addl,
-                                sensitive_attrs=resamp_sensitive_attrs_addl,
-                                num_datapoints=num_datapoints_addl,
-                                meta=addl_dataset.meta,
-                            )
-                            resampled_addl_datasets[constraint_str][bn] = {'dataset':resampled_dataset}
                             if addl_batch_size:
                                 resampled_addl_datasets[constraint_str][bn]['batch_size'] = addl_batch_size
 
+                            if "candidate_dataset" in this_dict:
+                                keys = ["candidate_dataset","safety_dataset"]
+                            else:
+                                keys = ["dataset"]
+                            
+                            for key in keys:
+                                addl_dataset = this_dict[key]
+                                num_datapoints_addl = addl_dataset.num_datapoints
+                                ix_resamp_addl = np.random.choice(
+                                    range(num_datapoints_addl), num_datapoints_addl, replace=True
+                                )
+                                # features can be list of arrays or a single array
+                                if type(addl_dataset.features) == list:
+                                    resamp_features_addl = [x[ix_resamp_addl] for x in addl_dataset.features]
+                                else:
+                                    resamp_features_addl = addl_dataset.features[ix_resamp_addl]
+
+                                # labels and sensitive attributes must be arrays
+                                resamp_labels_addl = addl_dataset.labels[ix_resamp_addl]
+                                if isinstance(addl_dataset.sensitive_attrs, np.ndarray):
+                                    resamp_sensitive_attrs_addl = addl_dataset.sensitive_attrs[ix_resamp_addl]
+                                else:
+                                    resamp_sensitive_attrs_addl = []
+
+                                resampled_dataset = SupervisedDataSet(
+                                    features=resamp_features_addl,
+                                    labels=resamp_labels_addl,
+                                    sensitive_attrs=resamp_sensitive_attrs_addl,
+                                    num_datapoints=num_datapoints_addl,
+                                    meta=addl_dataset.meta,
+                                )
+                                resampled_addl_datasets[constraint_str][bn][key] = resampled_dataset
+                            
                     save_pickle(savename_addl,resampled_addl_datasets,verbose=verbose)
         
         if verbose:
@@ -927,6 +970,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         
         run_seldonian_kwargs = dict(
             spec=self.spec,
+            regime=self.regime,
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             n_workers=self.n_workers,
@@ -1197,6 +1241,7 @@ class RLPlotGenerator(PlotGenerator):
 
         run_seldonian_kwargs = dict(
             spec=self.spec,
+            regime=self.regime,
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             n_workers=self.n_workers,
@@ -1296,7 +1341,7 @@ class RLPlotGenerator(PlotGenerator):
         :type savename: str, defaults to None
         """
         plt.style.use("bmh")
-        regime = self.spec.dataset.regime
+        regime = self.regime
         if regime != "reinforcement_learning":
             raise ValueError(
                 "Importance weights can only be plotted for reinforcement learning problems"
