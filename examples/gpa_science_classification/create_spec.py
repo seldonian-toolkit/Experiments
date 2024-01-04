@@ -9,12 +9,10 @@ from seldonian.models.models import (
     BinaryLogisticRegressionModel)
 from seldonian.models import objectives
 
-
+def initial_solution_fn(model,X,Y):
+    return model.fit(X,Y)
 
 if __name__ == '__main__':
-
-    def initial_solution_fn(model,X,Y):
-        return model.fit(X,Y)
     data_pth = "../../static/datasets/supervised/GPA/gpa_classification_dataset.csv"
     metadata_pth = "../../static/datasets/supervised/GPA/metadata_classification.json"
     save_base_dir = '.'
@@ -71,7 +69,7 @@ if __name__ == '__main__':
             use_builtin_primary_gradient_fn=True,
             parse_trees=parse_trees,
             sub_regime=sub_regime,
-            initial_solution_fn=None,
+            initial_solution_fn=initial_solution_fn,
             optimization_technique="gradient_descent",
             optimizer="adam",
             optimization_hyperparams={

@@ -24,7 +24,8 @@ from experiments.baselines.random_classifiers import (
     UniformRandomClassifierBaseline)
 from experiments.perf_eval_funcs import deterministic_accuracy
 
-
+def initial_solution_fn(model,X,Y):
+    return model.fit(X,Y)
 
 def gpa_example(
     spec_rootdir,
@@ -38,7 +39,7 @@ def gpa_example(
     ],
     n_trials=50,
     data_fracs=np.logspace(-4,0,15),
-    baselines=[UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()],
+    baselines=[BinaryLogisticRegressionBaseline()],
     include_fairlearn_models=True,
     performance_metric="accuracy",
     plot_save_format="pdf",
@@ -46,8 +47,7 @@ def gpa_example(
     model_label_dict={},
     n_workers=1,
 ):
-    def initial_solution_fn(model,X,Y):
-        return model.fit(X,Y)
+    
     if performance_metric == "accuracy":
         perf_eval_fn = deterministic_accuracy
     else:
@@ -146,18 +146,17 @@ if __name__ == "__main__":
     model_label_dict = {
         "qsa": "Quasi-Seldonian algorithm",
         "logistic_regression": "Logistic regression (no constraint)",
-        "uniform_random": "Uniform random classifier",
         "fairlearn_eps0.01": "Fairlearn (eps=0.01)",
         "fairlearn_eps0.10": "Fairlearn (eps=0.1)",
         "fairlearn_eps1.00": "Fairlearn (eps=1.0)",
     }
 
     if include_baselines:
-        baselines = [UniformRandomClassifierBaseline(),BinaryLogisticRegressionBaseline()]
+        baselines = [BinaryLogisticRegressionBaseline()]
     else:
         baselines = []
 
-    results_base_dir = f"./results"
+    results_base_dir = f"./results_2024Jan3"
 
     gpa_example(
         spec_rootdir="data/spec",

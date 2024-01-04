@@ -21,7 +21,7 @@ def initial_solution_fn(model,X,Y):
 
 def main():
     # Parameter setup
-    run_experiments = True
+    run_experiments = False
     make_plots = True
     save_plot = False
     include_legend = True
@@ -29,7 +29,6 @@ def main():
     model_label_dict = {
         'qsa':'Seldonian model',
         'uniform_random': 'Uniform random',
-        # 'weighted_random_0.80': 'Weighted random',
         'logistic_regression': 'Logistic regression (no constraint)',
         'fairlearn_eps0.01': 'Fairlearn (epsilon=0.01)',
         'fairlearn_eps0.10': 'Fairlearn (epsilon=0.1)',
@@ -45,9 +44,10 @@ def main():
     n_trials = 5
     # data_fracs = np.logspace(-4,0,15)
     data_fracs = 0.1*np.arange(1,11)
-    n_workers = 6
+    # data_fracs = [1.0]
+    n_workers = 8
     # results_dir = f'../../results/gpa_{constraint_name}_{performance_metric}'
-    results_dir = f'results/test_run_v5'
+    results_dir = f'results/test_run_2024Jan3'
     plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
     # plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}_fa.png')
 
