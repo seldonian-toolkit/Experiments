@@ -19,6 +19,7 @@ experiments.generate\_plots
       :toctree:                                         
       :template: custom-class-template.rst              
    
+      CustomPlotGenerator
       PlotGenerator
       RLPlotGenerator
       SupervisedPlotGenerator

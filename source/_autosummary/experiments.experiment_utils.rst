@@ -15,6 +15,7 @@ experiments.experiment\_utils
       :toctree:                                         
    
       batch_predictions
+      batch_predictions_custom_regime
       generate_behavior_policy_episodes
       generate_episodes_and_calc_J
       has_failed
@@ -22,6 +23,7 @@ experiments.experiment\_utils
       load_resampled_datasets
       make_batch_epoch_dict_fixedniter
       make_batch_epoch_dict_min_sample_repeat
+      prep_custom_data
       prep_data_for_fairlearn
       prep_feat_labels
       prep_feat_labels_for_baseline

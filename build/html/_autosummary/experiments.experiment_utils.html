@@ -40,26 +40,32 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.batch_predictions.html#experiments.experiment_utils.batch_predictions" title="experiments.experiment_utils.batch_predictions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_predictions</span></code></a>(model, solution, X_test, ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.generate_behavior_policy_episodes.html#experiments.experiment_utils.generate_behavior_policy_episodes" title="experiments.experiment_utils.generate_behavior_policy_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_behavior_policy_episodes</span></code></a>(...[, verbose])</p></td>
-<td><p>Utility function for reinforcement learning to generate new episodes using the behavior policy to use in each trial.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.generate_episodes_and_calc_J.html#experiments.experiment_utils.generate_episodes_and_calc_J" title="experiments.experiment_utils.generate_episodes_and_calc_J"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_episodes_and_calc_J</span></code></a>(**kwargs)</p></td>
-<td><p>Calculate the expected discounted return by generating episodes</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.has_failed.html#experiments.experiment_utils.has_failed" title="experiments.experiment_utils.has_failed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_failed</span></code></a>(g)</p></td>
-<td><p>Condition for whether a value of g is unsafe.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.load_regenerated_episodes.html#experiments.experiment_utils.load_regenerated_episodes" title="experiments.experiment_utils.load_regenerated_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_regenerated_episodes</span></code></a>(results_dir, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.batch_predictions_custom_regime.html#experiments.experiment_utils.batch_predictions_custom_regime" title="experiments.experiment_utils.batch_predictions_custom_regime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_predictions_custom_regime</span></code></a>(model, ...)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.load_resampled_datasets.html#experiments.experiment_utils.load_resampled_datasets" title="experiments.experiment_utils.load_resampled_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_resampled_datasets</span></code></a>(spec, results_dir, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.generate_behavior_policy_episodes.html#experiments.experiment_utils.generate_behavior_policy_episodes" title="experiments.experiment_utils.generate_behavior_policy_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_behavior_policy_episodes</span></code></a>(...[, verbose])</p></td>
+<td><p>Utility function for reinforcement learning to generate new episodes using the behavior policy to use in each trial.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.generate_episodes_and_calc_J.html#experiments.experiment_utils.generate_episodes_and_calc_J" title="experiments.experiment_utils.generate_episodes_and_calc_J"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_episodes_and_calc_J</span></code></a>(**kwargs)</p></td>
+<td><p>Calculate the expected discounted return by generating episodes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.has_failed.html#experiments.experiment_utils.has_failed" title="experiments.experiment_utils.has_failed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_failed</span></code></a>(g)</p></td>
+<td><p>Condition for whether a value of g is unsafe.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.load_regenerated_episodes.html#experiments.experiment_utils.load_regenerated_episodes" title="experiments.experiment_utils.load_regenerated_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_regenerated_episodes</span></code></a>(results_dir, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.load_resampled_datasets.html#experiments.experiment_utils.load_resampled_datasets" title="experiments.experiment_utils.load_resampled_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_resampled_datasets</span></code></a>(spec, results_dir, ...)</p></td>
 <td><p>Utility function for supervised learning to generate the resampled datasets to use in each trial.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html#experiments.experiment_utils.make_batch_epoch_dict_fixedniter" title="experiments.experiment_utils.make_batch_epoch_dict_fixedniter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_fixedniter</span></code></a>(niter, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html#experiments.experiment_utils.make_batch_epoch_dict_fixedniter" title="experiments.experiment_utils.make_batch_epoch_dict_fixedniter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_fixedniter</span></code></a>(niter, ...)</p></td>
 <td><p>Convenience function for figuring out the number of epochs necessary to ensure that at each data fraction, the total number of iterations (and batch size) will be fixed.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html#experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat" title="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_min_sample_repeat</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html#experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat" title="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_min_sample_repeat</span></code></a>(...)</p></td>
 <td><p>Convenience function for figuring out the number of epochs necessary to ensure that the number of iterations for each data frac is: max(niter_min,# of iterations s.t.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_custom_data.html#experiments.experiment_utils.prep_custom_data" title="experiments.experiment_utils.prep_custom_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_custom_data</span></code></a>(trial_dataset, n_points[, ...])</p></td>
+<td><p>Utility function for preparing data and sensitive attributes for the custom regime for a given trial with n_points (given data frac)</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_data_for_fairlearn.html#experiments.experiment_utils.prep_data_for_fairlearn" title="experiments.experiment_utils.prep_data_for_fairlearn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_data_for_fairlearn</span></code></a>(spec, results_dir, ...)</p></td>
 <td><p></p></td>
@@ -108,6 +114,7 @@
 <li class="toctree-l3"><a class="reference internal" href="experiments.baselines.html">experiments.baselines</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">experiments.experiment_utils</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.batch_predictions.html">experiments.experiment_utils.batch_predictions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.batch_predictions_custom_regime.html">experiments.experiment_utils.batch_predictions_custom_regime</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.generate_behavior_policy_episodes.html">experiments.experiment_utils.generate_behavior_policy_episodes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.generate_episodes_and_calc_J.html">experiments.experiment_utils.generate_episodes_and_calc_J</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.has_failed.html">experiments.experiment_utils.has_failed</a></li>
@@ -115,6 +122,7 @@
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.load_resampled_datasets.html">experiments.experiment_utils.load_resampled_datasets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html">experiments.experiment_utils.make_batch_epoch_dict_fixedniter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html">experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.prep_custom_data.html">experiments.experiment_utils.prep_custom_data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.prep_data_for_fairlearn.html">experiments.experiment_utils.prep_data_for_fairlearn</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels.html">experiments.experiment_utils.prep_feat_labels</a></li>
 <li class="toctree-l4"><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels_for_baseline.html">experiments.experiment_utils.prep_feat_labels_for_baseline</a></li>
