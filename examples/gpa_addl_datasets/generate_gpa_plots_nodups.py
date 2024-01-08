@@ -1,17 +1,15 @@
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
 import numpy as np 
 
 from experiments.generate_plots import SupervisedPlotGenerator
 from experiments.baselines.logistic_regression import BinaryLogisticRegressionBaseline
-from experiments.baselines.random_classifiers import (
-    UniformRandomClassifierBaseline,WeightedRandomClassifierBaseline)
-from experiments.baselines.random_forest import RandomForestClassifierBaseline
 from seldonian.utils.io_utils import load_pickle
+from seldonian.dataset import SupervisedDataSet
 from sklearn.metrics import log_loss,accuracy_score
 
 def perf_eval_fn(y_pred,y,**kwargs):
-    # Deterministic accuracy. Should really be using probabilistic accuracy, 
-    # but use deterministic to match Thomas et al. (2019)
+    # Deterministic accuracy to match Thomas et al. (2019)
     return accuracy_score(y,y_pred > 0.5)
 
 def initial_solution_fn(m,X,Y):
@@ -20,12 +18,13 @@ def initial_solution_fn(m,X,Y):
 def main():
     # Parameter setup
     run_experiments = False
-    make_plots = False
-    save_plot = False
+    make_plots = True
+    save_plot = True
     include_legend = True
 
     model_label_dict = {
-        'qsa':'Seldonian model (with additional datasets)',
+        'qsa':'Quasi-Seldonian algorithm',
+        'logistic_regression':'Logistic regression (no constraint)',
         }
 
     constraint_name = 'demographic_parity'
@@ -33,28 +32,28 @@ def main():
     n_trials = 20
     data_fracs = np.logspace(-4,0,15)
     n_workers = 8
-    results_dir = f'results/test_demographic_parity'
+    results_dir = f'results/demographic_parity_nodups'
     plot_savename = os.path.join(results_dir,f'gpa_{constraint_name}_{performance_metric}.png')
 
-    verbose=True
+    verbose=False
 
     # Load spec
-    specfile = f'specfiles/demographic_parity_addl_datasets.pkl'
+    specfile = f'specfiles/demographic_parity_addl_datasets_nodups.pkl'
     spec = load_pickle(specfile)
-    print(spec.dataset.num_datapoints)
     os.makedirs(results_dir,exist_ok=True)
 
-    # Use entire original primary dataset as ground truth for test set
-    dataset = spec.dataset
-    test_features = dataset.features
-    test_labels = dataset.labels
+    # Combine primary candidate and safety datasets to be used as ground truth for performance plotd
+    test_dataset = spec.candidate_dataset + spec.safety_dataset 
+
+    test_features = test_dataset.features
+    test_labels = test_dataset.labels
 
     # Setup performance evaluation function and kwargs 
     perf_eval_kwargs = {
         'X':test_features,
         'y':test_labels,
         'performance_metric':performance_metric
-        }
+    }
 
     # Use original additional_datasets as ground truth (for evaluating safety)
     constraint_eval_kwargs = {}
@@ -71,16 +70,24 @@ def main():
         constraint_eval_kwargs=constraint_eval_kwargs,
         results_dir=results_dir,
         perf_eval_kwargs=perf_eval_kwargs,
-        )
+    )
 
     if run_experiments:
+
+        # Logistic regression baseline
+        lr_baseline = BinaryLogisticRegressionBaseline()
+        plot_generator.run_baseline_experiment(
+            baseline_model=lr_baseline,verbose=False)
 
         # Seldonian experiment
         plot_generator.run_seldonian_experiment(verbose=verbose)
 
 
     if make_plots:
-        plot_generator.make_plots(fontsize=12,legend_fontsize=8,
+        plot_generator.make_plots(
+            tot_data_size=test_dataset.num_datapoints,
+            fontsize=14,
+            legend_fontsize=12,
             performance_label=performance_metric,
             include_legend=include_legend,
             model_label_dict=model_label_dict,

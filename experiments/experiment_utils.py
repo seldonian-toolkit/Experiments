@@ -68,25 +68,54 @@ def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False
     """
 
     # Primary dataset
-    resampled_filename = os.path.join(
-        results_dir, "resampled_datasets", f"trial_{trial_i}.pkl"
-    )
-    resampled_dataset = load_pickle(resampled_filename)
-    num_datapoints_tot = resampled_dataset.num_datapoints
-    
-    n_points = int(round(data_frac * num_datapoints_tot))
+    resampled_base_dir = os.path.join(
+        results_dir, "resampled_datasets")
+    # Check if forced candidate/safety data
 
-    if verbose:
-        print(
-            f"Using resampled dataset {resampled_filename} "
-            f"with {num_datapoints_tot} datapoints"
+    if spec.candidate_dataset is not None:
+        resampled_cand_filename = os.path.join(
+            resampled_base_dir, 
+            f"trial_{trial_i}_candidate_dataset.pkl"
         )
-    if n_points < 1:
-        raise ValueError(
-            f"This data_frac={data_frac} "
-            f"results in {n_points} data points. "
-            "Must have at least 1 data point to run a trial."
+        resampled_cand_dataset = load_pickle(resampled_cand_filename)
+        resampled_safety_filename = os.path.join(
+            resampled_base_dir, 
+            f"trial_{trial_i}_safety_dataset.pkl"
         )
+        resampled_safety_dataset = load_pickle(resampled_safety_filename)
+        resampled_datasets = {
+            "candidate_dataset":resampled_cand_dataset,
+            "safety_dataset":resampled_safety_dataset
+        }
+        num_datapoints_cand = int(round(data_frac*resampled_cand_dataset.num_datapoints))
+        num_datapoints_safety = int(round(data_frac*resampled_safety_dataset.num_datapoints))
+
+        n_points_dict = {
+            "candidate_dataset":num_datapoints_cand,
+            "safety_dataset":num_datapoints_safety
+        }
+    else:
+        resampled_filename = os.path.join(
+            resampled_base_dir, 
+            f"trial_{trial_i}.pkl"
+        )
+        resampled_dataset = load_pickle(resampled_filename)
+        resampled_datasets = {
+            "dataset":resampled_dataset
+        }
+        num_datapoints_tot = resampled_dataset.num_datapoints
+        n_points = int(round(data_frac * num_datapoints_tot))
+        n_points_dict = {
+            "dataset":n_points
+        }
+
+    for key,val in n_points_dict.items():
+        if val < 1:
+            raise ValueError(
+                f"This data_frac={data_frac} "
+                f"results in {n_points} data points. "
+                "Must have at least 1 data point to run a trial."
+            )
 
     if spec.additional_datasets:
         addl_resampled_filename = os.path.join(
@@ -96,7 +125,7 @@ def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False
     else:
         additional_datasets = {}
 
-    return resampled_dataset, n_points, additional_datasets
+    return resampled_datasets, n_points_dict, additional_datasets
 
 def load_regenerated_episodes(results_dir, trial_i, data_frac, orig_meta, verbose=False):
     save_dir = os.path.join(results_dir, "regenerated_datasets")
@@ -157,6 +186,131 @@ def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
 
     return features, labels
 
+def prep_feat_labels_for_baseline(
+    spec,
+    results_dir,
+    trial_i,
+    data_frac,
+    datagen_method,
+    verbose
+):
+    if datagen_method == "resample":
+        trial_datasets, n_points_dict, trial_addl_datasets = load_resampled_datasets(
+            spec, results_dir, trial_i, data_frac, verbose=verbose
+        )
+        # If there are separate resampled candidate and safety datasets, 
+        # we merge them into a single dataset and then take the first n_points points
+        # from the merged dataset
+        if "candidate_dataset" in trial_datasets:
+            trial_cand_dataset = trial_datasets["candidate_dataset"]
+            trial_safety_dataset = trial_datasets["safety_dataset"]
+            cand_features = trial_cand_dataset.features
+            cand_labels = trial_cand_dataset.labels
+            cand_sensitive_attrs = trial_cand_dataset.sensitive_attrs
+            safety_features = trial_safety_dataset.features
+            safety_labels = trial_safety_dataset.labels
+            safety_sensitive_attrs = trial_safety_dataset.sensitive_attrs
+            merged_features = np.vstack([cand_features,safety_features])
+            merged_labels = np.hstack([cand_labels,safety_labels])
+            merged_sensitive_attrs = np.vstack([cand_sensitive_attrs,safety_sensitive_attrs])
+
+            merged_trial_dataset = SupervisedDataSet(
+                features=merged_features,
+                labels=merged_labels,
+                sensitive_attrs=merged_sensitive_attrs,
+                num_datapoints=len(merged_labels),
+                meta=trial_cand_dataset.meta
+            )
+            n_points_cand = n_points_dict["candidate_dataset"]
+            n_points_safety = n_points_dict["safety_dataset"]
+            n_points_merged = n_points_cand+n_points_safety
+            features, labels = prep_feat_labels(merged_trial_dataset, n_points_merged)
+        else:
+            trial_dataset = trial_datasets["dataset"]
+            n_points = n_points_dict["dataset"]
+            features, labels = prep_feat_labels(trial_dataset, n_points)
+        
+    else:
+        raise NotImplementedError(
+            f"datagen_method: {datagen_method} "
+            f"not supported for regime: {regime}"
+        )
+
+    return features,labels
+
+def prep_data_for_fairlearn(
+    spec,
+    results_dir,
+    trial_i,
+    data_frac,
+    datagen_method,
+    fairlearn_sensitive_feature_names,
+    verbose
+):
+    if datagen_method == "resample":
+        trial_datasets, n_points_dict, trial_addl_datasets = load_resampled_datasets(
+            spec, results_dir, trial_i, data_frac, verbose=verbose
+        )
+        # If there are separate resampled candidate and safety datasets, 
+        # we merge them into a single dataset and then take the first n_points points
+        # from the merged dataset
+        if "candidate_dataset" in trial_datasets:
+            trial_cand_dataset = trial_datasets["candidate_dataset"]
+            trial_safety_dataset = trial_datasets["safety_dataset"]
+            cand_features = trial_cand_dataset.features
+            cand_labels = trial_cand_dataset.labels
+            cand_sensitive_attrs = trial_cand_dataset.sensitive_attrs
+            safety_features = trial_safety_dataset.features
+            safety_labels = trial_safety_dataset.labels
+            safety_sensitive_attrs = trial_safety_dataset.sensitive_attrs
+            merged_features = np.vstack([cand_features,safety_features])
+            merged_labels = np.hstack([cand_labels,safety_labels])
+            merged_sensitive_attrs = np.vstack([cand_sensitive_attrs,safety_sensitive_attrs])
+
+            merged_trial_dataset = SupervisedDataSet(
+                features=merged_features,
+                labels=merged_labels,
+                sensitive_attrs=merged_sensitive_attrs,
+                num_datapoints=len(merged_labels),
+                meta=trial_cand_dataset.meta
+            )
+            n_points_cand = n_points_dict["candidate_dataset"]
+            n_points_safety = n_points_dict["safety_dataset"]
+            n_points_merged = n_points_cand+n_points_safety
+            features,labels,sensitive_attrs = prep_feat_labels(
+                merged_trial_dataset, 
+                n_points_merged,
+                include_sensitive_attrs=True
+            )
+            sensitive_col_indices = [
+                merged_trial_dataset.sensitive_col_names.index(col)
+                for col in fairlearn_sensitive_feature_names
+            ]
+
+            fairlearn_sensitive_features = np.squeeze(
+                sensitive_attrs[:, sensitive_col_indices]
+            )
+        else:
+            trial_dataset = trial_datasets["dataset"]
+            n_points = n_points_dict["dataset"]
+            features, labels = prep_feat_labels(trial_dataset, n_points)
+            sensitive_col_indices = [
+                trial_dataset.sensitive_col_names.index(col)
+                for col in fairlearn_sensitive_feature_names
+            ]
+
+            fairlearn_sensitive_features = np.squeeze(
+                trial_dataset.sensitive_attrs[:, sensitive_col_indices]
+            )[:n_points]
+        
+    else:
+        raise NotImplementedError(
+            f"datagen_method: {datagen_method} "
+            f"not supported for regime: {regime}"
+        )
+
+    return features,labels,fairlearn_sensitive_features
+
 def setup_SA_spec_for_exp(
     spec,
     regime,
@@ -170,7 +324,7 @@ def setup_SA_spec_for_exp(
 ):
     if regime == "supervised_learning":
         if datagen_method == "resample":
-            trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
+            trial_datasets, n_points_dict, trial_addl_datasets = load_resampled_datasets(
                 spec, results_dir, trial_i, data_frac
             )
 
@@ -182,21 +336,57 @@ def setup_SA_spec_for_exp(
         # Make a new spec object which we will modify
         spec_for_exp = copy.deepcopy(spec)
 
-        # Primary dataset first
-        features, labels, sensitive_attrs = prep_feat_labels(
-            trial_dataset, n_points, include_sensitive_attrs=True
-        )
+        # Check if we have forced candidate/safety datasets
+        if "candidate_dataset" in trial_datasets:
+            trial_cand_dataset = trial_datasets["candidate_dataset"]
+            n_points_cand = n_points_dict["candidate_dataset"]
+            trial_safety_dataset = trial_datasets["safety_dataset"]
+            n_points_safety = n_points_dict["safety_dataset"]
 
-        dataset_for_exp = SupervisedDataSet(
-            features=features,
-            labels=labels,
-            sensitive_attrs=sensitive_attrs,
-            num_datapoints=n_points,
-            meta=trial_dataset.meta,
-        )
+            cand_features, cand_labels, cand_sensitive_attrs = prep_feat_labels(
+                trial_cand_dataset, n_points_cand, include_sensitive_attrs=True
+            )
+            safety_features, safety_labels, safety_sensitive_attrs = prep_feat_labels(
+                trial_safety_dataset, n_points_safety, include_sensitive_attrs=True
+            )
 
-        # Update primary dataset
-        spec_for_exp.dataset = dataset_for_exp
+            cand_dataset_for_exp = SupervisedDataSet(
+                features=cand_features,
+                labels=cand_labels,
+                sensitive_attrs=cand_sensitive_attrs,
+                num_datapoints=n_points_cand,
+                meta=trial_cand_dataset.meta,
+            )
+
+            safety_dataset_for_exp = SupervisedDataSet(
+                features=safety_features,
+                labels=safety_labels,
+                sensitive_attrs=safety_sensitive_attrs,
+                num_datapoints=n_points_safety,
+                meta=trial_safety_dataset.meta,
+            )
+
+            # Update candidate and safety datasets
+            spec_for_exp.candidate_dataset = cand_dataset_for_exp
+            spec_for_exp.safety_dataset = safety_dataset_for_exp
+        else:
+            trial_dataset = trial_datasets["dataset"]
+            n_points = n_points_dict["dataset"]
+            features, labels, sensitive_attrs = prep_feat_labels(
+                trial_dataset, n_points, include_sensitive_attrs=True
+            )
+
+            dataset_for_exp = SupervisedDataSet(
+                features=features,
+                labels=labels,
+                sensitive_attrs=sensitive_attrs,
+                num_datapoints=n_points,
+                meta=trial_dataset.meta,
+            )
+
+            # Update primary dataset
+            spec_for_exp.dataset = dataset_for_exp
+
 
         # Check for addl datasets
         if trial_addl_datasets != {}:
@@ -204,26 +394,36 @@ def setup_SA_spec_for_exp(
             for constraint_str in trial_addl_datasets:
                 additional_datasets_for_exp[constraint_str] = {}
                 for bn in trial_addl_datasets[constraint_str]:
+                    additional_datasets_for_exp[constraint_str][bn] = {}
                     this_dict = trial_addl_datasets[constraint_str][bn]
-                    addl_trial_dataset = this_dict["dataset"]
                     addl_batch_size = this_dict.get("batch_size")
-                    num_datapoints_addl = addl_trial_dataset.num_datapoints
-                    addl_n_points = int(round(data_frac * num_datapoints_addl))
-                    # Primary dataset first
-                    addl_features, addl_labels, addl_sensitive_attrs = prep_feat_labels(
-                        addl_trial_dataset, addl_n_points, include_sensitive_attrs=True
-                    )
-
-                    addl_dataset_for_exp = SupervisedDataSet(
-                        features=addl_features,
-                        labels=addl_labels,
-                        sensitive_attrs=addl_sensitive_attrs,
-                        num_datapoints=addl_n_points,
-                        meta=addl_trial_dataset.meta,
-                    )
-                    additional_datasets_for_exp[constraint_str][bn] = {"dataset": addl_dataset_for_exp}
                     if addl_batch_size:
                         additional_datasets_for_exp[constraint_str][bn]["batch_size"] = addl_batch_size
+
+                    # Check to see if candidate/safety datasets are explicitly provided
+                    if "candidate_dataset" in this_dict:
+                        keys = ["candidate_dataset","safety_dataset"]
+                    else:
+                        keys = ["dataset"]
+
+                    for key in keys:
+                        addl_trial_dataset = this_dict[key]
+                        num_datapoints_addl = addl_trial_dataset.num_datapoints
+                        addl_n_points = int(round(data_frac * num_datapoints_addl))
+
+                        addl_features, addl_labels, addl_sensitive_attrs = prep_feat_labels(
+                            addl_trial_dataset, addl_n_points, include_sensitive_attrs=True
+                        )
+
+                        addl_dataset_for_exp = SupervisedDataSet(
+                            features=addl_features,
+                            labels=addl_labels,
+                            sensitive_attrs=addl_sensitive_attrs,
+                            num_datapoints=addl_n_points,
+                            meta=addl_trial_dataset.meta,
+                        )
+                        additional_datasets_for_exp[constraint_str][bn][key] = addl_dataset_for_exp
+                    
             spec_for_exp.additional_datasets = additional_datasets_for_exp
 
     elif regime == "reinforcement_learning":

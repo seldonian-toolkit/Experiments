@@ -30,6 +30,8 @@ from .experiment_utils import (
     load_resampled_datasets,
     load_regenerated_episodes,
     prep_feat_labels,
+    prep_feat_labels_for_baseline,
+    prep_data_for_fairlearn,
     setup_SA_spec_for_exp,
     trial_arg_chunker,
 )
@@ -205,7 +207,7 @@ class BaselineExperiment(Experiment):
         spec = copy.deepcopy(kwargs["spec"])
 
         dataset = spec.dataset
-        regime = dataset.regime
+        regime = kwargs['regime']
         parse_trees = spec.parse_trees
         (
             verbose,
@@ -261,17 +263,14 @@ class BaselineExperiment(Experiment):
         """ Setup for running baseline algorithm """
         ##############################################
         if regime == "supervised_learning":
-            if datagen_method == "resample":
-                trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
-                    spec, self.results_dir, trial_i, data_frac, verbose=verbose
-                )
-            else:
-                raise NotImplementedError(
-                    f"datagen_method: {datagen_method} "
-                    f"not supported for regime: {regime}"
-                )
 
-            features, labels = prep_feat_labels(trial_dataset, n_points)
+            features,labels = prep_feat_labels_for_baseline(
+                spec=spec, 
+                results_dir=self.results_dir, 
+                trial_i=trial_i, 
+                data_frac=data_frac,
+                datagen_method=datagen_method,
+                verbose=verbose)
 
             ####################################################
             """" Instantiate model and fit to resampled data """
@@ -330,8 +329,6 @@ class BaselineExperiment(Experiment):
             """" Instantiate model and run it on resampled data """
             ####################################################
             baseline_model = copy.deepcopy(self.baseline_model)
-            # train_kwargs = {}
-            # pred_kwargs = {}
             try:
                 solution = baseline_model.train(trial_dataset)
                 baseline_model.set_new_params(solution)
@@ -363,7 +360,7 @@ class BaselineExperiment(Experiment):
 
             # Determine whether this solution
             # violates any of the constraints
-            # on the test dataset, which is the dataset from spec
+            # on the test dataset
 
             if regime == "supervised_learning":
                 dataset_for_eval = dataset  # the original one
@@ -377,7 +374,10 @@ class BaselineExperiment(Experiment):
 
             constraint_eval_kwargs["baseline_model"] = baseline_model
             constraint_eval_kwargs["dataset"] = dataset_for_eval
+            constraint_eval_kwargs["regime"] = regime
+            constraint_eval_kwargs["sub_regime"] = spec.sub_regime
             constraint_eval_kwargs["parse_trees"] = parse_trees
+            constraint_eval_kwargs["additional_datasets"] = spec.additional_datasets
             constraint_eval_kwargs["verbose"] = verbose
 
             gvec = self.evaluate_constraint_functions(
@@ -428,8 +428,10 @@ class BaselineExperiment(Experiment):
         gvals = []
         if constraint_eval_fns == []:
             parse_trees = constraint_eval_kwargs["parse_trees"]
-            dataset_for_eval = constraint_eval_kwargs["dataset"]
-            tree_dataset_dict = {"all": dataset_for_eval}
+            additional_datasets = constraint_eval_kwargs["additional_datasets"]
+            regime = constraint_eval_kwargs["regime"]
+            sub_regime = constraint_eval_kwargs["sub_regime"]
+            backup_dataset_for_eval = constraint_eval_kwargs["dataset"]
             baseline_model = constraint_eval_kwargs["baseline_model"]
             if hasattr(baseline_model, "eval_batch_size"):
                 batch_size_safety = getattr(baseline_model, "eval_batch_size")
@@ -438,12 +440,29 @@ class BaselineExperiment(Experiment):
 
             for parse_tree in parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
+
+                # handle additional datasets
+                if additional_datasets:
+                    held_out_addl_datasets = constraint_eval_kwargs["additional_datasets"]
+                    tree_dataset_dict = {}
+                    cstr = parse_tree.constraint_str
+
+                    for bn in held_out_addl_datasets[cstr]:
+                        if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
+                            # Combine the candidate and safety datasets into a single dataset for evaluation
+                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            tree_dataset_dict[bn] = combined_dataset
+                        else:
+                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
+                else:
+                    tree_dataset_dict = {"all": backup_dataset_for_eval}
+
                 parse_tree.evaluate_constraint(
                     theta=solution,
                     tree_dataset_dict=tree_dataset_dict,
                     model=baseline_model,
-                    regime=dataset_for_eval.regime,
-                    sub_regime=dataset_for_eval.meta.sub_regime,
+                    regime=regime,
+                    sub_regime=sub_regime,
                     branch="safety_test",
                     batch_size_safety=batch_size_safety,
                 )
@@ -539,6 +558,7 @@ class SeldonianExperiment(Experiment):
         :type trial_i: int
         """
         spec = kwargs["spec"]
+        regime = kwargs["regime"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
         perf_eval_fn = kwargs["perf_eval_fn"]
@@ -555,7 +575,6 @@ class SeldonianExperiment(Experiment):
                 "especially for small values of data_frac."
             )
             warnings.warn(warning_msg)
-        regime = spec.dataset.regime
 
         trial_dir = os.path.join(self.results_dir, "qsa_results", "trial_data")
 
@@ -592,7 +611,6 @@ class SeldonianExperiment(Experiment):
         ################################
         """" Run Seldonian algorithm """
         ################################
-
         try:
             SA = SeldonianAlgorithm(spec_for_exp)
             passed_safety, solution = SA.run(write_cs_logfile=verbose, debug=verbose)
@@ -732,7 +750,6 @@ class SeldonianExperiment(Experiment):
             to evaluate the constraints. Use the default:
             the parse tree has a built-in way to evaluate constraints.
             """
-
             spec_orig = constraint_eval_kwargs["spec_orig"]
             spec_for_exp = constraint_eval_kwargs["spec_for_exp"]
             model = constraint_eval_kwargs["model"]
@@ -754,7 +771,7 @@ class SeldonianExperiment(Experiment):
             if regime == "supervised_learning":
                 # Use the original dataset as ground truth
 
-                sub_regime = spec_orig.dataset.meta.sub_regime
+                sub_regime = spec_orig.sub_regime
                 backup_dataset_for_eval = spec_orig.dataset
 
             elif regime == "reinforcement_learning":
@@ -779,12 +796,18 @@ class SeldonianExperiment(Experiment):
 
                 # handle additional datasets
                 if have_additional_datasets:
+                    tree_dataset_dict = {}
                     cstr = parse_tree.constraint_str
 
-                    tree_dataset_dict = {bn:held_out_addl_datasets[cstr][bn]["dataset"] for bn in held_out_addl_datasets[cstr]}
+                    for bn in held_out_addl_datasets[cstr]:
+                        if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
+                            # Combine the candidate and safety datasets into a single dataset for evaluation
+                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            tree_dataset_dict[bn] = combined_dataset
+                        else:
+                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
                 else:
                     tree_dataset_dict = {"all": backup_dataset_for_eval}
-                
                 # parse_tree.evaluate_constraint(**constraint_eval_kwargs)
                 parse_tree.evaluate_constraint(
                     theta=solution,
@@ -875,6 +898,7 @@ class FairlearnExperiment(Experiment):
         :type trial_i: int
         """
         spec = kwargs["spec"]
+        regime = kwargs["regime"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
         fairlearn_sensitive_feature_names = kwargs["fairlearn_sensitive_feature_names"]
@@ -887,7 +911,6 @@ class FairlearnExperiment(Experiment):
         constraint_eval_fns = kwargs["constraint_eval_fns"]
         constraint_eval_kwargs = kwargs["constraint_eval_kwargs"]
 
-        regime = spec.dataset.regime
         assert regime == "supervised_learning"
 
         trial_dir = os.path.join(
@@ -914,27 +937,14 @@ class FairlearnExperiment(Experiment):
         """ Setup for running Fairlearn algorithm """
         ##############################################
 
-        if datagen_method == "resample":
-            trial_dataset, n_points, trial_addl_datasets = load_resampled_datasets(
-                    spec, self.results_dir, trial_i, data_frac, verbose=verbose
-            )
-        else:
-            raise NotImplementedError(
-                f"datagen_method: {datagen_method} "
-                f"not supported for regime: {regime}"
-            )
-
-        # Prepare features and labels
-        features, labels = prep_feat_labels(trial_dataset, n_points)
-
-        sensitive_col_indices = [
-            trial_dataset.sensitive_col_names.index(col)
-            for col in fairlearn_sensitive_feature_names
-        ]
-
-        fairlearn_sensitive_features = np.squeeze(
-            trial_dataset.sensitive_attrs[:, sensitive_col_indices]
-        )[:n_points]
+        features,labels,fairlearn_sensitive_features = prep_data_for_fairlearn(
+            spec=spec, 
+            results_dir=self.results_dir, 
+            trial_i=trial_i, 
+            data_frac=data_frac,
+            datagen_method=datagen_method,
+            fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
+            verbose=verbose)
 
         ##############################################
         """" Run Fairlearn algorithm on trial data """
