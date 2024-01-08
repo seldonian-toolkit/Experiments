@@ -200,7 +200,6 @@ def gpa_regression_addl_datasets_spec():
     yield spec_maker
     print("Teardown gpa_regression_addl_datasets_spec")
     
-
 @pytest.fixture
 def gpa_classification_spec():
     print("Setup gpa_classification_spec")
@@ -248,7 +247,6 @@ def gpa_classification_spec():
     yield spec_maker
     print("Teardown gpa_classification_spec")
     
-
 @pytest.fixture
 def gridworld_spec():
     print("Setup gridworld_spec")
@@ -284,7 +282,134 @@ def gridworld_spec():
     
     yield spec_maker
     print("Teardown gridworld_spec")
+ 
+def custom_loss_fn(model,theta,data,**kwargs):
+    """Used for custom_text_spec fixture. Calculate average logistic loss
+    over all data points for binary classification.
+
+    :param model: SeldonianModel instance
+    :param theta: The parameter weights
+    :type theta: numpy ndarray
+    :param data: A list of samples, where in this case samples are
+        lists of length three with each element a single character
+
+    :return: mean of the predictions
+    :rtype: float
+    """
+    # Figure out features and labels
+    # In this case I know that the label column is the final column
+    # I also know that data is a 2D numpy array. The data structure
+    # will be custom to the use case, so user will have to manipulate 
+    # accordingly. 
+    predictions = model.predict(theta,data) # floats length of data
+    loss = np.mean(predictions)
+    return loss
+
+def custom_initial_solution_fn(model,data,**kwargs):
+    """ Used for custom_text_spec fixture. """
+    return np.array([-1.0,0.0,1.0])
+
+@pytest.fixture
+def custom_text_spec():
+    print("Setup custom_text_spec")
+    import seldonian.models.custom_text_model as custom_text_model
+
+    def spec_maker():
+        # Load some string data in as lists of lists
+        N_chars = 100
+        l=[chr(x) for x in np.random.randint(97,122,N_chars)] # lowercase letters
+        data = [l[i*3:i*3+3] for i in range(N_chars//3)]
+
+        all_col_names = ["string"]
+        meta = CustomMetaData(all_col_names=all_col_names)
+        dataset = CustomDataSet(data=data, sensitive_attrs=[], num_datapoints=len(data), meta=meta)
+
+        regime='custom'
+        sub_regime=None
+        sensitive_attrs = []
+
+        num_datapoints = len(data)
+
+        dataset = CustomDataSet(
+            data=data,
+            sensitive_attrs=sensitive_attrs,
+            num_datapoints=num_datapoints,
+            meta=meta
+        )
+        frac_data_in_safety=0.6
+        sensitive_col_names = []
+
+        model = custom_text_model.CustomTextModel()
+
+        # Define behavioral constraint
+        constraint_str = 'CUST_LOSS <= 30.0'
+        delta = 0.05
+        
+        # Define custom measure function for CPR and register it when making parse tree
+        def custom_measure_function(model, theta, data, **kwargs):
+            """
+            Calculate 
+            for each observation. Meaning depends on whether
+            binary or multi-class classification.
+
+            :param model: SeldonianModel instance
+            :param theta: The parameter weights
+            :type theta: numpy ndarray
+            :param data: A list of samples, where in this case samples are
+                lists of length three with each element a single character
+
+            :return: Positive rate for each observation
+            :rtype: numpy ndarray(float between 0 and 1)
+            """
+            predictions = model.predict(theta,data)
+            return predictions
+
+        custom_measure_functions = {
+            "CUST_LOSS": custom_measure_function
+        }
+        
+        # Create parse tree object
+        pt = ParseTree(
+            delta=delta, regime=regime, sub_regime=sub_regime, columns=sensitive_col_names,
+            custom_measure_functions=custom_measure_functions
+        )
+
+        # Fill out tree
+        pt.build_tree(
+            constraint_str=constraint_str
+        )
+
+        parse_trees = [pt]
+
+        # Use vanilla Spec object for custom datasets.
+        spec = Spec(
+            dataset=dataset,
+            model=model,
+            parse_trees=parse_trees,
+            frac_data_in_safety=frac_data_in_safety,
+            primary_objective=custom_loss_fn,
+            initial_solution_fn=custom_initial_solution_fn,
+            use_builtin_primary_gradient_fn=False,
+            optimization_technique='gradient_descent',
+            optimizer='adam',
+            optimization_hyperparams={
+                'lambda_init'   : np.array([0.5]),
+                'alpha_theta'   : 0.01,
+                'alpha_lamb'    : 0.01,
+                'beta_velocity' : 0.9,
+                'beta_rmsprop'  : 0.95,
+                'use_batches'   : False,
+                'num_iters'     : 100,
+                'gradient_library': "autograd",
+                'hyper_search'  : None,
+                'verbose'       : True,
+            }
+        )
+
+        return spec
     
+    yield spec_maker
+    print("Teardown custom_text_spec")
 
 @pytest.fixture
 def experiment(request):

@@ -4,7 +4,7 @@ import os
 import numpy as np
 from functools import partial
 
-from .experiments import Experiment 
+from .experiments import Experiment
 from . import headless_utils
 from .experiment_utils import batch_predictions
 
@@ -76,9 +76,9 @@ class HeadlessSeldonianExperiment(Experiment):
         self.aggregate_results(**kwargs)
 
     def run_trial(self, data_frac, trial_i, **kwargs):
-        """Run a trial of the quasi-Seldonian algorithm. 
-        First, obtain the latent features by training 
-        a full model on the candidate data, then creating 
+        """Run a trial of the quasi-Seldonian algorithm.
+        First, obtain the latent features by training
+        a full model on the candidate data, then creating
         the headless model, then passing all data
         through the headless model.
 
@@ -98,22 +98,27 @@ class HeadlessSeldonianExperiment(Experiment):
         batch_epoch_dict = kwargs["batch_epoch_dict"]
 
         # Headless kwargs
-        full_pretraining_model=kwargs["full_pretraining_model"]
-        initial_state_dict=kwargs["initial_state_dict"]
-        headless_pretraining_model=kwargs["headless_pretraining_model"]
-        head_layer_names=kwargs["head_layer_names"]
-        latent_feature_shape=kwargs["latent_feature_shape"]
+        full_pretraining_model = kwargs["full_pretraining_model"]
+        initial_state_dict = kwargs["initial_state_dict"]
+        headless_pretraining_model = kwargs["headless_pretraining_model"]
+        head_layer_names = kwargs["head_layer_names"]
+        latent_feature_shape = kwargs["latent_feature_shape"]
 
-        batch_epoch_dict_pretraining=kwargs["batch_epoch_dict_pretraining"]
-        candidate_batch_size_pretraining,num_epochs_pretraining = batch_epoch_dict_pretraining[data_frac]
-        safety_batch_size_pretraining=kwargs["safety_batch_size_pretraining"]
-        loss_func_pretraining=kwargs["loss_func_pretraining"]
-        learning_rate_pretraining=kwargs["learning_rate_pretraining"]
-        pretraining_device=kwargs["pretraining_device"]
-        
+        batch_epoch_dict_pretraining = kwargs["batch_epoch_dict_pretraining"]
+        (
+            candidate_batch_size_pretraining,
+            num_epochs_pretraining,
+        ) = batch_epoch_dict_pretraining[data_frac]
+        safety_batch_size_pretraining = kwargs["safety_batch_size_pretraining"]
+        loss_func_pretraining = kwargs["loss_func_pretraining"]
+        learning_rate_pretraining = kwargs["learning_rate_pretraining"]
+        pretraining_device = kwargs["pretraining_device"]
+
         regime = spec.dataset.regime
 
-        trial_dir = os.path.join(self.results_dir, f"{self.model_name}_results", "trial_data")
+        trial_dir = os.path.join(
+            self.results_dir, f"{self.model_name}_results", "trial_data"
+        )
 
         savename = os.path.join(
             trial_dir, f"data_frac_{data_frac:.4f}_trial_{trial_i}.csv"
@@ -135,7 +140,8 @@ class HeadlessSeldonianExperiment(Experiment):
 
         if regime != "supervised_learning":
             raise NotImplementedError(
-                "Headless experiments are only available for supervised_learning")
+                "Headless experiments are only available for supervised_learning"
+            )
 
         if datagen_method != "resample":
             raise NotImplementedError(
@@ -188,27 +194,28 @@ class HeadlessSeldonianExperiment(Experiment):
         if verbose:
             print(f"With data_frac: {data_frac}, have {n_points} data points")
 
-        # Obtain latent features by training the full model 
+        # Obtain latent features by training the full model
         # and then passing the data through a headless version of this model
 
         # First re-initialize weights
         full_pretraining_model.load_state_dict(initial_state_dict)
-        
+
         latent_features = headless_utils.generate_latent_features(
             full_pretraining_model=full_pretraining_model,
             headless_pretraining_model=headless_pretraining_model,
             head_layer_names=head_layer_names,
             orig_features=features,
-            labels=labels, 
+            labels=labels,
             latent_feature_shape=latent_feature_shape,
-            frac_data_in_safety=spec.frac_data_in_safety, 
-            candidate_batch_size=candidate_batch_size_pretraining, 
+            frac_data_in_safety=spec.frac_data_in_safety,
+            candidate_batch_size=candidate_batch_size_pretraining,
             safety_batch_size=safety_batch_size_pretraining,
             loss_func=loss_func_pretraining,
             learning_rate=learning_rate_pretraining,
             num_epochs=num_epochs_pretraining,
-            device=pretraining_device)
-        
+            device=pretraining_device,
+        )
+
         dataset_for_experiment = SupervisedDataSet(
             features=latent_features,
             labels=labels,
@@ -267,7 +274,7 @@ class HeadlessSeldonianExperiment(Experiment):
             if passed_safety:
                 if verbose:
                     print("Passed safety test! Calculating performance")
-                
+
                 #############################
                 """ Calculate performance """
                 #############################
@@ -278,7 +285,7 @@ class HeadlessSeldonianExperiment(Experiment):
                         test_data_loaders,
                         headless_pretraining_model,
                         latent_feature_shape,
-                        device=pretraining_device
+                        device=pretraining_device,
                     )
                     # X_test = perf_eval_kwargs["X"]
                     Y_test = perf_eval_kwargs["y"]
@@ -312,7 +319,9 @@ class HeadlessSeldonianExperiment(Experiment):
                     constraint_eval_kwargs["model"] = model
                     constraint_eval_kwargs["X_test"] = X_test
                     if "eval_batch_size" in perf_eval_kwargs:
-                        constraint_eval_kwargs["eval_batch_size"] = perf_eval_kwargs["eval_batch_size"]
+                        constraint_eval_kwargs["eval_batch_size"] = perf_eval_kwargs[
+                            "eval_batch_size"
+                        ]
                     constraint_eval_kwargs["spec_orig"] = spec
                     constraint_eval_kwargs["spec_for_experiment"] = spec_for_experiment
                     constraint_eval_kwargs["regime"] = regime
@@ -335,7 +344,9 @@ class HeadlessSeldonianExperiment(Experiment):
 
         else:
             n_constraints = len(spec.parse_trees)
-            gvec = -np.inf*np.ones(n_constraints) # NSF is safe, so set g=-inf for all constraints
+            gvec = -np.inf * np.ones(
+                n_constraints
+            )  # NSF is safe, so set g=-inf for all constraints
             if verbose:
                 print("NSF")
             performance = np.nan
@@ -344,7 +355,7 @@ class HeadlessSeldonianExperiment(Experiment):
         # This handles the case where solution_found=False.
         for parse_tree in spec_for_experiment.parse_trees:
             parse_tree.reset_base_node_dict(reset_data=True)
-            
+
         # Write out file for this data_frac,trial_i combo
         data = [data_frac, trial_i, performance, passed_safety, gvec]
         colnames = ["data_frac", "trial_i", "performance", "passed_safety", "gvec"]
@@ -398,7 +409,8 @@ class HeadlessSeldonianExperiment(Experiment):
                     labels=orig_dataset.labels,
                     sensitive_attrs=orig_dataset.sensitive_attrs,
                     num_datapoints=orig_dataset.num_datapoints,
-                    meta=orig_dataset.meta)
+                    meta=orig_dataset.meta,
+                )
                 constraint_eval_kwargs["dataset"] = dataset_for_eval
 
             for parse_tree in spec_for_experiment.parse_trees:
@@ -407,13 +419,14 @@ class HeadlessSeldonianExperiment(Experiment):
 
                 g = parse_tree.root.value
                 gvals.append(g)
-                parse_tree.reset_base_node_dict(reset_data=True) # to clear out anything so the next trial has fresh data
+                parse_tree.reset_base_node_dict(
+                    reset_data=True
+                )  # to clear out anything so the next trial has fresh data
 
         else:
             # User provided functions to evaluate constraints
             for eval_fn in constraint_eval_fns:
                 g = eval_fn(solution)
                 gvals.append(g)
-        
-        return np.array(gvals)
 
+        return np.array(gvals)

@@ -19,7 +19,7 @@ class BaseExample:
         datagen_method="resample",
         verbose=False,
         baselines=[],
-        model_label_dict = {},
+        model_label_dict={},
         include_fairlearn_models=False,
         fairlearn_kwargs={},
         performance_label="performance",
@@ -67,9 +67,7 @@ class BaseExample:
             fairlearn_sensitive_feature_names = fairlearn_kwargs[
                 "fairlearn_sensitive_feature_names"
             ]
-            fairlearn_constraint_name = fairlearn_kwargs[
-                "fairlearn_constraint_name"
-            ]
+            fairlearn_constraint_name = fairlearn_kwargs["fairlearn_constraint_name"]
             fairlearn_constraint_epsilons = fairlearn_kwargs[
                 "fairlearn_constraint_epsilons"
             ]

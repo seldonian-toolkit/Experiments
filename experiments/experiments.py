@@ -207,7 +207,7 @@ class BaselineExperiment(Experiment):
         spec = copy.deepcopy(kwargs["spec"])
 
         dataset = spec.dataset
-        regime = kwargs['regime']
+        regime = kwargs["regime"]
         parse_trees = spec.parse_trees
         (
             verbose,
@@ -263,14 +263,14 @@ class BaselineExperiment(Experiment):
         """ Setup for running baseline algorithm """
         ##############################################
         if regime == "supervised_learning":
-
-            features,labels = prep_feat_labels_for_baseline(
-                spec=spec, 
-                results_dir=self.results_dir, 
-                trial_i=trial_i, 
+            features, labels = prep_feat_labels_for_baseline(
+                spec=spec,
+                results_dir=self.results_dir,
+                trial_i=trial_i,
                 data_frac=data_frac,
                 datagen_method=datagen_method,
-                verbose=verbose)
+                verbose=verbose,
+            )
 
             ####################################################
             """" Instantiate model and fit to resampled data """
@@ -443,17 +443,24 @@ class BaselineExperiment(Experiment):
 
                 # handle additional datasets
                 if additional_datasets:
-                    held_out_addl_datasets = constraint_eval_kwargs["additional_datasets"]
+                    held_out_addl_datasets = constraint_eval_kwargs[
+                        "additional_datasets"
+                    ]
                     tree_dataset_dict = {}
                     cstr = parse_tree.constraint_str
 
                     for bn in held_out_addl_datasets[cstr]:
                         if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
                             # Combine the candidate and safety datasets into a single dataset for evaluation
-                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            combined_dataset = (
+                                held_out_addl_datasets[cstr][bn]["candidate_dataset"]
+                                + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            )
                             tree_dataset_dict[bn] = combined_dataset
                         else:
-                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
+                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn][
+                                "dataset"
+                            ]
                 else:
                     tree_dataset_dict = {"all": backup_dataset_for_eval}
 
@@ -508,11 +515,6 @@ class SeldonianExperiment(Experiment):
         trial_kwargs = {
             key: kwargs[key] for key in kwargs if key not in ["data_fracs", "n_trials"]
         }
-        manager = mp.Manager()
-        shared_namespace = manager.Namespace()
-
-        # Store the trial_kwargs in the shared namespace
-        shared_namespace.trial_kwargs = trial_kwargs
 
         data_fracs = kwargs["data_fracs"]
         n_trials = kwargs["n_trials"]
@@ -524,6 +526,12 @@ class SeldonianExperiment(Experiment):
 
         elif n_workers > 1:
             import itertools
+
+            manager = mp.Manager()
+            shared_namespace = manager.Namespace()
+
+            # Store the trial_kwargs in the shared namespace
+            shared_namespace.trial_kwargs = trial_kwargs
 
             chunked_arg_list = trial_arg_chunker(data_fracs, n_trials, n_workers)
             with ProcessPoolExecutor(max_workers=n_workers, mp_context=context) as ex:
@@ -566,7 +574,11 @@ class SeldonianExperiment(Experiment):
         constraint_eval_fns = kwargs["constraint_eval_fns"]
         constraint_eval_kwargs = kwargs["constraint_eval_kwargs"]
         batch_epoch_dict = kwargs["batch_epoch_dict"]
-        if batch_epoch_dict == {} and spec.optimization_technique == "gradient_descent":
+        if (
+            batch_epoch_dict == {}
+            and spec.optimization_technique == "gradient_descent"
+            and spec.optimization_hyperparams["use_batches"] == True
+        ):
             warning_msg = (
                 "WARNING: No batch_epoch_dict was provided. "
                 "Each data_frac will use the same values "
@@ -665,14 +677,31 @@ class SeldonianExperiment(Experiment):
                     perf_eval_kwargs["hyperparameter_and_setting_dict"] = kwargs[
                         "hyperparameter_and_setting_dict"
                     ]
-                    episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs)
+                    episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs) 
+                
+                elif regime == "custom":
+                    test_data = perf_eval_kwargs["test_data"]
 
+                    model = SA.model
+                    # Batch the prediction if specified
+                    if "eval_batch_size" in perf_eval_kwargs:
+                        y_pred = batch_predictions_custom_regime(
+                            model=model,
+                            solution=solution,
+                            test_data=test_data,
+                            **perf_eval_kwargs,
+                        )
+                    else:
+                        y_pred = model.predict(solution, test_data)
+
+                    performance = perf_eval_fn(y_pred, model=model, **perf_eval_kwargs)
                 if verbose:
                     print(f"Performance = {performance}")
                     print(
                         "Determining whether solution "
                         "is actually safe on ground truth\n"
                     )
+
                 ########################################
                 """ Calculate safety on ground truth """
                 ########################################
@@ -769,8 +798,7 @@ class SeldonianExperiment(Experiment):
                 held_out_addl_datasets = constraint_eval_kwargs["additional_datasets"]
 
             if regime == "supervised_learning":
-                # Use the original dataset as ground truth
-
+                # Use the original dataset as backup ground truth
                 sub_regime = spec_orig.sub_regime
                 backup_dataset_for_eval = spec_orig.dataset
 
@@ -789,7 +817,9 @@ class SeldonianExperiment(Experiment):
                     meta=spec_for_exp.dataset.meta,
                     regime=regime,
                 )
-
+            elif regime == "custom":
+                sub_regime=None
+                backup_dataset_for_eval = spec_orig.dataset
 
             for parse_tree in spec_for_exp.parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
@@ -802,10 +832,15 @@ class SeldonianExperiment(Experiment):
                     for bn in held_out_addl_datasets[cstr]:
                         if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
                             # Combine the candidate and safety datasets into a single dataset for evaluation
-                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            combined_dataset = (
+                                held_out_addl_datasets[cstr][bn]["candidate_dataset"]
+                                + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            )
                             tree_dataset_dict[bn] = combined_dataset
                         else:
-                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
+                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn][
+                                "dataset"
+                            ]
                 else:
                     tree_dataset_dict = {"all": backup_dataset_for_eval}
                 # parse_tree.evaluate_constraint(**constraint_eval_kwargs)
@@ -937,14 +972,15 @@ class FairlearnExperiment(Experiment):
         """ Setup for running Fairlearn algorithm """
         ##############################################
 
-        features,labels,fairlearn_sensitive_features = prep_data_for_fairlearn(
-            spec=spec, 
-            results_dir=self.results_dir, 
-            trial_i=trial_i, 
+        features, labels, fairlearn_sensitive_features = prep_data_for_fairlearn(
+            spec=spec,
+            results_dir=self.results_dir,
+            trial_i=trial_i,
             data_frac=data_frac,
             datagen_method=datagen_method,
             fairlearn_sensitive_feature_names=fairlearn_sensitive_feature_names,
-            verbose=verbose)
+            verbose=verbose,
+        )
 
         ##############################################
         """" Run Fairlearn algorithm on trial data """

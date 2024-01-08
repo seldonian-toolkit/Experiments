@@ -8,7 +8,9 @@ class HeadlessExample(BaseExample):
     def __init__(self, spec):
         """Class for running headless experiments"""
         super().__init__(spec=spec)
-        assert self.regime == "supervised_learning","Headless examples are only supported for supervised learning"
+        assert (
+            self.regime == "supervised_learning"
+        ), "Headless examples are only supported for supervised learning"
 
     def run(
         self,
@@ -45,7 +47,7 @@ class HeadlessExample(BaseExample):
         """
         # assert baselines == [], "No baselines supported for headless examples yet"
         os.makedirs(results_dir, exist_ok=True)
-        
+
         plot_generator = SupervisedPlotGenerator(
             spec=self.spec,
             n_trials=n_trials,
@@ -65,25 +67,26 @@ class HeadlessExample(BaseExample):
             plot_generator.run_baseline_experiment(
                 baseline_model=baseline_model, verbose=verbose
             )
-        
+
         # Run Seldonian headless experiment
-        # A special thing we need to do for headless experiments is get the 
-        # initial weights of the model and freeze them so we can 
+        # A special thing we need to do for headless experiments is get the
+        # initial weights of the model and freeze them so we can
         # re-initialize the same weights in each train when we pretrain
         initial_state_dict = full_pretraining_model.state_dict()
 
         plot_generator.run_headless_seldonian_experiment(
-            full_pretraining_model=full_pretraining_model, 
+            full_pretraining_model=full_pretraining_model,
             initial_state_dict=initial_state_dict,
-            headless_pretraining_model=headless_pretraining_model, 
+            headless_pretraining_model=headless_pretraining_model,
             head_layer_names=head_layer_names,
             latent_feature_shape=latent_feature_shape,
             loss_func_pretraining=loss_func_pretraining,
             learning_rate_pretraining=learning_rate_pretraining,
             pretraining_device=pretraining_device,
-            batch_epoch_dict_pretraining=batch_epoch_dict_pretraining, 
+            batch_epoch_dict_pretraining=batch_epoch_dict_pretraining,
             safety_batch_size_pretraining=1000,
-            verbose=verbose)
+            verbose=verbose,
+        )
 
         plot_generator.make_plots(
             fontsize=plot_fontsize,

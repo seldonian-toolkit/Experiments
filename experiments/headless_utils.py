@@ -55,14 +55,10 @@ def make_data_loaders(
     data_loaders = {"candidate": dataloader_c, "safety": dataloader_s}
     return data_loaders
 
+
 def train_pytorch_model(
-    pytorch_model, 
-    num_epochs, 
-    data_loaders, 
-    optimizer, 
-    loss_func, 
-    device,
-    verbose=False):
+    pytorch_model, num_epochs, data_loaders, optimizer, loss_func, device, verbose=False
+):
     """Train a pytorch model
 
     :param pytorch_model: The PyTorch model object. Must have a .forward() method
@@ -107,33 +103,30 @@ def train_pytorch_model(
                         )
                     )
 
+
 def update_headless_state_dict(
-    full_state_dict,
-    headless_pretraining_model,
-    head_layer_names):
-    """
-    
-    """
+    full_state_dict, headless_pretraining_model, head_layer_names
+):
+    """ """
     # Remove entries in full_state_dict
     # that are from the head of the model
     for layer_name in head_layer_names:
         del full_state_dict[layer_name]
-    # Use this to update state dict of headless model 
+    # Use this to update state dict of headless model
     headless_pretraining_model.load_state_dict(full_state_dict)
+
 
 def forward_pass_all_features(
     loaders,
     headless_pretraining_model,
     latent_feature_shape,
     device,
-    ):
-    """
-
-    """
+):
+    """ """
     headless_pretraining_model.eval()
-    n_points_tot = len(loaders['candidate'].dataset) + len(loaders['safety'].dataset)
-    candidate_batch_size = loaders['candidate'].batch_size
-    safety_batch_size = loaders['safety'].batch_size
+    n_points_tot = len(loaders["candidate"].dataset) + len(loaders["safety"].dataset)
+    candidate_batch_size = loaders["candidate"].batch_size
+    safety_batch_size = loaders["safety"].batch_size
 
     new_features_shape = (n_points_tot, *(latent_feature_shape))
     new_features = np.zeros(new_features_shape)
@@ -156,35 +149,37 @@ def forward_pass_all_features(
             headless_pretraining_model(batch_features).cpu().detach().numpy()
         )
 
-    return new_features 
+    return new_features
+
 
 def generate_latent_features(
     full_pretraining_model,
     headless_pretraining_model,
     head_layer_names,
     orig_features,
-    labels, 
+    labels,
     latent_feature_shape,
-    frac_data_in_safety, 
-    candidate_batch_size, 
+    frac_data_in_safety,
+    candidate_batch_size,
     safety_batch_size,
     loss_func=nn.CrossEntropyLoss(),
     learning_rate=0.001,
     num_epochs=5,
     device=torch.device("cpu"),
-    verbose=False):
+    verbose=False,
+):
     """
     Pretrain a PyTorch model using candidate data only,
-    pass all data (candidate+safety) through headless version 
+    pass all data (candidate+safety) through headless version
     of this trained model to obtain latent features
 
     :param full_pretraining_model: The untrained full PyTorch model
     :param headless_pretraining_model: The untrained headless version of the PyTorch model
-    :param head_layer_names: List of the names of the layers of the head of the network 
+    :param head_layer_names: List of the names of the layers of the head of the network
         (see) model.state_dict() keys for the list of all layer names
     :type head_layer_names: List
     :param orig_features: The original features from the problem that are used for pretraining
-    :param labels: Labels 
+    :param labels: Labels
     :param latent_feature_shape: The dimension of each latent data point. e.g., (256,) or (16,84)
     :type latent_feature_shape: Tuple
     :param frac_data_in_safety: The fraction of data put into the safety dataset
@@ -192,20 +187,20 @@ def generate_latent_features(
     :param candidate_batch_size: The batch sized used for pretraining the full network
     :type candidate_batch_size: int
     :param safety_batch_size: The batch sized used for passing safety data through the network.
-        Used for memory-optimization purposes only. 
+        Used for memory-optimization purposes only.
     :type safety_batch_size: int
     :param loss_func: The PyTorch loss function used for pretraining
     :param learning_rate: Learning rate used in Adam optimization during pretraining
     :type learning_rate: float
     :param num_epochs: The number of epochs of pretraining to run
     :type num_epochs: int
-    :param device: The device to run the pretraining 
+    :param device: The device to run the pretraining
         and to perform the forward passes to create latent features
     :type device: torch.device or int
     :param verbose: Verbosity flag
     :type verbose: Bool
     """
-    
+
     full_pretraining_model.to(device)
     headless_pretraining_model.to(device)
 
@@ -215,48 +210,49 @@ def generate_latent_features(
     # Make data loaders
     data_loaders = make_data_loaders(
         features=orig_features,
-        labels=labels, 
-        frac_data_in_safety=frac_data_in_safety, 
-        candidate_batch_size=candidate_batch_size, 
-        safety_batch_size=safety_batch_size
+        labels=labels,
+        frac_data_in_safety=frac_data_in_safety,
+        candidate_batch_size=candidate_batch_size,
+        safety_batch_size=safety_batch_size,
     )
-    
+
     n_candidate = len(data_loaders["candidate"].dataset)
     n_safety = len(data_loaders["safety"].dataset)
 
     # Train model
-    if verbose: print("pretraining pytorch model...")
+    if verbose:
+        print("pretraining pytorch model...")
     train_pytorch_model(
         pytorch_model=full_pretraining_model,
-        num_epochs=num_epochs, 
-        data_loaders=data_loaders, 
-        optimizer=optimizer, 
+        num_epochs=num_epochs,
+        data_loaders=data_loaders,
+        optimizer=optimizer,
         loss_func=loss_func,
         device=device,
-        verbose=verbose)
-    if verbose: print("done training pytorch model")
-    # get state dict after training 
+        verbose=verbose,
+    )
+    if verbose:
+        print("done training pytorch model")
+    # get state dict after training
     full_state_dict = full_pretraining_model.state_dict()
 
     # Copy over only headless layers from full model's
     # state dictionary to the headless model
     update_headless_state_dict(
-        full_state_dict,
-        headless_pretraining_model,
-        head_layer_names)
-    
+        full_state_dict, headless_pretraining_model, head_layer_names
+    )
 
     # Pass all candidate and safety data through the headless model
     # to create latent features
-    if verbose: print("Creating latent features from trained headless model")
+    if verbose:
+        print("Creating latent features from trained headless model")
     latent_features = forward_pass_all_features(
         loaders=data_loaders,
         headless_pretraining_model=headless_pretraining_model,
         latent_feature_shape=latent_feature_shape,
         device=device,
     )
-    if verbose: print("Done creating latent features.")
+    if verbose:
+        print("Done creating latent features.")
 
     return latent_features
-    
-

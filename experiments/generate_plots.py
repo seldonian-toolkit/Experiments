@@ -125,8 +125,8 @@ class PlotGenerator:
         """Make the three plots of the experiment. Looks up any
         experiments run in self.results_dir and plots them on the
         same three plots.
-        :param tot_data_size: The total number of datapoints in the experiment. 
-            This is used, alongside the data_fracs array to construct the 
+        :param tot_data_size: The total number of datapoints in the experiment.
+            This is used, alongside the data_fracs array to construct the
             horizontal axes of the three plots. If None, assumes a value from the dataset.
         :type tot_data_size: int
         :param model_label_dict: An optional dictionary where keys
@@ -181,7 +181,7 @@ class PlotGenerator:
         regime = self.regime
 
         if tot_data_size is None:
-            if regime in ["supervised_learning","custom"]:
+            if regime in ["supervised_learning", "custom"]:
                 tot_data_size = self.spec.dataset.num_datapoints
             elif regime == "reinforcement_learning":
                 tot_data_size = self.hyperparameter_and_setting_dict["num_episodes"]
@@ -716,15 +716,21 @@ class PlotGenerator:
                         "from held out additional datasets dict."
                     )
                 if "dataset" not in addl_datasets_held_out[constraint_str][bn]:
-                    if "candidate_dataset" not in addl_datasets_held_out[constraint_str][bn]:
+                    if (
+                        "candidate_dataset"
+                        not in addl_datasets_held_out[constraint_str][bn]
+                    ):
                         raise RuntimeError(
                             f"'dataset' key missing from held out additional datasets dict entry for "
                             f"parse tree: '{constraint_str}' and base node '{bn}'"
                         )
                     else:
                         if not isinstance(
-                            addl_datasets_held_out[constraint_str][bn]["candidate_dataset"], DataSet
-                        ):                        
+                            addl_datasets_held_out[constraint_str][bn][
+                                "candidate_dataset"
+                            ],
+                            DataSet,
+                        ):
                             raise RuntimeError(
                                 f"The candidate dataset provided for parse tree: '{constraint_str}' and base node '{bn}' "
                                 "is not a seldonian.DataSet object."
@@ -822,9 +828,9 @@ class SupervisedPlotGenerator(PlotGenerator):
             batch_epoch_dict=batch_epoch_dict,
         )
         self.regime = "supervised_learning"
-    
-    def generate_trial_datasets(self,verbose=False):
-        """Generate the datasets to be used in each trial. """
+
+    def generate_trial_datasets(self, verbose=False):
+        """Generate the datasets to be used in each trial."""
         if self.datagen_method == "resample":
             self.generate_resampled_datasets(verbose=verbose)
         else:
@@ -832,15 +838,15 @@ class SupervisedPlotGenerator(PlotGenerator):
                 f"datagen_method: {self.datagen_method} not supported for supervised learning."
             )
 
-    def generate_resampled_datasets(self,verbose=False):
+    def generate_resampled_datasets(self, verbose=False):
         """Generate resampled datasets to use in each trial. Resamples (with replacement)
         features, labels and sensitive attributes to create n_trials versions of these
         of the same shape as the inputs. Saves them in self.results_dir/resampled_datasets
         """
-       
+
         if verbose:
             print("Checking for resampled datasets")
-        
+
         save_dir = os.path.join(self.results_dir, "resampled_datasets")
         os.makedirs(save_dir, exist_ok=True)
 
@@ -850,14 +856,11 @@ class SupervisedPlotGenerator(PlotGenerator):
             orig_safety_dataset = self.spec.safety_dataset
             orig_datasets = {
                 "candidate_dataset": orig_cand_dataset,
-                "safety_dataset": orig_safety_dataset
+                "safety_dataset": orig_safety_dataset,
             }
         else:
             orig_dataset = self.spec.dataset
-            orig_datasets = {
-                "dataset": orig_dataset
-            }
-        
+            orig_datasets = {"dataset": orig_dataset}
 
         # Check for additional datasets which also need to be resampled.
         have_addl_datasets = False
@@ -897,10 +900,12 @@ class SupervisedPlotGenerator(PlotGenerator):
                         meta=dataset.meta,
                     )
 
-                    save_pickle(savename,resampled_dataset,verbose=verbose)
+                    save_pickle(savename, resampled_dataset, verbose=verbose)
 
             if have_addl_datasets:
-                savename_addl = os.path.join(save_dir, f"trial_{trial_i}_addl_datasets.pkl")
+                savename_addl = os.path.join(
+                    save_dir, f"trial_{trial_i}_addl_datasets.pkl"
+                )
                 if not os.path.exists(savename_addl):
                     resampled_addl_datasets = {}
                     addl_datasets = self.spec.additional_datasets
@@ -914,29 +919,39 @@ class SupervisedPlotGenerator(PlotGenerator):
                             addl_batch_size = this_dict.get("batch_size")
 
                             if addl_batch_size:
-                                resampled_addl_datasets[constraint_str][bn]['batch_size'] = addl_batch_size
+                                resampled_addl_datasets[constraint_str][bn][
+                                    "batch_size"
+                                ] = addl_batch_size
 
                             if "candidate_dataset" in this_dict:
-                                keys = ["candidate_dataset","safety_dataset"]
+                                keys = ["candidate_dataset", "safety_dataset"]
                             else:
                                 keys = ["dataset"]
-                            
+
                             for key in keys:
                                 addl_dataset = this_dict[key]
                                 num_datapoints_addl = addl_dataset.num_datapoints
                                 ix_resamp_addl = np.random.choice(
-                                    range(num_datapoints_addl), num_datapoints_addl, replace=True
+                                    range(num_datapoints_addl),
+                                    num_datapoints_addl,
+                                    replace=True,
                                 )
                                 # features can be list of arrays or a single array
                                 if type(addl_dataset.features) == list:
-                                    resamp_features_addl = [x[ix_resamp_addl] for x in addl_dataset.features]
+                                    resamp_features_addl = [
+                                        x[ix_resamp_addl] for x in addl_dataset.features
+                                    ]
                                 else:
-                                    resamp_features_addl = addl_dataset.features[ix_resamp_addl]
+                                    resamp_features_addl = addl_dataset.features[
+                                        ix_resamp_addl
+                                    ]
 
                                 # labels and sensitive attributes must be arrays
                                 resamp_labels_addl = addl_dataset.labels[ix_resamp_addl]
                                 if isinstance(addl_dataset.sensitive_attrs, np.ndarray):
-                                    resamp_sensitive_attrs_addl = addl_dataset.sensitive_attrs[ix_resamp_addl]
+                                    resamp_sensitive_attrs_addl = (
+                                        addl_dataset.sensitive_attrs[ix_resamp_addl]
+                                    )
                                 else:
                                     resamp_sensitive_attrs_addl = []
 
@@ -947,10 +962,12 @@ class SupervisedPlotGenerator(PlotGenerator):
                                     num_datapoints=num_datapoints_addl,
                                     meta=addl_dataset.meta,
                                 )
-                                resampled_addl_datasets[constraint_str][bn][key] = resampled_dataset
-                            
-                    save_pickle(savename_addl,resampled_addl_datasets,verbose=verbose)
-        
+                                resampled_addl_datasets[constraint_str][bn][
+                                    key
+                                ] = resampled_dataset
+
+                    save_pickle(savename_addl, resampled_addl_datasets, verbose=verbose)
+
         if verbose:
             print("Done checking for resampled datasets")
             print()
@@ -967,7 +984,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         dataset = self.spec.dataset
 
         self.generate_trial_datasets(verbose=verbose)
-        
+
         run_seldonian_kwargs = dict(
             spec=self.spec,
             regime=self.regime,
@@ -1132,6 +1149,255 @@ class SupervisedPlotGenerator(PlotGenerator):
         )
 
         fl_exp.run_experiment(**run_fairlearn_kwargs)
+        return
+
+
+class CustomPlotGenerator(PlotGenerator):
+    def __init__(
+        self,
+        spec,
+        n_trials,
+        data_fracs,
+        datagen_method,
+        perf_eval_fn,
+        results_dir,
+        n_workers,
+        constraint_eval_fns=[],
+        perf_eval_kwargs={},
+        constraint_eval_kwargs={},
+        batch_epoch_dict={},
+    ):
+        """Class for running supervised custom experiments
+                and generating the three plots. Use with spec.regime = "custom"
+
+        :param spec: Specification object for running the
+                Seldonian algorithm
+        :type spec: seldonian.spec.Spec object
+
+        :param n_trials: The number of times the
+                Seldonian algorithm is run for each data fraction.
+                Used for generating error bars
+        :type n_trials: int
+
+        :param data_fracs: Proportions of the overall size
+                of the dataset to use
+                (the horizontal axis on the three plots).
+        :type data_fracs: List(float)
+
+        :param datagen_method: Method for generating data that is used
+                to run the Seldonian algorithm for each trial
+        :type datagen_method: str, e.g. "resample"
+
+        :param perf_eval_fn: Function used to evaluate the performance
+                of the model obtained in each trial, with signature:
+                func(theta,**kwargs), where theta is the solution
+                from candidate selection
+        :type perf_eval_fn: function or class method
+
+        :param results_dir: The directory in which to save the results
+        :type results_dir: str
+
+        :param n_workers: The number of workers to use if
+                using multiprocessing
+        :type n_workers: int
+
+        :param constraint_eval_fns: List of functions used to evaluate
+                the constraints on ground truth. If an empty list is provided,
+                the constraints are evaluated using the parse tree
+        :type constraint_eval_fns: List(function or class method),
+                defaults to []
+
+        :param perf_eval_kwargs: Extra keyword arguments to pass to
+                perf_eval_fn
+        :type perf_eval_kwargs: dict
+
+        :param constraint_eval_kwargs: Extra keyword arguments to pass to
+                the constraint_eval_fns
+        :type constraint_eval_kwargs: dict
+
+        :param batch_epoch_dict: Instruct batch sizes and n_epochs
+                for each data frac
+        :type batch_epoch_dict: dict
+        """
+
+        super().__init__(
+            spec=spec,
+            n_trials=n_trials,
+            data_fracs=data_fracs,
+            datagen_method=datagen_method,
+            perf_eval_fn=perf_eval_fn,
+            results_dir=results_dir,
+            n_workers=n_workers,
+            constraint_eval_fns=constraint_eval_fns,
+            perf_eval_kwargs=perf_eval_kwargs,
+            constraint_eval_kwargs=constraint_eval_kwargs,
+            batch_epoch_dict=batch_epoch_dict,
+        )
+        self.regime = "custom"
+
+    def generate_trial_datasets(self, verbose=False):
+        """Generate the datasets to be used in each trial."""
+        if self.datagen_method == "resample":
+            self.generate_resampled_datasets(verbose=verbose)
+        else:
+            raise NotImplementedError(
+                f"datagen_method: {self.datagen_method} not supported for the custom regime."
+            )
+
+    def generate_resampled_datasets(self, verbose=False):
+        """Generate resampled datasets to use in each trial. Resamples (with replacement)
+        features, labels and sensitive attributes to create n_trials versions of these
+        of the same shape as the inputs. Saves them in self.results_dir/resampled_datasets
+        """
+
+        if verbose:
+            print("Checking for resampled datasets")
+
+        save_dir = os.path.join(self.results_dir, "resampled_datasets")
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Check to see if we have forced candidate/safety data
+        if self.spec.candidate_dataset is not None:
+            orig_cand_dataset = self.spec.candidate_dataset
+            orig_safety_dataset = self.spec.safety_dataset
+            orig_datasets = {
+                "candidate_dataset": orig_cand_dataset,
+                "safety_dataset": orig_safety_dataset,
+            }
+        else:
+            orig_dataset = self.spec.dataset
+            orig_datasets = {"dataset": orig_dataset}
+
+        # Check for additional datasets which also need to be resampled.
+        have_addl_datasets = False
+        if self.spec.additional_datasets != {}:
+            have_addl_datasets = True
+
+        for trial_i in range(self.n_trials):
+            for key in orig_datasets:
+                if key == "dataset":
+                    savename = os.path.join(save_dir, f"trial_{trial_i}.pkl")
+                else:
+                    savename = os.path.join(save_dir, f"trial_{trial_i}_{key}.pkl")
+                dataset = orig_datasets[key]
+                num_datapoints = dataset.num_datapoints
+                if not os.path.exists(savename):
+                    # Data are a list of objects (could be list, array, etc.)
+                    ix_resamp = np.random.choice(
+                        range(num_datapoints), num_datapoints, replace=True
+                    )
+                    resamp_data = [dataset.data[ii] for ii in ix_resamp]
+                    # Sensitive attributes must be arrays (or [])
+                    if isinstance(dataset.sensitive_attrs, np.ndarray):
+                        resamp_sensitive_attrs = dataset.sensitive_attrs[ix_resamp]
+                    else:
+                        resamp_sensitive_attrs = []
+
+                    resampled_dataset = CustomDataSet(
+                        data=resamp_data,
+                        sensitive_attrs=resamp_sensitive_attrs,
+                        num_datapoints=num_datapoints,
+                        meta=dataset.meta,
+                    )
+
+                    save_pickle(savename, resampled_dataset, verbose=verbose)
+
+            if have_addl_datasets:
+                savename_addl = os.path.join(
+                    save_dir, f"trial_{trial_i}_addl_datasets.pkl"
+                )
+                if not os.path.exists(savename_addl):
+                    resampled_addl_datasets = {}
+                    addl_datasets = self.spec.additional_datasets
+                    for constraint_str in addl_datasets:
+                        resampled_addl_datasets[constraint_str] = {}
+                        for bn in addl_datasets[constraint_str]:
+                            resampled_addl_datasets[constraint_str][bn] = {}
+                            # Check if explicit candidate/safety datasets or just "dataset" key
+
+                            this_dict = addl_datasets[constraint_str][bn]
+                            addl_batch_size = this_dict.get("batch_size")
+
+                            if addl_batch_size:
+                                resampled_addl_datasets[constraint_str][bn][
+                                    "batch_size"
+                                ] = addl_batch_size
+
+                            if "candidate_dataset" in this_dict:
+                                keys = ["candidate_dataset", "safety_dataset"]
+                            else:
+                                keys = ["dataset"]
+
+                            for key in keys:
+                                addl_dataset = this_dict[key]
+                                num_datapoints_addl = addl_dataset.num_datapoints
+                                ix_resamp_addl = np.random.choice(
+                                    range(num_datapoints_addl),
+                                    num_datapoints_addl,
+                                    replace=True,
+                                )
+
+                                # Data are a list of objects (could be list, array, etc.)
+                                resamp_data_addl = [
+                                    addl_dataset.data[ii] for ii in ix_resamp
+                                ]
+
+                                # Sensitive attributes must be arrays (or [])
+                                if isinstance(addl_dataset.sensitive_attrs, np.ndarray):
+                                    resamp_sensitive_attrs_addl = (
+                                        addl_dataset.sensitive_attrs[ix_resamp_addl]
+                                    )
+                                else:
+                                    resamp_sensitive_attrs_addl = []
+
+                                resampled_dataset = CustomDataSet(
+                                    data=resamp_data_addl,
+                                    sensitive_attrs=resamp_sensitive_attrs_addl,
+                                    num_datapoints=num_datapoints_addl,
+                                    meta=addl_dataset.meta,
+                                )
+                                resampled_addl_datasets[constraint_str][bn][
+                                    key
+                                ] = resampled_dataset
+
+                    save_pickle(savename_addl, resampled_addl_datasets, verbose=verbose)
+
+        if verbose:
+            print("Done checking for resampled datasets")
+            print()
+
+    def run_seldonian_experiment(self, verbose=False):
+        """Run a supervised Seldonian experiment using the spec attribute
+        assigned to the class in __init__().
+
+        :param verbose: Whether to display results to stdout
+                while the Seldonian algorithms are running in each trial
+        :type verbose: bool, defaults to False
+        """
+
+        dataset = self.spec.dataset
+
+        self.generate_trial_datasets(verbose=verbose)
+
+        run_seldonian_kwargs = dict(
+            spec=self.spec,
+            regime=self.regime,
+            data_fracs=self.data_fracs,
+            n_trials=self.n_trials,
+            n_workers=self.n_workers,
+            datagen_method=self.datagen_method,
+            perf_eval_fn=self.perf_eval_fn,
+            perf_eval_kwargs=self.perf_eval_kwargs,
+            constraint_eval_fns=self.constraint_eval_fns,
+            constraint_eval_kwargs=self.constraint_eval_kwargs,
+            batch_epoch_dict=self.batch_epoch_dict,
+            verbose=verbose,
+        )
+
+        ## Run experiment
+        sd_exp = SeldonianExperiment(model_name="qsa", results_dir=self.results_dir)
+
+        sd_exp.run_experiment(**run_seldonian_kwargs)
         return
 
 

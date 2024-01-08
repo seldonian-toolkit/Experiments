@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 
 from experiments.generate_plots import (
-    SupervisedPlotGenerator,RLPlotGenerator)
+    SupervisedPlotGenerator,RLPlotGenerator,
+    CustomPlotGenerator)
 
 from experiments.experiment_utils import (
     generate_episodes_and_calc_J,has_failed)
@@ -102,6 +103,106 @@ def test_regression_plot_generator(gpa_regression_spec,experiment):
     trial_file_0 = os.path.join(trial_dir,trial_files[0])
     df_trial0 = pd.read_csv(trial_file_0)
     assert len(df_trial0) == 1
+
+@pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
+def test_custom_regime_plot_generator(custom_text_spec,experiment):
+    np.random.seed(42)
+    
+    spec = custom_text_spec()
+    n_trials = 2
+    data_fracs = [0.1,0.5]
+    datagen_method="resample"
+    verbose=True
+    def calc_performance(y_pred,**kwargs):
+        # A dummy function
+        return np.mean(y_pred)
+
+    perf_eval_fn = calc_performance
+    results_dir = "./tests/static/results"
+    n_workers = 1
+    # Get performance evaluation kwargs set up
+    # Use entire original dataset as ground truth for test set
+    dataset = spec.dataset
+
+    test_data = dataset.data
+
+    # Define any additional keyword arguments (besides theta)
+    # of the performance evaluation function,
+    # which in our case is accuracy
+    perf_eval_kwargs = {
+        'test_data':test_data,
+        }
+    
+    spg = CustomPlotGenerator(
+        spec=spec,
+        n_trials=n_trials,
+        data_fracs=data_fracs,
+        datagen_method=datagen_method,
+        perf_eval_fn=perf_eval_fn,
+        results_dir=results_dir,
+        n_workers=n_workers,
+        constraint_eval_fns=[],
+        perf_eval_kwargs=perf_eval_kwargs,
+        constraint_eval_kwargs={})
+    
+    assert spg.n_trials == n_trials
+    assert spg.regime == 'custom'
+
+    # Generate resampled datasets
+    spg.generate_resampled_datasets(verbose=verbose)
+
+    # Make sure n_trials resampled datasets were created
+    resampled_dir = os.path.join(results_dir,"resampled_datasets")
+    resampled_files = os.listdir(resampled_dir)
+    assert len(resampled_files) == n_trials
+    assert "trial_0.pkl" in resampled_files and "trial_1.pkl" in resampled_files
+
+    # Seldonian experiment
+
+    spg.run_seldonian_experiment(verbose=True)
+
+    # ## Make sure results file was created
+    # results_file = os.path.join(results_dir,"qsa_results/qsa_results.csv")
+    # assert os.path.exists(results_file)
+
+    # # Make sure length of df is correct
+    # df = pd.read_csv(results_file)
+    # assert len(df) == 4
+    # dps = df.data_frac
+    # trial_is = df.trial_i
+    # perfs = df.performance
+    # passed_safetys = df.passed_safety
+    # gvecs = df.gvec.apply(lambda t: np.fromstring(t[1:-1],sep=' '))
+    
+    # assert dps[0] == 0.01
+    # assert trial_is[0] == 0
+    # assert passed_safetys[0] == False
+    # assert gvecs.str[0][0] == -np.inf
+
+    # assert dps[1] == 0.01
+    # assert trial_is[1] == 1
+    # assert passed_safetys[1] == False
+    # assert gvecs.str[0][1] == -np.inf
+
+    # assert dps[2] == 0.1
+    # assert trial_is[2] == 0
+    # assert passed_safetys[2] == False
+    # assert gvecs.str[0][2] == -np.inf
+
+    # assert dps[3] == 0.1
+    # assert trial_is[3] == 1
+    # assert passed_safetys[3] == False
+    # assert gvecs.str[0][3] == -np.inf
+    
+    # # Make sure number of trial files created is correct
+    # trial_dir = os.path.join(results_dir,"qsa_results/trial_data")
+    # trial_files = os.listdir(trial_dir)
+    # assert len(trial_files) == 4
+
+    # # Make sure the trial files have the right format
+    # trial_file_0 = os.path.join(trial_dir,trial_files[0])
+    # df_trial0 = pd.read_csv(trial_file_0)
+    # assert len(df_trial0) == 1
 
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_bad_datagen_method(gpa_regression_spec,experiment):

@@ -1,8 +1,10 @@
 import numpy as np
-from sklearn.metrics import log_loss,accuracy_score
+from sklearn.metrics import log_loss, accuracy_score
 
-def binary_logistic_loss(y_pred,y,**kwargs):    
-    return log_loss(y,y_pred)
+
+def binary_logistic_loss(y_pred, y, **kwargs):
+    return log_loss(y, y_pred)
+
 
 def multiclass_logistic_loss(y_pred, y, **kwargs):
     """Calculate average logistic loss
@@ -21,9 +23,10 @@ def multiclass_logistic_loss(y_pred, y, **kwargs):
     probs_trueclasses = y_pred[np.arange(n), y.astype("int")]
     return -1 / n * sum(np.log(probs_trueclasses))
 
+
 def probabilistic_accuracy(y_pred, y, **kwargs):
     """For binary classification only.
-    1 - error rate. Use when output of 
+    1 - error rate. Use when output of
     model y_pred is a probability
 
     :param y_pred: Array of predicted probabilities of each label
@@ -33,9 +36,10 @@ def probabilistic_accuracy(y_pred, y, **kwargs):
     v = np.where(y != 1.0, 1.0 - y_pred, y_pred)
     return sum(v) / len(v)
 
-def multiclass_accuracy(y_pred,y,**kwargs):
+
+def multiclass_accuracy(y_pred, y, **kwargs):
     """For multi-class classification.
-    1 - error rate. Use when output of 
+    1 - error rate. Use when output of
     model y_pred is a probability
 
     :param y_pred: Array of predicted probabilities of each label
@@ -43,19 +47,21 @@ def multiclass_accuracy(y_pred,y,**kwargs):
 
     """
     n = len(y)
-    return np.sum(y_pred[np.arange(n),y.astype("int")])/n
+    return np.sum(y_pred[np.arange(n), y.astype("int")]) / n
+
 
 def deterministic_accuracy(y_pred, y, **kwargs):
     """The fraction of correct samples. Best to use
     only when the output of the model, y_pred
-    is 0 or 1. 
+    is 0 or 1.
 
     :param y_pred: Array of predicted labels
     :param y: Array of true labels
 
     """
     from sklearn.metrics import accuracy_score
-    return accuracy_score(y,y_pred > 0.5)
+
+    return accuracy_score(y, y_pred > 0.5)
 
 
 def MSE(y_pred, y, **kwargs):
