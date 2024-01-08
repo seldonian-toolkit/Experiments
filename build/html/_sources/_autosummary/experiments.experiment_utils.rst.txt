@@ -22,7 +22,9 @@ experiments.experiment\_utils
       load_resampled_datasets
       make_batch_epoch_dict_fixedniter
       make_batch_epoch_dict_min_sample_repeat
+      prep_data_for_fairlearn
       prep_feat_labels
+      prep_feat_labels_for_baseline
       setup_SA_spec_for_exp
       supervised_initial_solution_fn
       trial_arg_chunker
