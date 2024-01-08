@@ -87,8 +87,9 @@ def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False
             "candidate_dataset":resampled_cand_dataset,
             "safety_dataset":resampled_safety_dataset
         }
-        num_datapoints_cand = resampled_cand_dataset.num_datapoints
-        num_datapoints_safety = resampled_safety_dataset.num_datapoints
+        num_datapoints_cand = int(round(data_frac*resampled_cand_dataset.num_datapoints))
+        num_datapoints_safety = int(round(data_frac*resampled_safety_dataset.num_datapoints))
+
         n_points_dict = {
             "candidate_dataset":num_datapoints_cand,
             "safety_dataset":num_datapoints_safety

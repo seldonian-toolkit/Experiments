@@ -207,7 +207,7 @@ class BaselineExperiment(Experiment):
         spec = copy.deepcopy(kwargs["spec"])
 
         dataset = spec.dataset
-        regime = dataset.regime
+        regime = kwargs['regime']
         parse_trees = spec.parse_trees
         (
             verbose,
@@ -329,8 +329,6 @@ class BaselineExperiment(Experiment):
             """" Instantiate model and run it on resampled data """
             ####################################################
             baseline_model = copy.deepcopy(self.baseline_model)
-            # train_kwargs = {}
-            # pred_kwargs = {}
             try:
                 solution = baseline_model.train(trial_dataset)
                 baseline_model.set_new_params(solution)
@@ -362,7 +360,7 @@ class BaselineExperiment(Experiment):
 
             # Determine whether this solution
             # violates any of the constraints
-            # on the test dataset, which is the dataset from spec
+            # on the test dataset
 
             if regime == "supervised_learning":
                 dataset_for_eval = dataset  # the original one
@@ -376,7 +374,10 @@ class BaselineExperiment(Experiment):
 
             constraint_eval_kwargs["baseline_model"] = baseline_model
             constraint_eval_kwargs["dataset"] = dataset_for_eval
+            constraint_eval_kwargs["regime"] = regime
+            constraint_eval_kwargs["sub_regime"] = spec.sub_regime
             constraint_eval_kwargs["parse_trees"] = parse_trees
+            constraint_eval_kwargs["additional_datasets"] = spec.additional_datasets
             constraint_eval_kwargs["verbose"] = verbose
 
             gvec = self.evaluate_constraint_functions(
@@ -427,8 +428,10 @@ class BaselineExperiment(Experiment):
         gvals = []
         if constraint_eval_fns == []:
             parse_trees = constraint_eval_kwargs["parse_trees"]
-            dataset_for_eval = constraint_eval_kwargs["dataset"]
-            tree_dataset_dict = {"all": dataset_for_eval}
+            additional_datasets = constraint_eval_kwargs["additional_datasets"]
+            regime = constraint_eval_kwargs["regime"]
+            sub_regime = constraint_eval_kwargs["sub_regime"]
+            backup_dataset_for_eval = constraint_eval_kwargs["dataset"]
             baseline_model = constraint_eval_kwargs["baseline_model"]
             if hasattr(baseline_model, "eval_batch_size"):
                 batch_size_safety = getattr(baseline_model, "eval_batch_size")
@@ -437,12 +440,29 @@ class BaselineExperiment(Experiment):
 
             for parse_tree in parse_trees:
                 parse_tree.reset_base_node_dict(reset_data=True)
+
+                # handle additional datasets
+                if additional_datasets:
+                    held_out_addl_datasets = constraint_eval_kwargs["additional_datasets"]
+                    tree_dataset_dict = {}
+                    cstr = parse_tree.constraint_str
+
+                    for bn in held_out_addl_datasets[cstr]:
+                        if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
+                            # Combine the candidate and safety datasets into a single dataset for evaluation
+                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            tree_dataset_dict[bn] = combined_dataset
+                        else:
+                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
+                else:
+                    tree_dataset_dict = {"all": backup_dataset_for_eval}
+
                 parse_tree.evaluate_constraint(
                     theta=solution,
                     tree_dataset_dict=tree_dataset_dict,
                     model=baseline_model,
-                    regime=dataset_for_eval.regime,
-                    sub_regime=dataset_for_eval.meta.sub_regime,
+                    regime=regime,
+                    sub_regime=sub_regime,
                     branch="safety_test",
                     batch_size_safety=batch_size_safety,
                 )
@@ -591,8 +611,6 @@ class SeldonianExperiment(Experiment):
         ################################
         """" Run Seldonian algorithm """
         ################################
-        # print("spec_for_exp.candidate_dataset.features:")
-        # print(spec_for_exp.candidate_dataset.features)
         try:
             SA = SeldonianAlgorithm(spec_for_exp)
             passed_safety, solution = SA.run(write_cs_logfile=verbose, debug=verbose)
@@ -732,7 +750,6 @@ class SeldonianExperiment(Experiment):
             to evaluate the constraints. Use the default:
             the parse tree has a built-in way to evaluate constraints.
             """
-
             spec_orig = constraint_eval_kwargs["spec_orig"]
             spec_for_exp = constraint_eval_kwargs["spec_for_exp"]
             model = constraint_eval_kwargs["model"]
@@ -783,9 +800,10 @@ class SeldonianExperiment(Experiment):
                     cstr = parse_tree.constraint_str
 
                     for bn in held_out_addl_datasets[cstr]:
-                        if "safety_dataset" in held_out_addl_datasets[cstr][bn]:
-                            # Just use the safety dataset for evaluation
-                            tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                        if "candidate_dataset" in held_out_addl_datasets[cstr][bn]:
+                            # Combine the candidate and safety datasets into a single dataset for evaluation
+                            combined_dataset = held_out_addl_datasets[cstr][bn]["candidate_dataset"] + held_out_addl_datasets[cstr][bn]["safety_dataset"]
+                            tree_dataset_dict[bn] = combined_dataset
                         else:
                             tree_dataset_dict[bn] = held_out_addl_datasets[cstr][bn]["dataset"]
                 else:
@@ -880,6 +898,7 @@ class FairlearnExperiment(Experiment):
         :type trial_i: int
         """
         spec = kwargs["spec"]
+        regime = kwargs["regime"]
         verbose = kwargs["verbose"]
         datagen_method = kwargs["datagen_method"]
         fairlearn_sensitive_feature_names = kwargs["fairlearn_sensitive_feature_names"]
@@ -892,7 +911,6 @@ class FairlearnExperiment(Experiment):
         constraint_eval_fns = kwargs["constraint_eval_fns"]
         constraint_eval_kwargs = kwargs["constraint_eval_kwargs"]
 
-        regime = spec.dataset.regime
         assert regime == "supervised_learning"
 
         trial_dir = os.path.join(

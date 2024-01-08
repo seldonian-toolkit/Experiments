@@ -1017,6 +1017,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         run_kwargs = dict(
             spec=self.spec,
+            regime=self.regime,
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             full_pretraining_model=full_pretraining_model,
@@ -1063,6 +1064,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         run_baseline_kwargs = dict(
             spec=self.spec,
+            regime=self.regime,
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             n_workers=self.n_workers,
@@ -1106,6 +1108,7 @@ class SupervisedPlotGenerator(PlotGenerator):
 
         run_fairlearn_kwargs = dict(
             spec=self.spec,
+            regime=self.regime,
             data_fracs=self.data_fracs,
             n_trials=self.n_trials,
             n_workers=self.n_workers,
