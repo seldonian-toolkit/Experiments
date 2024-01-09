@@ -684,17 +684,13 @@ class SeldonianExperiment(Experiment):
 
                     model = SA.model
                     # Batch the prediction if specified
-                    if "eval_batch_size" in perf_eval_kwargs:
-                        y_pred = batch_predictions_custom_regime(
-                            model=model,
-                            solution=solution,
-                            test_data=test_data,
-                            **perf_eval_kwargs,
-                        )
-                    else:
-                        y_pred = model.predict(solution, test_data)
+                    performance = perf_eval_fn(
+                        theta=solution,
+                        model=model,
+                        data=test_data,
+                        **perf_eval_kwargs
+                    )
 
-                    performance = perf_eval_fn(y_pred, model=model, **perf_eval_kwargs)
                 if verbose:
                     print(f"Performance = {performance}")
                     print(

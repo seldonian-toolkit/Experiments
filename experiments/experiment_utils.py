@@ -706,7 +706,7 @@ def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     n_batches = np.array([math.ceil(x) for x in n_batches])
     n_epochs_arr = (
         niter / n_batches
-    )  # number of epochs needed to get to niter iterations in each data frac
+    )  # number of epochs needed to get to at least niter iterations in each data frac
     n_epochs_arr = np.array([math.ceil(x) for x in n_epochs_arr])
     batch_epoch_dict = {
         data_fracs[ii]: [batch_size, n_epochs_arr[ii]] for ii in range(len(data_fracs))
