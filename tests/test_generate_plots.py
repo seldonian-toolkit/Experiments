@@ -113,8 +113,9 @@ def test_custom_regime_plot_generator(custom_text_spec,experiment):
     data_fracs = [0.1,0.5]
     datagen_method="resample"
     verbose=True
-    def calc_performance(y_pred,**kwargs):
+    def calc_performance(theta,model,data,**kwargs):
         # A dummy function
+        y_pred = model.predict(theta,data)
         return np.mean(y_pred)
 
     perf_eval_fn = calc_performance
@@ -213,8 +214,9 @@ def test_custom_regime_addl_datasets_plot_generator(custom_text_addl_datasets_sp
     data_fracs = [0.1,0.5]
     datagen_method="resample"
     verbose=True
-    def calc_performance(y_pred,**kwargs):
+    def calc_performance(theta,model,data,**kwargs):
         # A dummy function
+        y_pred = model.predict(theta,data)
         return np.mean(y_pred)
 
     perf_eval_fn = calc_performance
@@ -313,7 +315,6 @@ def test_custom_regime_addl_datasets_plot_generator(custom_text_addl_datasets_sp
     trial_file_0 = os.path.join(trial_dir,trial_files[0])
     df_trial0 = pd.read_csv(trial_file_0)
     assert len(df_trial0) == 1
-
 
 @pytest.mark.parametrize('experiment', ["./tests/static/results"], indirect=True)
 def test_bad_datagen_method(gpa_regression_spec,experiment):
