@@ -12,9 +12,9 @@ class BaseFittedQBaseline(RLExperimentBaseline):
         env_kwargs={"gamma": 1.0},
         regressor_kwargs={},
     ):
-        """Base class for fitted-Q RL baselines. All methods that raise 
+        """Base class for fitted-Q RL baselines. All methods that raise
         NotImplementedError must be implemented in child classes. Any method
-        here can be overridden in a child class. 
+        here can be overridden in a child class.
 
         :param regressor_class: The class (not object) for the regressor.
             Must have a fit() method which takes features and lables as first two args.
@@ -172,15 +172,20 @@ class BaseFittedQBaseline(RLExperimentBaseline):
         raise NotImplementedError("Implement this method in a child class")
 
 
-
 class ExactTabularFittedQBaseline(BaseFittedQBaseline):
     def __init__(
-        self, model_name, regressor_class, policy, num_iters=100, env_kwargs={'gamma':1.0}, regressor_kwargs={}
+        self,
+        model_name,
+        regressor_class,
+        policy,
+        num_iters=100,
+        env_kwargs={"gamma": 1.0},
+        regressor_kwargs={},
     ):
         """Implements fitted-Q RL baseline where the policy is a Q table.
         Uses the regressor weights to update the Q table. Works for parametric
         models. The features of the regression problem are the one-hot vectors
-        of the (observation,action) pairs. 
+        of the (observation,action) pairs.
 
         Env kwargs needs to include the following key,value pairs:
             "gamma": float
@@ -270,26 +275,45 @@ class ExactTabularFittedQBaseline(BaseFittedQBaseline):
         """If the greedy actions in each observation
         are not changing from iteration to iteration
         then we can stop the algorithm and return the optimal solution.
-        Should keep track of last few greedy actions. 
+        Should keep track of last few greedy actions.
         """
-        current_greedy_actions = np.array([np.argmax(self.policy.get_params()[obs]) for obs in range(self.num_observations)])
+        current_greedy_actions = np.array(
+            [
+                np.argmax(self.policy.get_params()[obs])
+                for obs in range(self.num_observations)
+            ]
+        )
         if len(self.last_greedy_actions) == 0:
             self.last_greedy_actions = current_greedy_actions
             return False
-        if all([current_greedy_actions[ii] == self.last_greedy_actions[ii] for ii in range(len(current_greedy_actions))]):
+        if all(
+            [
+                current_greedy_actions[ii] == self.last_greedy_actions[ii]
+                for ii in range(len(current_greedy_actions))
+            ]
+        ):
             self.last_greedy_actions = current_greedy_actions
             return True
 
         self.last_greedy_actions = current_greedy_actions
         return False
 
+
 class ApproximateTabularFittedQBaseline(ExactTabularFittedQBaseline):
-    def __init__(self,model_name,regressor_class,policy,num_iters=100,env_kwargs={'gamma':1.0},regressor_kwargs={}):
-        """Implements fitted-Q RL baseline for a Q table, 
+    def __init__(
+        self,
+        model_name,
+        regressor_class,
+        policy,
+        num_iters=100,
+        env_kwargs={"gamma": 1.0},
+        regressor_kwargs={},
+    ):
+        """Implements fitted-Q RL baseline for a Q table,
         but uses the fitted regressor to approximate the Q values.
-        Useful for nonparametric regressors. The features of the 
+        Useful for nonparametric regressors. The features of the
         regression problem are the one-hot vectors
-        of the (observation,action) pairs. 
+        of the (observation,action) pairs.
         """
         super().__init__(
             model_name=model_name,
@@ -297,7 +321,7 @@ class ApproximateTabularFittedQBaseline(ExactTabularFittedQBaseline):
             policy=policy,
             num_iters=num_iters,
             env_kwargs=env_kwargs,
-            regressor_kwargs=regressor_kwargs
+            regressor_kwargs=regressor_kwargs,
         )
 
     def instantiate_regressor(self):
@@ -309,15 +333,15 @@ class ApproximateTabularFittedQBaseline(ExactTabularFittedQBaseline):
         """
         regressor = self.regressor_class()
         return regressor
-    
+
     def get_regressor_weights(self):
-        """ Approximates Q table by passing each possible 
+        """Approximates Q table by passing each possible
         one-hot encoding of (observation,action) pairs
-        through the regressor's forward pass. """
+        through the regressor's forward pass."""
         vecs = []
-        for i in range(self.num_observations*self.num_actions):
-            vec = np.zeros(self.num_observations*self.num_actions)
+        for i in range(self.num_observations * self.num_actions):
+            vec = np.zeros(self.num_observations * self.num_actions)
             vec[i] = 1
             vecs.append(vec)
         Q = self.regressor.predict(vecs)
-        return Q.reshape(self.num_observations,self.num_actions)
+        return Q.reshape(self.num_observations, self.num_actions)

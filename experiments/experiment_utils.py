@@ -536,7 +536,8 @@ def setup_SA_spec_for_exp(
             trial_dataset = trial_datasets["dataset"]
             n_points = n_points_dict["dataset"]
             data, sensitive_attrs = prep_custom_data(
-                trial_dataset, n_points, include_sensitive_attrs=True)
+                trial_dataset, n_points, include_sensitive_attrs=True
+            )
 
             dataset_for_exp = CustomDataSet(
                 data=data,
@@ -664,8 +665,9 @@ def batch_predictions(model, solution, X_test, **kwargs):
         batch_start = batch_end
     return y_pred
 
+
 def batch_predictions_custom_regime(model, solution, test_data, **kwargs):
-    batch_size = kwargs["eval_batch_size"]    
+    batch_size = kwargs["eval_batch_size"]
     N_eval = len(test_data)
     if "N_output_classes" in kwargs:
         N_output_classes = kwargs["N_output_classes"]
@@ -791,5 +793,3 @@ def trial_arg_chunker(data_fracs, n_trials, n_workers):
 
 def supervised_initial_solution_fn(m, x, y):
     return m.fit(x, y)
-
-

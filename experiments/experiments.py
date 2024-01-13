@@ -677,18 +677,15 @@ class SeldonianExperiment(Experiment):
                     perf_eval_kwargs["hyperparameter_and_setting_dict"] = kwargs[
                         "hyperparameter_and_setting_dict"
                     ]
-                    episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs) 
-                
+                    episodes_new_policy, performance = perf_eval_fn(**perf_eval_kwargs)
+
                 elif regime == "custom":
                     test_data = perf_eval_kwargs["test_data"]
 
                     model = SA.model
                     # Batch the prediction if specified
                     performance = perf_eval_fn(
-                        theta=solution,
-                        model=model,
-                        data=test_data,
-                        **perf_eval_kwargs
+                        theta=solution, model=model, data=test_data, **perf_eval_kwargs
                     )
 
                 if verbose:
@@ -814,7 +811,7 @@ class SeldonianExperiment(Experiment):
                     regime=regime,
                 )
             elif regime == "custom":
-                sub_regime=None
+                sub_regime = None
                 backup_dataset_for_eval = spec_orig.dataset
 
             for parse_tree in spec_for_exp.parse_trees:
