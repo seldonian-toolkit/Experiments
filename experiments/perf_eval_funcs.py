@@ -3,12 +3,22 @@ from sklearn.metrics import log_loss, accuracy_score
 
 
 def binary_logistic_loss(y_pred, y, **kwargs):
+    """ Wrapper for sklearn's log_loss function. 
+    Just switches the order of the arguments 
+    to comply with the toolkit convention.
+
+    :param y_pred: Array of predicted probabilities of each label
+    :param y: Array of true labels, 1-dimensional
+    """
     return log_loss(y, y_pred)
 
 
 def multiclass_logistic_loss(y_pred, y, **kwargs):
     """Calculate average logistic loss
     over all data points for multi-class classification
+
+    :param y_pred: Array of predicted probabilities of each class label
+    :param y: Array of true class labels
 
     :return: logistic loss
     :rtype: float
@@ -31,7 +41,6 @@ def probabilistic_accuracy(y_pred, y, **kwargs):
 
     :param y_pred: Array of predicted probabilities of each label
     :param y: Array of true labels, 1-dimensional
-
     """
     v = np.where(y != 1.0, 1.0 - y_pred, y_pred)
     return sum(v) / len(v)
@@ -42,8 +51,8 @@ def multiclass_accuracy(y_pred, y, **kwargs):
     1 - error rate. Use when output of
     model y_pred is a probability
 
-    :param y_pred: Array of predicted probabilities of each label
-    :param y: Array of true labels, 1-dimensional
+    :param y_pred: Array of predicted probabilities of each class label
+    :param y: Array of true class labels
 
     """
     n = len(y)
@@ -52,12 +61,11 @@ def multiclass_accuracy(y_pred, y, **kwargs):
 
 def deterministic_accuracy(y_pred, y, **kwargs):
     """The fraction of correct samples. Best to use
-    only when the output of the model, y_pred
+    only when the output of the model, y_pred,
     is 0 or 1.
 
     :param y_pred: Array of predicted labels
     :param y: Array of true labels
-
     """
     from sklearn.metrics import accuracy_score
 

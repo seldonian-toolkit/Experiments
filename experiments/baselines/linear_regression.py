@@ -11,7 +11,7 @@ class LinearRegressionBaseline(LinearRegressionModel, SupervisedExperimentBaseli
         LinearRegressionModel.__init__(self)  # inherits parent's predict() method.
         SupervisedExperimentBaseline.__init__(self, model_name="linear_regression")
 
-    def train(self, X, Y):
+    def train(self, X, y):
         """Train the model. Just a wrapper to parent's fit() method.
 
         :param X: features
@@ -19,4 +19,4 @@ class LinearRegressionBaseline(LinearRegressionModel, SupervisedExperimentBaseli
         :param y: labels
         :type y: 1D np.ndarray
         """
-        return self.fit(X, Y)
+        return self.fit(X, y)

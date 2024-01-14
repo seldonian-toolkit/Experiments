@@ -44,6 +44,44 @@ class HeadlessExample(BaseExample):
         """Run the experiment for this example.
         Runs any baseline models included in baselines
         parameter first. Then produces the three plots.
+
+        :param full_pretraining_model: The model with head intact
+        :param headless_pretraining_model: The model with head removed
+        :param head_layer_names: List of names of the layers to be tuned.
+        :param latent_feature_shape: Shape of the latent features 
+            (the output shape of the last layer of headless model)
+        :param loss_func_pretraining: Loss function to use for pretraining
+        :param learning_rate_pretraining: Learning rate for pretraining
+        :param pretraining_device: Torch device for pretraining
+        :param batch_epoch_dict_pretraining: Dictionary mapping data fraction 
+            to (batch_size,n_epochs) 
+        :param safety_batch_size_pretraining: The number of samples to forward pass
+            at a time in the safety test. Changing this does not change the result,
+            but can lead to memory overflow if this number is too large. 
+        :param n_trials: The number of trials for the experiments
+        :param data_fracs: The data fractions for the experiments
+        :param results_dir: Directory for saving results files
+        :param perf_eval_fn: Performance evaluation function
+        :param perf_eval_kwargs: Keyword arguments to pass 
+            to the performance evaluation function
+        :param constraint_eval_kwargs: Extra keyword arguments to pass to
+                the constraint_eval_fns
+        :type constraint_eval_kwargs: dict
+        :param n_workers: Number of parallel processors to use 
+        :param batch_epoch_dict: Instruct batch sizes and n_epochs
+                for each data frac
+        :type batch_epoch_dict: dict
+        :param datagen_method: Method for generating the trial data
+        :param baselines: List of baseline models to include
+        :param performance_label: Label to use on the performance plot (left-most plot)
+        :type performance_label: str
+        :param performance_yscale: How to scale the y-axis on the performance plot. 
+            Options are "linear" and "log"
+        :type performance_yscale: str
+        :param plot_savename: If provided, the filepath where the three plots will be saved
+        :param legend_fontsize: Font size for legend
+        :param model_label_dict: Dictionary mapping model names (see model.model_name)
+            to display name in the 3 plots legend.
         """
         # assert baselines == [], "No baselines supported for headless examples yet"
         os.makedirs(results_dir, exist_ok=True)

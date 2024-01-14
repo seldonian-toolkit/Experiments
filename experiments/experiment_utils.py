@@ -23,6 +23,7 @@ def generate_behavior_policy_episodes(
         environment, agent, etc. needed for generating new episodes.
     :type hyperparameter_and_setting_dict: dict
 
+    :param n_trials: The number of experiment trials to run per data fraction
     :param save_dir: The parent directory in which to save the
             regenerated_episodes
     :type save_dir: str
@@ -67,10 +68,8 @@ def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False
     :param spec: A seldonian.spec.Spec object.
     :param results_dir: The directory in which results are saved for this trial
     :type results_dir: str
-
     :param trial_i: Trial index
     :type trial_i: int
-
     :param data_frac: data fraction
     :type data_frac: float
 
@@ -135,6 +134,16 @@ def load_resampled_datasets(spec, results_dir, trial_i, data_frac, verbose=False
 def load_regenerated_episodes(
     results_dir, trial_i, data_frac, orig_meta, verbose=False
 ):
+    """Load the episodes generatd for each experiment trial.
+    :param results_dir: The directory in which results are saved for this trial
+    :type results_dir: str
+    :param trial_i: Trial index
+    :type trial_i: int
+    :param data_frac: data fraction
+    :type data_frac: float
+    :param orig_meta: MetaData object from the original spec.dataset for this experiment
+    
+    """
     save_dir = os.path.join(results_dir, "regenerated_datasets")
     savename = os.path.join(save_dir, f"regenerated_data_trial{trial_i}.pkl")
 
@@ -200,6 +209,18 @@ def prep_feat_labels(trial_dataset, n_points, include_sensitive_attrs=False):
 def prep_feat_labels_for_baseline(
     spec, results_dir, trial_i, data_frac, datagen_method, verbose
 ):
+    """Utility function for preparing features and labels
+    for a given baseline trial.
+
+    :param spec: A seldonian.spec.Spec object.
+    :param results_dir: The directory in which results are saved for this trial
+    :type results_dir: str
+    :param trial_i: Trial index
+    :type trial_i: int
+    :param data_frac: data fraction
+    :type data_frac: float
+    :param datagen_method: Method for generating the trial datasets.
+    """
     if datagen_method == "resample":
         trial_datasets, n_points_dict, trial_addl_datasets = load_resampled_datasets(
             spec, results_dir, trial_i, data_frac, verbose=verbose
@@ -255,6 +276,20 @@ def prep_data_for_fairlearn(
     fairlearn_sensitive_feature_names,
     verbose,
 ):
+    """Utility function for preparing features and labels
+    for a given fairlearn trial.
+
+    :param spec: A seldonian.spec.Spec object.
+    :param results_dir: The directory in which results are saved for this trial
+    :type results_dir: str
+    :param trial_i: Trial index
+    :type trial_i: int
+    :param data_frac: data fraction
+    :type data_frac: float
+    :param datagen_method: Method for generating the trial datasets.
+    :param fairlearn_sensitive_feature_names: List of names of the sensitive attributes
+        that fairlearn will use.
+    """
     if datagen_method == "resample":
         trial_datasets, n_points_dict, trial_addl_datasets = load_resampled_datasets(
             spec, results_dir, trial_i, data_frac, verbose=verbose
@@ -351,6 +386,23 @@ def setup_SA_spec_for_exp(
     kwargs,
     perf_eval_kwargs,
 ):
+    """Utility function for setting up the spec object
+    to use for a Seldonian algorithm trial
+
+    :param spec: A seldonian.spec.Spec object.
+    :param regime: The category of ML problem. 
+    :param results_dir: The directory in which results are saved for this trial
+    :type results_dir: str
+    :param trial_i: Trial index for this data fraction
+    :type trial_i: int
+    :param data_frac: data fraction
+    :type data_frac: float
+    :param datagen_method: Method for generating the trial datasets.
+    :param batch_epoch_dict: A dictionary where keys are data fractions
+        and values are [batch_size,num_epochs]
+
+    :return: spec_for_exp, the spec object ready for running this Seldonian trial.
+    """
     if regime == "supervised_learning":
         if datagen_method == "resample":
             (
@@ -612,7 +664,7 @@ def generate_episodes_and_calc_J(**kwargs):
     """Calculate the expected discounted return
     by generating episodes
 
-    :return: episodes, J, where episodes is the list
+    :return: (episodes, J), where episodes is the list
             of generated ground truth episodes and J is
             the expected discounted return
     :rtype: (List(Episode),float)
@@ -642,18 +694,30 @@ def generate_episodes_and_calc_J(**kwargs):
 
 
 def batch_predictions(model, solution, X_test, **kwargs):
+    """Run model forward pass in batches.
+
+    :param model: A model object with a .predict(theta,X) method
+    :param solution: Model weights to set before making the forward pass
+    :param X_test: The features to batch up
+
+    :return: y_pred, the combined predictions in a flattened array
+    """
     batch_size = kwargs["eval_batch_size"]
+    
     if type(X_test) == list:
         N_eval = len(X_test[0])
     else:
         N_eval = len(X_test)
+    
     if "N_output_classes" in kwargs:
         N_output_classes = kwargs["N_output_classes"]
         y_pred = np.zeros((N_eval, N_output_classes))
     else:
         y_pred = np.zeros(N_eval)
+    
     num_batches = math.ceil(N_eval / batch_size)
     batch_start = 0
+    
     for i in range(num_batches):
         batch_end = batch_start + batch_size
 
@@ -667,6 +731,14 @@ def batch_predictions(model, solution, X_test, **kwargs):
 
 
 def batch_predictions_custom_regime(model, solution, test_data, **kwargs):
+    """Run model forward pass in batches for the custom regime.
+
+    :param model: A model object with a .predict(theta,data) method
+    :param solution: Model weights to set before making the forward pass
+    :param test_data: The input data to the model to batch up
+
+    :return: y_pred, the combined predictions in a flattened array
+    """
     batch_size = kwargs["eval_batch_size"]
     N_eval = len(test_data)
     if "N_output_classes" in kwargs:
@@ -688,7 +760,7 @@ def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     """
     Convenience function for figuring out the number of epochs necessary
     to ensure that at each data fraction, the total
-    number of iterations (and batch size) will be fixed.
+    number of iterations (and batch size) will stay fixed.
 
     :param niter: The total number of iterations you want run at every data_frac
     :type niter: int
@@ -698,6 +770,7 @@ def make_batch_epoch_dict_fixedniter(niter, data_fracs, N_max, batch_size):
     :type N_max: int
     :param batch_size: The fixed batch size
     :type batch_size: int
+
     :return batch_epoch_dict: A dictionary where keys are data fractions
         and values are [batch_size,num_epochs]
     """
@@ -722,7 +795,7 @@ def make_batch_epoch_dict_min_sample_repeat(
     """
     Convenience function for figuring out the number of epochs necessary
     to ensure that the number of iterations for each data frac is:
-    max(niter_min,# of iterations s.t. each sample is seen num_repeat times)
+    max(niter_min,# of iterations such that each sample is seen num_repeat times)
 
     :param niter_min: The minimum total number of iterations you want run at every data_frac
     :type niter_min: int
@@ -734,6 +807,7 @@ def make_batch_epoch_dict_min_sample_repeat(
     :type batch_size: int
     :param num_repeats: The minimum number of times each sample must be seen in the optimization process
     :type num_repeats: int
+
     :return batch_epoch_dict: A dictionary where keys are data fractions
         and values are [batch_size,num_epochs]
     """
@@ -755,7 +829,7 @@ def has_failed(g):
     """Condition for whether a value of g is unsafe. This is used
     to determine the failure rate in the right-most plot of the experiments plots.
 
-    :param g: The value of the behavioral constraint evaluated using a model and data
+    :param g: The expected value of a single behavioral constraint function
     :type g: float
 
     :return: True if g is unsafe, False if g is safe
@@ -764,6 +838,21 @@ def has_failed(g):
 
 
 def trial_arg_chunker(data_fracs, n_trials, n_workers):
+    """
+    Convenience function for parallel processing that chunks up 
+    the data fractions and trial indices as arguments
+    for use in the map function of a ProcessPoolExecutor.
+
+    :param data_fracs: 1-D array of data fractions
+    :type data_fracs: np.ndarray
+    :param n_trials: The number of trials per data fraction
+    :type n_trials: int
+    :param n_workers: The number of parallel processes that will be used.
+    :type n_workers: int
+    
+
+    :return chunked_list: A list of lists of tuples (data_frac,trial_index)
+    """
     n_tot = len(data_fracs) * n_trials
     chunk_size = n_tot // n_workers
     chunk_sizes = []
@@ -792,4 +881,14 @@ def trial_arg_chunker(data_fracs, n_trials, n_workers):
 
 
 def supervised_initial_solution_fn(m, x, y):
+    """A common initial solution function used in supervised learning.
+    Just a wrapper for the model.fit() method.
+
+    :param m: SeldonianModel instance
+    :param x: features
+    :param y: labels
+
+    :return: The output of the fit() method,
+        which are model weights as a flattened 1D array
+    """
     return m.fit(x, y)

@@ -20,7 +20,19 @@ class RLDiabetesUSAgentBaseline:
         cf_shrink_factor=np.sqrt(3),
     ):
         """Implements an RL baseline that uses importance sampling
-        with unequal support (US) with a fixed area policy"""
+        with unequal support (US) with a fixed area policy.
+
+        :param initial_solution: Initial policy parameters 
+        :param env_kwargs: Environment-specific keyword arguments
+        :param bb_crmin: Bounding box minimum in CR dimension 
+        :param bb_crmax: Bounding box maximum in CR dimension 
+        :param bb_cfmin: Bounding box minimum in CF dimension 
+        :param bb_cfmax: Bounding box maximum in CF dimension 
+        :param cr_shrink_factor: Factor to shrink the bounding box
+            CR size of the box by for this fixed area policy
+        :param cf_shrink_factor: Factor to shrink the bounding box
+            CR size of the box by for this fixed area policy
+        """
         super().__init__()
         self.model_name = "diabetes_us"
         self.initial_solution = initial_solution
@@ -44,6 +56,10 @@ class RLDiabetesUSAgentBaseline:
     def train(self, dataset, **kwargs):
         """
         Run CMA-ES starting with a random initial policy parameterization
+
+        :param dataset: A seldonian.dataset.RLDataSet object containing the episodes
+
+        :return solution: The fitted policy parameters
         """
         self.episodes = dataset.episodes
         n_eps = len(self.episodes)
@@ -75,6 +91,10 @@ class RLDiabetesUSAgentBaseline:
         """This is the function we want to minimize.
         In RL, we want to maximize the expected return
         so we need to minimize the negative expected return.
+
+        :param theta: Model weights
+
+        :return: the negative expected return of the history in self.episodes
         """
         crmin, crmax, cfmin, cfmax = self.policy.theta2crcf(theta)
         returns_inside_theta_box = []

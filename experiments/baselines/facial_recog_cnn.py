@@ -10,6 +10,8 @@ from .baselines import SupervisedExperimentBaseline
 
 class FacialRecogCNNModel(nn.Module):
     def __init__(self):
+        """ A 4-layer CNN with FC + softmax output layer to use as a binary classifier
+        """
         super(FacialRecogCNNModel, self).__init__()
 
         self.cnn1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1)
@@ -90,10 +92,13 @@ class PytorchFacialRecogBaseline(
     SupervisedPytorchBaseModel, SupervisedExperimentBaseline
 ):
     def __init__(self, device, learning_rate, batch_epoch_dict={}):
-        """Implements a CNN with PyTorch.
-        CNN consists of four hidden layers followed
-        by a linear + softmax output layer
+        """Used as a baseline in the facial recognition example: 
+        https://seldonian.cs.umass.edu/Tutorials/examples/facial_recognition/
 
+        :device: torch.device object specifying the GPU or CPU for running the model.
+        :param learning_rate: Initial learning rate for adam
+        :param batch_epoch_dict: Dictionary specifying batch size and number of epochs
+            as a function of data fraction.
         """
         SupervisedPytorchBaseModel.__init__(self, device)
         SupervisedExperimentBaseline.__init__(self, model_name="facial_recog_cnn")
@@ -116,11 +121,27 @@ class PytorchFacialRecogBaseline(
         return FacialRecogCNNModel()
 
     def predict(self, solution, X, **kwargs):
+        """Forward pass
+
+        :param solution: model weights
+        :param X: batch of data 
+
+        :return: y_pred, the positive class probabilities for each sample in X
+        """
         y_pred_super = super().predict(solution, X, **kwargs)
         y_pred = softmax(y_pred_super, axis=-1)[:, 1]
         return y_pred
 
     def train(self, X_train, Y_train, batch_size, n_epochs):
+        """
+        Train the model
+        :param X_train: Batch of training data
+        :param Y_train: Batch of training labels
+        :param batch_size: Size of each batche
+        :param n_epochs: Number of epochs to train over.
+
+        :return solution: Trained model weights
+        """
         loss_list = []
         accuracy_list = []
         iter_list = []

@@ -92,6 +92,7 @@ class Experiment:
             self.results_dir, f"{self.model_name}_results", "trial_data"
         )
         df_list = []
+       
         for data_frac in kwargs["data_fracs"]:
             for trial_i in range(kwargs["n_trials"]):
                 filename = os.path.join(
@@ -102,6 +103,7 @@ class Experiment:
 
         res_df = pd.concat(df_list)
         res_df.to_csv(res_fname, index=False)
+        
         if kwargs["verbose"]:
             print(f"Saved {res_fname}")
         return
@@ -113,7 +115,7 @@ class Experiment:
         :param data: The information to save
         :type data: List
 
-        :param colnames: Names of the items in the list.
+        :param colnames: Names of the items in the data list.
                 These will comprise the header of the saved file
         :type colnames: List(str)
 
@@ -140,7 +142,7 @@ class Experiment:
 class BaselineExperiment(Experiment):
     def __init__(self, baseline_model, results_dir):
         """Class for running baseline experiments
-        against which to compare Seldonian Experiments
+        to compare against Seldonian Experiments
 
         :param model_name: The string name of the baseline model,
                 e.g 'logistic_regression'
@@ -310,6 +312,7 @@ class BaselineExperiment(Experiment):
                 if verbose:
                     print("Error training baseline model. Returning NSF\n")
                 solution = "NSF"
+       
         elif regime == "reinforcement_learning":
             if datagen_method == "generate_episodes":
                 trial_dataset = load_regenerated_episodes(
@@ -406,7 +409,7 @@ class BaselineExperiment(Experiment):
     ):
         """Helper function to evaluate
         the constraint functions to determine
-        whether baseline solution was safe on ground truth
+        whether the baseline solution was safe on ground truth
 
         :param solution: The weights of the model found
                 during model training in a given trial
@@ -414,13 +417,14 @@ class BaselineExperiment(Experiment):
         :param constraint_eval_fns: List of functions
                 to use to evaluate each constraint.
                 An empty list (default) results in using the parse
-                tree to evaluate the constraints
+                trees to evaluate the constraints
         :type constraint_eval_fns: List(function)
         :param constraint_eval_kwargs: keyword arguments
                 to pass to each constraint function
                 in constraint_eval_fns
         :type constraint_eval_kwargs: dict
-        :return: a vector of g values for the constraints
+        
+        :return: a vector of g values (expected values) for the constraints
         :rtype: np.ndarray
         """
         # Use safety test branch so the confidence bounds on
@@ -485,6 +489,7 @@ class BaselineExperiment(Experiment):
             for eval_fn in constraint_eval_fns:
                 g = eval_fn(solution, **constraint_eval_kwargs)
                 gvals.append(g)
+
         return np.array(gvals)
 
 
@@ -552,12 +557,20 @@ class SeldonianExperiment(Experiment):
         self.aggregate_results(**kwargs)
 
     def run_trials_par(self, args_list, shared_namespace):
+        """Wrapper function that is run as a parallel process. 
+        Runs all the trials provided in args_list on a single core .
+
+        :param args_list: list of (data_frac,trial_i) pairs
+        :param shared_namespace: The namespace shared across multiple cores 
+            containing the keyword arguments that are the same 
+            for all trials. 
+        """
         for args in args_list:
             data_frac, trial_i = args
             self.run_QSA_trial(data_frac, trial_i, **shared_namespace.trial_kwargs)
 
     def run_QSA_trial(self, data_frac, trial_i, **kwargs):
-        """Run a trial of the quasi-Seldonian algorithm
+        """Run a trial of the quasi-Seldonian algorithm (QSA)
 
         :param data_frac: Fraction of overall dataset size to use
         :type data_frac: float
@@ -747,7 +760,8 @@ class SeldonianExperiment(Experiment):
     ):
         """Helper function for run_QSA_trial() to evaluate
         the constraint functions to determine
-        whether solution was safe on ground truth
+        whether the solution from the QSA was safe on a ground truth
+        held out dataset.
 
         :param solution: The weights of the model found
                 during candidate selection in a given trial
@@ -761,7 +775,8 @@ class SeldonianExperiment(Experiment):
                 to pass to each constraint function
                 in constraint_eval_fns
         :type constraint_eval_kwargs: dict
-        :return: a vector of g values for the constraints
+        
+        :return: a vector of g values (expected values) for the constraints
         :rtype: np.ndarray
         """
         # Use safety test branch so the confidence bounds on
@@ -1075,6 +1090,8 @@ class FairlearnExperiment(Experiment):
 
         :param X_test_fairlearn: The test features from which
                 to predict the labels
+
+        :return y_pred: Array of predicted class labels
         """
         n_points_test = len(X_test_fairlearn)
         y_pred = np.zeros(n_points_test)
@@ -1112,10 +1129,10 @@ class FairlearnExperiment(Experiment):
         """Evaluate the constraint function using the
         Fairlearn predictions
 
-        :param y_pred: Predicted labels, same shape as test_labels
+        :param y_pred: Predicted class labels, same shape as test_labels
         :type y_pred: 1D array
 
-        :param test_labels: True labels
+        :param test_labels: True class labels
         :type test_labels: 1D array
 
         :param fairlearn_constraint_name: The name of the constraint

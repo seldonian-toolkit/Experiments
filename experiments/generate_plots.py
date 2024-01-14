@@ -44,7 +44,7 @@ class PlotGenerator:
         1) Performance
         2) Solution rate
         3) Failure rate
-        all plotted vs. amount of data used
+        all plotted vs. amount of data used in the algorithm (candidate + safety). 
 
         :param spec: Specification object for running the
                 Seldonian algorithm
@@ -125,6 +125,7 @@ class PlotGenerator:
         """Make the three plots of the experiment. Looks up any
         experiments run in self.results_dir and plots them on the
         same three plots.
+
         :param tot_data_size: The total number of datapoints in the experiment.
             This is used, alongside the data_fracs array to construct the
             horizontal axes of the three plots. If None, assumes a value from the dataset.
@@ -136,10 +137,12 @@ class PlotGenerator:
                 will appear in the legend, and they will show up in the legend
                 in the order that you specify them in the dict.
         :type model_label_dict: int
-        :param ignore_models: Do not plot any models that appear in this list.
+        :param ignore_models: Do not plot any models whose .model_name attribute appears in this list.
         :type ignore_models: List
         :param fontsize: The font size to use for the axis labels
         :type fontsize: int
+        :param title_fontsize: The font size to use for the title of each subplot
+        :type title_fontsize: int
         :param legend_fontsize: The font size to use for text
                 in the legend
         :type legend_fontsize: int
@@ -158,13 +161,13 @@ class PlotGenerator:
         :param performance_ylims: The y limits of the performance plot.
             Default is to use matplotlib's automatic determination.
         :param hoz_axis_label: What you want to show as the horizontal axis
-            label for all plots
+            label for all plots.
         :type hoz_axis_label: str, defaults to "Amount of data"
         :param show_confidence_level: Whether to show the black dotted line for the value
             of delta in the failure rate plot (right plot)
         :type show_confidence_level: Bool
-        :param marker_size: The size of the points in each plots
-        :type marker_size: float
+        :param marker_size: The size of the points in each plots (matplotlib "s" parameter)
+        :type marker_size: float, defaults to 20.
         :param save_format: The file type for the saved plot
         :type save_format: str, defaults to "pdf"
         :param show_title: Whether to show the title at the top of the figure
@@ -690,7 +693,11 @@ class PlotGenerator:
     def validate_constraint_eval_kwargs(self, constraint_eval_kwargs):
         """Ensure that if additional datasets are contained within the spec
         object that there are held out datasets in constraint_eval_kwargs
-        for each additional dataset"""
+        for each additional dataset.
+
+        :param constraint_eval_kwargs: The keyword arguments used when
+            evaluating the constraints for the failure rate plot (right plot). 
+        """
         addl_datasets_spec = self.spec.additional_datasets
         if not addl_datasets_spec:
             return constraint_eval_kwargs
@@ -841,9 +848,9 @@ class SupervisedPlotGenerator(PlotGenerator):
     def generate_resampled_datasets(self, verbose=False):
         """Generate resampled datasets to use in each trial. Resamples (with replacement)
         features, labels and sensitive attributes to create n_trials versions of these
-        of the same shape as the inputs. Saves them in self.results_dir/resampled_datasets
+        of the same shape as the inputs. Saves them as Seldonian DataSet objects 
+        in self.results_dir/resampled_datasets
         """
-
         if verbose:
             print("Checking for resampled datasets")
 
@@ -1021,8 +1028,23 @@ class SupervisedPlotGenerator(PlotGenerator):
         verbose=False,
     ):
         """Run a headless supervised Seldonian experiment using the spec attribute
-        assigned to the class in __init__().
+        assigned to the class in __init__(). Only compatible with PyTorch models.
 
+        :param full_pretraining_model: The model with head intact
+        :param initial_state_dict: PyTorch state dictionary of pretrained model
+        :param headless_pretraining_model: The model with head removed
+        :param head_layer_names: List of names of the layers to be tuned.
+        :param latent_feature_shape: Shape of the latent features 
+            (the output shape of the last layer of headless model)
+        :param loss_func_pretraining: Loss function to use for pretraining
+        :param learning_rate_pretraining: Learning rate for pretraining
+        :param pretraining_device: Torch device for pretraining
+        :param batch_epoch_dict_pretraining: Dictionary mapping data fraction 
+            to (batch_size,n_epochs) 
+        :param safety_batch_size_pretraining: The number of samples to forward pass
+            at a time in the safety test. Changing this does not change the result,
+            but can lead to memory overflow if this number is too large. 
+        
         :param verbose: Whether to display results to stdout
                 while the Seldonian algorithms are running in each trial
         :type verbose: bool, defaults to False
@@ -1070,6 +1092,7 @@ class SupervisedPlotGenerator(PlotGenerator):
         """Run a supervised Seldonian experiment using the spec attribute
         assigned to the class in __init__().
 
+        :param baseline_model: The experiment baseline model object.
         :param verbose: Whether to display results to stdout
                 while the Seldonian algorithms are running in each trial
         :type verbose: bool, defaults to False
@@ -1114,6 +1137,17 @@ class SupervisedPlotGenerator(PlotGenerator):
         """Run a supervised experiment using the fairlearn
         library
 
+        :param fairlearn_sensitive_feature_names: Names of columns that 
+            are used as sensitive features in fairlearn model
+        :param fairlearn_constraint_name:
+            The name of the constraint in fairlearn's context 
+        :param fairlearn_epsilon_constraint:
+            The threshold of the constraint for training fairlearn's mitigator
+        :param fairlearn_epsilon_eval:
+            The threshold for evaluating fairlearn's mitigator
+        :param fairlearn_eval_kwargs:
+            Extra keyword arguments to pass to function evaluating fairlearn's mitigator
+            on the held out dataset.
         :param verbose: Whether to display results to stdout
                 while the fairlearn algorithms are running in each trial
         :type verbose: bool, defaults to False
@@ -1438,6 +1472,10 @@ class RLPlotGenerator(PlotGenerator):
                 to run the Seldonian algorithm for each trial
         :type datagen_method: str, e.g. "resample"
 
+        :param hyperparameter_and_setting_dict: Contains information like
+            experiment and agent for running the RL Seldonian algorithm.
+        :type hyperparameter_and_setting_dict: dict
+
         :param perf_eval_fn: Function used to evaluate the performance
                 of the model obtained in each trial, with signature:
                 func(theta,**kwargs), where theta is the solution
@@ -1595,8 +1633,18 @@ class RLPlotGenerator(PlotGenerator):
         all trials in an experiment. Only uses the qsa_results/
         folder since that is the only experiment that is relevant.
 
+        :param n_trials: The number of times the
+                Seldonian algorithm is run for each data fraction.
+                Used for generating error bars
+        :type n_trials: int
+        :param data_fracs: Proportions of the overall size
+                of the dataset to use
+                (the horizontal axis on the three plots).
+        :type data_fracs: List(float)
         :param fontsize: The font size to use for the axis labels
         :type fontsize: int
+        :param title_fontsize: The font size to use for the axis titles
+        :type title_fontsize: int
         :param marker_size: The size of the points in each plots
         :type marker_size: float
         :param save_format: The file type for the saved plot

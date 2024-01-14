@@ -32,10 +32,13 @@ class DecisionTreeClassifierLeafTuningBaseline(
         """Instantiate a new model instance and train (fit)
         it to the training data, X,Y. Then run Adam gradient descent
         on the leaf node probabilities.
+
         :param X: features
         :type X: 2D np.ndarray
         :param Y: labels
         :type Y: 1D np.ndarray
+
+        :return: theta, the fitted model parameters
         """
         leaf_node_probs = self.fit(X, Y)  # parent method
         self.X = X
@@ -60,7 +63,8 @@ class DecisionTreeClassifierLeafTuningBaseline(
         )
 
     def adam(self, theta_init, **kwargs):
-        """Perform gradient descent with adam optimizer
+        """Perform gradient descent with adam optimizer. Hardcoded some hyperparameters
+        just for this example baseline. 
 
         :param theta_init: The initial weights to begin gradient descent
 

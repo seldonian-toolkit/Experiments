@@ -5,7 +5,10 @@ from .generate_plots import SupervisedPlotGenerator
 
 class BaseExample:
     def __init__(self, spec):
-        """Base class for running experiments"""
+        """Base class for running experiments
+
+        :param spec: specification object created using the Seldonian Engine.
+        """
         self.spec = spec
         self.regime = self.spec.dataset.regime
 
@@ -17,7 +20,6 @@ class BaseExample:
         perf_eval_fn,
         n_workers=1,
         datagen_method="resample",
-        verbose=False,
         baselines=[],
         model_label_dict={},
         include_fairlearn_models=False,
@@ -29,10 +31,32 @@ class BaseExample:
         include_legend=True,
         plot_fontsize=12,
         legend_fontsize=8,
+        verbose=False,
     ):
-        """Run the experiment for this example.
+        """Run the experiments for this example.
         Runs any baseline models included in baselines
         parameter first. Then produces the three plots.
+
+        :param n_trials: The number of trials for the experiments
+        :param data_fracs: The data fractions for the experiments
+        :param results_dir: Directory for saving results files
+        :param perf_eval_fn: Performance evaluation function
+        :param n_workers: Number of parallel processors to use 
+        :param datagen_method: Method for generating the trial data
+        :param baselines: List of baseline models to include
+        :param model_label_dict: Dictionary mapping model names (see model.model_name)
+            to display name in the 3 plots legend.
+        :param include_fairlearn_models: Whether to include fairlearn baseline models
+        :type include_fairlearn_models: Bool
+        :param performance_label: Label to use on the performance plot (left-most plot)
+        :type performance_label: str
+        :param performance_yscale: How to scale the y-axis on the performance plot. 
+            Options are "linear" and "log"
+        :type performance_yscale: str
+        :param plot_savename: If provided, the filepath where the three plots will be saved
+        :param plot_save_format: "pdf" or "png"
+        :param include_legend: Whether to include legend on the 3 plots
+        :type include_legend: bool
         """
         os.makedirs(results_dir, exist_ok=True)
 

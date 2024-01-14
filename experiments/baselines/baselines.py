@@ -4,7 +4,12 @@ import autograd.numpy as np
 class SupervisedExperimentBaseline:
     def __init__(self, model_name):
         """Base class for all supervised learning experiment baselines. All such baselines
-        must implement at least the two methods below: train() and predict()."""
+        must have a string model_name and implement at least the two methods below: 
+        train() and predict().
+
+        :param model_name: The string name to give the model. This will be used 
+            as the prefix for the directory in which the model's results are saved.
+        """
         self.model_name = model_name
 
     def train(self, X, Y):
@@ -30,7 +35,7 @@ class RLExperimentBaseline(object):
         """Base class for all RL experiment baselines. All RL experiment baselines
         must have at least the two methods below. Depending on the constraint,
         other methods may be required. When the constraint involves an importance sampling variant,
-        e.g., one of the "J_pi_new" variants, a method:
+        e.g., one of the "J_pi_new_" variants, a method:
             get_probs_from_observations_and_actions(
                 self,
                 theta,
@@ -39,6 +44,12 @@ class RLExperimentBaseline(object):
                 behavior_action_probs
             )
         is also required.
+
+        :param model_name: The string name to give the model. This will be used 
+            as the prefix for the directory in which the model's results are saved.
+
+        :param policy: A seldonian.RL.Agents.Policies.Policy.Policy object. 
+        :param env_kwargs: Keyword arguments specific to the RL environemnt.
         """
         self.model_name = model_name
         self.policy = policy
