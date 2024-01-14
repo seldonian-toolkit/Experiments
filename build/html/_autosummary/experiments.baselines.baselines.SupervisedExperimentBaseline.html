@@ -41,7 +41,14 @@
 <dt class="sig sig-object py" id="experiments.baselines.baselines.SupervisedExperimentBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.baselines.SupervisedExperimentBaseline.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all supervised learning experiment baselines. All such baselines
-must implement at least the two methods below: train() and predict().</p>
+must have a string model_name and implement at least the two methods below: 
+train() and predict().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_name</strong> – The string name to give the model. This will be used 
+as the prefix for the directory in which the model’s results are saved.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

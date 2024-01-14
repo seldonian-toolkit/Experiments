@@ -70,7 +70,8 @@ DecisionTreeClassifier takes.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.adam">
 <span class="sig-name descname"><span class="pre">adam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_init</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.adam" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform gradient descent with adam optimizer</p>
+<dd><p>Perform gradient descent with adam optimizer. Hardcoded some hyperparameters
+just for this example baseline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>theta_init</strong> – The initial weights to begin gradient descent</p>
@@ -181,11 +182,18 @@ leaf nodes from left to right</p>
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree_leaf_tuning.DecisionTreeClassifierLeafTuningBaseline.train" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate a new model instance and train (fit)
 it to the training data, X,Y. Then run Adam gradient descent
-on the leaf node probabilities.
-:param X: features
-:type X: 2D np.ndarray
-:param Y: labels
-:type Y: 1D np.ndarray</p>
+on the leaf node probabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>2D np.ndarray</em>) – features</p></li>
+<li><p><strong>Y</strong> (<em>1D np.ndarray</em>) – labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta, the fitted model parameters</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

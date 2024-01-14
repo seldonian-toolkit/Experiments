@@ -38,10 +38,10 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.batch_predictions.html#experiments.experiment_utils.batch_predictions" title="experiments.experiment_utils.batch_predictions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_predictions</span></code></a>(model, solution, X_test, ...)</p></td>
-<td><p></p></td>
+<td><p>Run model forward pass in batches.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.batch_predictions_custom_regime.html#experiments.experiment_utils.batch_predictions_custom_regime" title="experiments.experiment_utils.batch_predictions_custom_regime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_predictions_custom_regime</span></code></a>(model, ...)</p></td>
-<td><p></p></td>
+<td><p>Run model forward pass in batches for the custom regime.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.generate_behavior_policy_episodes.html#experiments.experiment_utils.generate_behavior_policy_episodes" title="experiments.experiment_utils.generate_behavior_policy_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_behavior_policy_episodes</span></code></a>(...[, verbose])</p></td>
 <td><p>Utility function for reinforcement learning to generate new episodes using the behavior policy to use in each trial.</p></td>
@@ -53,37 +53,37 @@
 <td><p>Condition for whether a value of g is unsafe.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.load_regenerated_episodes.html#experiments.experiment_utils.load_regenerated_episodes" title="experiments.experiment_utils.load_regenerated_episodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_regenerated_episodes</span></code></a>(results_dir, ...)</p></td>
-<td><p></p></td>
+<td><p>Load the episodes generatd for each experiment trial.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.load_resampled_datasets.html#experiments.experiment_utils.load_resampled_datasets" title="experiments.experiment_utils.load_resampled_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_resampled_datasets</span></code></a>(spec, results_dir, ...)</p></td>
 <td><p>Utility function for supervised learning to generate the resampled datasets to use in each trial.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_fixedniter.html#experiments.experiment_utils.make_batch_epoch_dict_fixedniter" title="experiments.experiment_utils.make_batch_epoch_dict_fixedniter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_fixedniter</span></code></a>(niter, ...)</p></td>
-<td><p>Convenience function for figuring out the number of epochs necessary to ensure that at each data fraction, the total number of iterations (and batch size) will be fixed.</p></td>
+<td><p>Convenience function for figuring out the number of epochs necessary to ensure that at each data fraction, the total number of iterations (and batch size) will stay fixed.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat.html#experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat" title="experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_batch_epoch_dict_min_sample_repeat</span></code></a>(...)</p></td>
-<td><p>Convenience function for figuring out the number of epochs necessary to ensure that the number of iterations for each data frac is: max(niter_min,# of iterations s.t.</p></td>
+<td><p>Convenience function for figuring out the number of epochs necessary to ensure that the number of iterations for each data frac is: max(niter_min,# of iterations such that each sample is seen num_repeat times)</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_custom_data.html#experiments.experiment_utils.prep_custom_data" title="experiments.experiment_utils.prep_custom_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_custom_data</span></code></a>(trial_dataset, n_points[, ...])</p></td>
 <td><p>Utility function for preparing data and sensitive attributes for the custom regime for a given trial with n_points (given data frac)</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_data_for_fairlearn.html#experiments.experiment_utils.prep_data_for_fairlearn" title="experiments.experiment_utils.prep_data_for_fairlearn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_data_for_fairlearn</span></code></a>(spec, results_dir, ...)</p></td>
-<td><p></p></td>
+<td><p>Utility function for preparing features and labels for a given fairlearn trial.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels.html#experiments.experiment_utils.prep_feat_labels" title="experiments.experiment_utils.prep_feat_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_feat_labels</span></code></a>(trial_dataset, n_points[, ...])</p></td>
 <td><p>Utility function for preparing features and labels for a given trial with n_points (given data frac)</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.prep_feat_labels_for_baseline.html#experiments.experiment_utils.prep_feat_labels_for_baseline" title="experiments.experiment_utils.prep_feat_labels_for_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_feat_labels_for_baseline</span></code></a>(spec, ...)</p></td>
-<td><p></p></td>
+<td><p>Utility function for preparing features and labels for a given baseline trial.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.setup_SA_spec_for_exp.html#experiments.experiment_utils.setup_SA_spec_for_exp" title="experiments.experiment_utils.setup_SA_spec_for_exp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_SA_spec_for_exp</span></code></a>(spec, regime, ...)</p></td>
-<td><p></p></td>
+<td><p>Utility function for setting up the spec object to use for a Seldonian algorithm trial</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="experiments.experiment_utils.supervised_initial_solution_fn.html#experiments.experiment_utils.supervised_initial_solution_fn" title="experiments.experiment_utils.supervised_initial_solution_fn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">supervised_initial_solution_fn</span></code></a>(m, x, y)</p></td>
-<td><p></p></td>
+<td><p>A common initial solution function used in supervised learning.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="experiments.experiment_utils.trial_arg_chunker.html#experiments.experiment_utils.trial_arg_chunker" title="experiments.experiment_utils.trial_arg_chunker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trial_arg_chunker</span></code></a>(data_fracs, n_trials, ...)</p></td>
-<td><p></p></td>
+<td><p>Convenience function for parallel processing that chunks up  the data fractions and trial indices as arguments for use in the map function of a ProcessPoolExecutor.</p></td>
 </tr>
 </tbody>
 </table>

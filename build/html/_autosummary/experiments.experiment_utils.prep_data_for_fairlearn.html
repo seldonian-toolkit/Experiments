@@ -36,7 +36,22 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.experiment_utils.prep_data_for_fairlearn">
 <span class="sig-name descname"><span class="pre">prep_data_for_fairlearn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trial_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_frac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datagen_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fairlearn_sensitive_feature_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiment_utils.prep_data_for_fairlearn" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Utility function for preparing features and labels
+for a given fairlearn trial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> – A seldonian.spec.Spec object.</p></li>
+<li><p><strong>results_dir</strong> (<em>str</em>) – The directory in which results are saved for this trial</p></li>
+<li><p><strong>trial_i</strong> (<em>int</em>) – Trial index</p></li>
+<li><p><strong>data_frac</strong> (<em>float</em>) – data fraction</p></li>
+<li><p><strong>datagen_method</strong> – Method for generating the trial datasets.</p></li>
+<li><p><strong>fairlearn_sensitive_feature_names</strong> – List of names of the sensitive attributes
+that fairlearn will use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

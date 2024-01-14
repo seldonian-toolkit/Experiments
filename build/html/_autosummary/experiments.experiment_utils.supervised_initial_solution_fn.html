@@ -36,7 +36,22 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.experiment_utils.supervised_initial_solution_fn">
 <span class="sig-name descname"><span class="pre">supervised_initial_solution_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiment_utils.supervised_initial_solution_fn" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A common initial solution function used in supervised learning.
+Just a wrapper for the model.fit() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> – SeldonianModel instance</p></li>
+<li><p><strong>x</strong> – features</p></li>
+<li><p><strong>y</strong> – labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output of the fit() method,
+which are model weights as a flattened 1D array</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

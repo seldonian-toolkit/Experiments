@@ -36,7 +36,20 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.experiment_utils.batch_predictions">
 <span class="sig-name descname"><span class="pre">batch_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiment_utils.batch_predictions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Run model forward pass in batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – A model object with a .predict(theta,X) method</p></li>
+<li><p><strong>solution</strong> – Model weights to set before making the forward pass</p></li>
+<li><p><strong>X_test</strong> – The features to batch up</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>y_pred, the combined predictions in a flattened array</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

@@ -60,6 +60,45 @@
 <dd><p>Run the experiment for this example.
 Runs any baseline models included in baselines
 parameter first. Then produces the three plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>full_pretraining_model</strong> – The model with head intact</p></li>
+<li><p><strong>headless_pretraining_model</strong> – The model with head removed</p></li>
+<li><p><strong>head_layer_names</strong> – List of names of the layers to be tuned.</p></li>
+<li><p><strong>latent_feature_shape</strong> – Shape of the latent features 
+(the output shape of the last layer of headless model)</p></li>
+<li><p><strong>loss_func_pretraining</strong> – Loss function to use for pretraining</p></li>
+<li><p><strong>learning_rate_pretraining</strong> – Learning rate for pretraining</p></li>
+<li><p><strong>pretraining_device</strong> – Torch device for pretraining</p></li>
+<li><p><strong>batch_epoch_dict_pretraining</strong> – Dictionary mapping data fraction 
+to (batch_size,n_epochs)</p></li>
+<li><p><strong>safety_batch_size_pretraining</strong> – The number of samples to forward pass
+at a time in the safety test. Changing this does not change the result,
+but can lead to memory overflow if this number is too large.</p></li>
+<li><p><strong>n_trials</strong> – The number of trials for the experiments</p></li>
+<li><p><strong>data_fracs</strong> – The data fractions for the experiments</p></li>
+<li><p><strong>results_dir</strong> – Directory for saving results files</p></li>
+<li><p><strong>perf_eval_fn</strong> – Performance evaluation function</p></li>
+<li><p><strong>perf_eval_kwargs</strong> – Keyword arguments to pass 
+to the performance evaluation function</p></li>
+<li><p><strong>constraint_eval_kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to
+the constraint_eval_fns</p></li>
+<li><p><strong>n_workers</strong> – Number of parallel processors to use</p></li>
+<li><p><strong>batch_epoch_dict</strong> (<em>dict</em>) – Instruct batch sizes and n_epochs
+for each data frac</p></li>
+<li><p><strong>datagen_method</strong> – Method for generating the trial data</p></li>
+<li><p><strong>baselines</strong> – List of baseline models to include</p></li>
+<li><p><strong>performance_label</strong> (<em>str</em>) – Label to use on the performance plot (left-most plot)</p></li>
+<li><p><strong>performance_yscale</strong> (<em>str</em>) – How to scale the y-axis on the performance plot. 
+Options are “linear” and “log”</p></li>
+<li><p><strong>plot_savename</strong> – If provided, the filepath where the three plots will be saved</p></li>
+<li><p><strong>legend_fontsize</strong> – Font size for legend</p></li>
+<li><p><strong>model_label_dict</strong> – Dictionary mapping model names (see model.model_name)
+to display name in the 3 plots legend.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

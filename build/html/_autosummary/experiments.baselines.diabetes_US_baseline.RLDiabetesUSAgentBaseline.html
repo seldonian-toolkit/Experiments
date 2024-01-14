@@ -41,7 +41,23 @@
 <dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_solution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_crmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bb_cfmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf_shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.7320508075688772</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements an RL baseline that uses importance sampling
-with unequal support (US) with a fixed area policy</p>
+with unequal support (US) with a fixed area policy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>initial_solution</strong> – Initial policy parameters</p></li>
+<li><p><strong>env_kwargs</strong> – Environment-specific keyword arguments</p></li>
+<li><p><strong>bb_crmin</strong> – Bounding box minimum in CR dimension</p></li>
+<li><p><strong>bb_crmax</strong> – Bounding box maximum in CR dimension</p></li>
+<li><p><strong>bb_cfmin</strong> – Bounding box minimum in CF dimension</p></li>
+<li><p><strong>bb_cfmax</strong> – Bounding box maximum in CF dimension</p></li>
+<li><p><strong>cr_shrink_factor</strong> – Factor to shrink the bounding box
+CR size of the box by for this fixed area policy</p></li>
+<li><p><strong>cf_shrink_factor</strong> – Factor to shrink the bounding box
+CR size of the box by for this fixed area policy</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -61,6 +77,14 @@ with unequal support (US) with a fixed area policy</p>
 <dd><p>This is the function we want to minimize.
 In RL, we want to maximize the expected return
 so we need to minimize the negative expected return.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta</strong> – Model weights</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the negative expected return of the history in self.episodes</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -78,6 +102,14 @@ so we need to minimize the negative expected return.</p>
 <dt class="sig sig-object py" id="experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.diabetes_US_baseline.RLDiabetesUSAgentBaseline.train" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run CMA-ES starting with a random initial policy parameterization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset</strong> – A seldonian.dataset.RLDataSet object containing the episodes</p>
+</dd>
+<dt class="field-even">Return solution<span class="colon">:</span></dt>
+<dd class="field-even"><p>The fitted policy parameters</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

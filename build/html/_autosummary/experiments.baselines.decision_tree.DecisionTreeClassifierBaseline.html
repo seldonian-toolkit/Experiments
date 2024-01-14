@@ -41,13 +41,9 @@
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dt_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a decision tree classifier baseline for
-a binary classification task</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dt_kwargs</strong> – Any keyword arguments that scikit-learn’s</p>
-</dd>
-</dl>
-<p>DecisionTreeClassifier takes.</p>
+a binary classification task. Pass any
+keyword arguments to this class that scikit-learn’s
+DecisionTreeClassifier constructor takes.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -64,23 +60,32 @@ a binary classification task</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use the trained model to predict positive class probabilities
+<dd><p>Use the trained model to predict positive class probabilities.
 theta isn’t used here because there are no fitted parameters
-in decision trees.
-:param theta: Model weights, None in this case
-:param X: features
-:type X: 2D np.ndarray</p>
+in decision trees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> – Model weights, None in this case</p></li>
+<li><p><strong>X</strong> (<em>2D np.ndarray</em>) – features</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.decision_tree.DecisionTreeClassifierBaseline.train" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate a new model instance and train (fit)
-it to the training data, X,y
-:param X: features
-:type X: 2D np.ndarray
-:param y: labels
-:type y: 1D np.ndarray</p>
+it to the training data, X,y</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>2D np.ndarray</em>) – features</p></li>
+<li><p><strong>y</strong> (<em>1D np.ndarray</em>) – labels</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

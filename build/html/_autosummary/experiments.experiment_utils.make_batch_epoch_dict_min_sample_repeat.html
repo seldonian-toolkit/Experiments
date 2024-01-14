@@ -38,7 +38,7 @@
 <span class="sig-name descname"><span class="pre">make_batch_epoch_dict_min_sample_repeat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">niter_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_repeats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiment_utils.make_batch_epoch_dict_min_sample_repeat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function for figuring out the number of epochs necessary
 to ensure that the number of iterations for each data frac is:
-max(niter_min,# of iterations s.t. each sample is seen num_repeat times)</p>
+max(niter_min,# of iterations such that each sample is seen num_repeat times)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

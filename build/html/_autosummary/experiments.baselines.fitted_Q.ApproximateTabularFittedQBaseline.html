@@ -40,9 +40,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'gamma':</span> <span class="pre">1.0}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regressor_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements fitted-Q RL baseline for a Q table, 
+<dd><p>Implements fitted-Q RL baseline for a Q table,
 but uses the fitted regressor to approximate the Q values.
-Useful for nonparametric regressors. The features of the 
+Useful for nonparametric regressors. The features of the
 regression problem are the one-hot vectors
 of the (observation,action) pairs.</p>
 </dd></dl>
@@ -109,7 +109,7 @@ at each timestep in the episode</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.get_regressor_weights">
 <span class="sig-name descname"><span class="pre">get_regressor_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiments.baselines.fitted_Q.ApproximateTabularFittedQBaseline.get_regressor_weights" title="Permalink to this definition">¶</a></dt>
-<dd><p>Approximates Q table by passing each possible 
+<dd><p>Approximates Q table by passing each possible
 one-hot encoding of (observation,action) pairs
 through the regressor’s forward pass.</p>
 </dd></dl>

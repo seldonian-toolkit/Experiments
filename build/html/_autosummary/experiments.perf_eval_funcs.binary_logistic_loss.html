@@ -36,7 +36,18 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.perf_eval_funcs.binary_logistic_loss">
 <span class="sig-name descname"><span class="pre">binary_logistic_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.perf_eval_funcs.binary_logistic_loss" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper for sklearn’s log_loss function. 
+Just switches the order of the arguments 
+to comply with the toolkit convention.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> – Array of predicted probabilities of each label</p></li>
+<li><p><strong>y</strong> – Array of true labels, 1-dimensional</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

@@ -36,7 +36,22 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="experiments.experiment_utils.trial_arg_chunker">
 <span class="sig-name descname"><span class="pre">trial_arg_chunker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_fracs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_workers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.experiment_utils.trial_arg_chunker" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Convenience function for parallel processing that chunks up 
+the data fractions and trial indices as arguments
+for use in the map function of a ProcessPoolExecutor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_fracs</strong> (<em>np.ndarray</em>) – 1-D array of data fractions</p></li>
+<li><p><strong>n_trials</strong> (<em>int</em>) – The number of trials per data fraction</p></li>
+<li><p><strong>n_workers</strong> (<em>int</em>) – The number of parallel processes that will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return chunked_list<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of lists of tuples (data_frac,trial_index)</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

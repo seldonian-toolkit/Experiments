@@ -95,7 +95,8 @@ for each data frac</p></li>
 <span class="sig-name descname"><span class="pre">generate_resampled_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.generate_resampled_datasets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate resampled datasets to use in each trial. Resamples (with replacement)
 features, labels and sensitive attributes to create n_trials versions of these
-of the same shape as the inputs. Saves them in self.results_dir/resampled_datasets</p>
+of the same shape as the inputs. Saves them as Seldonian DataSet objects 
+in self.results_dir/resampled_datasets</p>
 </dd></dl>
 
 <dl class="py method">
@@ -109,23 +110,22 @@ of the same shape as the inputs. Saves them in self.results_dir/resampled_datase
 <span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tot_data_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_label_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_models</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">legend_fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sr_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Prob.</span> <span class="pre">of</span> <span class="pre">solution'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fr_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Prob.</span> <span class="pre">of</span> <span class="pre">violation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_ylims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hoz_axis_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Amount</span> <span class="pre">of</span> <span class="pre">data'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_confidence_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.make_plots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make the three plots of the experiment. Looks up any
 experiments run in self.results_dir and plots them on the
-same three plots.
-:param tot_data_size: The total number of datapoints in the experiment.</p>
-<blockquote>
-<div><p>This is used, alongside the data_fracs array to construct the
-horizontal axes of the three plots. If None, assumes a value from the dataset.</p>
-</div></blockquote>
+same three plots.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>tot_data_size</strong> (<em>int</em>) – The total number of datapoints in the experiment.
+This is used, alongside the data_fracs array to construct the
+horizontal axes of the three plots. If None, assumes a value from the dataset.</p></li>
 <li><p><strong>model_label_dict</strong> (<em>int</em>) – An optional dictionary where keys
 are model names and values are the names you want
 shown in the legend. Note that if you specify this
 dict, then only the models in this dictionary
 will appear in the legend, and they will show up in the legend
 in the order that you specify them in the dict.</p></li>
-<li><p><strong>ignore_models</strong> (<em>List</em>) – Do not plot any models that appear in this list.</p></li>
+<li><p><strong>ignore_models</strong> (<em>List</em>) – Do not plot any models whose .model_name attribute appears in this list.</p></li>
 <li><p><strong>fontsize</strong> (<em>int</em>) – The font size to use for the axis labels</p></li>
+<li><p><strong>title_fontsize</strong> (<em>int</em>) – The font size to use for the title of each subplot</p></li>
 <li><p><strong>legend_fontsize</strong> (<em>int</em>) – The font size to use for text
 in the legend</p></li>
 <li><p><strong>ncols_legend</strong> (<em>int</em><em>, </em><em>defaults to 3</em>) – The number of columns to use in the legend</p></li>
@@ -139,10 +139,10 @@ plot (right plot) you want to use.</p></li>
 <li><p><strong>performance_ylims</strong> – The y limits of the performance plot.
 Default is to use matplotlib’s automatic determination.</p></li>
 <li><p><strong>hoz_axis_label</strong> (<em>str</em><em>, </em><em>defaults to &quot;Amount</em><em> of </em><em>data&quot;</em>) – What you want to show as the horizontal axis
-label for all plots</p></li>
+label for all plots.</p></li>
 <li><p><strong>show_confidence_level</strong> (<em>Bool</em>) – Whether to show the black dotted line for the value
 of delta in the failure rate plot (right plot)</p></li>
-<li><p><strong>marker_size</strong> (<em>float</em>) – The size of the points in each plots</p></li>
+<li><p><strong>marker_size</strong> (<em>float</em><em>, </em><em>defaults to 20.</em>) – The size of the points in each plots (matplotlib “s” parameter)</p></li>
 <li><p><strong>save_format</strong> (<em>str</em><em>, </em><em>defaults to &quot;pdf&quot;</em>) – The file type for the saved plot</p></li>
 <li><p><strong>show_title</strong> (<em>bool</em>) – Whether to show the title at the top of the figure</p></li>
 <li><p><strong>custom_title</strong> (<em>str</em><em>, </em><em>defaults to None</em>) – A custom title</p></li>
@@ -161,8 +161,11 @@ will be saved on disk.</p></li>
 assigned to the class in __init__().</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
-while the Seldonian algorithms are running in each trial</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseline_model</strong> – The experiment baseline model object.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
+while the Seldonian algorithms are running in each trial</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -174,8 +177,17 @@ while the Seldonian algorithms are running in each trial</p>
 library</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
-while the fairlearn algorithms are running in each trial</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fairlearn_sensitive_feature_names</strong> – Names of columns that 
+are used as sensitive features in fairlearn model</p></li>
+<li><p><strong>fairlearn_constraint_name</strong> – The name of the constraint in fairlearn’s context</p></li>
+<li><p><strong>fairlearn_epsilon_constraint</strong> – The threshold of the constraint for training fairlearn’s mitigator</p></li>
+<li><p><strong>fairlearn_epsilon_eval</strong> – The threshold for evaluating fairlearn’s mitigator</p></li>
+<li><p><strong>fairlearn_eval_kwargs</strong> – Extra keyword arguments to pass to function evaluating fairlearn’s mitigator
+on the held out dataset.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
+while the fairlearn algorithms are running in each trial</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -184,11 +196,27 @@ while the fairlearn algorithms are running in each trial</p>
 <dt class="sig sig-object py" id="experiments.generate_plots.SupervisedPlotGenerator.run_headless_seldonian_experiment">
 <span class="sig-name descname"><span class="pre">run_headless_seldonian_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headless_pretraining_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_layer_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_feature_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_pretraining</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretraining_device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_epoch_dict_pretraining</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_batch_size_pretraining</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.run_headless_seldonian_experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a headless supervised Seldonian experiment using the spec attribute
-assigned to the class in __init__().</p>
+assigned to the class in __init__(). Only compatible with PyTorch models.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
-while the Seldonian algorithms are running in each trial</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>full_pretraining_model</strong> – The model with head intact</p></li>
+<li><p><strong>initial_state_dict</strong> – PyTorch state dictionary of pretrained model</p></li>
+<li><p><strong>headless_pretraining_model</strong> – The model with head removed</p></li>
+<li><p><strong>head_layer_names</strong> – List of names of the layers to be tuned.</p></li>
+<li><p><strong>latent_feature_shape</strong> – Shape of the latent features 
+(the output shape of the last layer of headless model)</p></li>
+<li><p><strong>loss_func_pretraining</strong> – Loss function to use for pretraining</p></li>
+<li><p><strong>learning_rate_pretraining</strong> – Learning rate for pretraining</p></li>
+<li><p><strong>pretraining_device</strong> – Torch device for pretraining</p></li>
+<li><p><strong>batch_epoch_dict_pretraining</strong> – Dictionary mapping data fraction 
+to (batch_size,n_epochs)</p></li>
+<li><p><strong>safety_batch_size_pretraining</strong> – The number of samples to forward pass
+at a time in the safety test. Changing this does not change the result,
+but can lead to memory overflow if this number is too large.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>defaults to False</em>) – Whether to display results to stdout
+while the Seldonian algorithms are running in each trial</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -211,7 +239,13 @@ while the Seldonian algorithms are running in each trial</p>
 <span class="sig-name descname"><span class="pre">validate_constraint_eval_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint_eval_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiments.generate_plots.SupervisedPlotGenerator.validate_constraint_eval_kwargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure that if additional datasets are contained within the spec
 object that there are held out datasets in constraint_eval_kwargs
-for each additional dataset</p>
+for each additional dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>constraint_eval_kwargs</strong> – The keyword arguments used when
+evaluating the constraints for the failure rate plot (right plot).</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
